@@ -1,0 +1,250 @@
+ls()
+swirl()
+5+7
+x<-5+7
+x
+y<-x-3
+y
+z<-c(1.1,9.3.14)
+z<-c(1.1,9,3.14)
+?c
+z
+c(z,555,z)
+play()
+c(z,555,z,recursive=FALSE)
+nxt()
+z*2+100
+mySqrt<-sqrt(z-1)
+mySqrt
+myDiv<-z/mySqrt
+myDiv
+c(1,2,3,4)+c(0,10)
+c(1,2,3,4)+c(0,10,100)
+1:20
+pi:10
+15:1
+?`:`
+seq(1,20)
+seq(0,10,by=.5)
+seq(5,10,length=30)
+seq(5,10,length=30)->my_seq
+length(my_seq)
+1:length(my_seq)
+seq(along=my_seq)
+seq_along(my_seq)
+rep(0,times=40)
+rep(c(0,1,2),times=10)
+rep(c(0,1,2), each=10)
+x<-4L
+class(x)
+class(L)
+class(4L)
+4L
+class(x<-c(4,TRUE))
+x<-'msg4re'
+x
+class(x)
+x<-345
+class(x)
+x<-345L
+class(x)
+x<-345
+x
+x<-c(3,4,5)
+x
+x<-1:5
+x
+class(x)
+x<-1.:5.0
+class(x)
+x
+as.numeric(x)
+class(x)
+class(as.numeric(x))
+as.logical(x)
+as.character(x)
+m<-matrix(nrow=2, ncol=3)
+m
+dim(m)
+attributes(m)
+m<-matrix(1:6, nrow=2, ncol=3)
+m
+m<-1:10
+dim(m)<-c(2,5)
+m
+x<-1:3
+y<-10:12
+cbind(x,y)
+rbind(x,y)
+y<-10:11
+cbind(x,y)
+rbind(x,y)
+x<-list(1,"a", TRUE, 1+4i)
+x
+x(2)
+x[2]
+q<-c(4,TRUE)
+class(q)
+class(4)
+class(TRUE)
+class(true)
+x<-list(1,"a", TRUE, 1+4i)
+x
+q<-(1,3,5)
+q<-c(1,3,5)
+r<-c(3,2,10)
+class(cbind(q,r))
+cbind(q
+,r)
+x[[1]]
+class(x[[1]])
+class(x)
+cbind(q,r)
+q+r
+q<-c(17,14,4,5,13,12,10)
+q
+q[q > 10]<-4
+q
+x<-c("a","b","c","d","a")
+x[1]
+x>"a"
+x[FALSE]
+x[TRUE]
+x[FALSE TRUE]
+x[FALSE TRUE TRUE TRUE TRUE FALES]
+x[FALSE TRUE TRUE TRUE TRUE FALSE]
+x[FALSE TRUE TRUE TRUE FALSE]
+clear
+x>"a"
+x[x>"a"]
+u<-x[x>"a"]
+x<-matrix(1:6,2,3)
+x
+x[1,:]
+x[1,]
+x[1]
+x[6]
+x[1,2]
+x[1,2, drop=FALSE]
+x[1,2]
+a<=x[1,]
+a<-x[1,]
+a
+a[1,1]
+x<-list(foo=1:4, bar=.6)
+x[1]
+x[2]
+class x[2]
+class(x[1])
+class(x[2])
+class(x[[1])]
+class(x[[1]])
+class(x[[2])
+class(x[[2]])
+x$foo
+x$bar
+c(x, baz="hello")
+x
+c(x, baz="hello")->x
+x
+c(1,3)
+x[1,3]
+x[c(1,3)]
+name<-"foo"
+x
+x[name]
+x<-list(a=list(10,12,14), b=c(3.14,2.81))
+x
+class(x$a)
+class(x$b)
+x[$a]
+x$a[[3]]
+x$a[3]
+x[1][3]
+x[2]
+x[2][1]
+x[2][2]
+x[2][1][1]
+x
+x
+x[[2]]
+class(x[2])
+class(x[[2]])
+x[[1]][3]
+x[2,1]
+x[2][1]
+x[[2]][1]
+x[2][[1]]
+x[c(2,1)]
+x[[c(2,1)]]
+x[[c(1,3)]]
+x<-list(arrdvark=1:5)
+x
+x$a
+x$b
+x$ar
+x$aa
+x[["a"]]
+x[["a", exact=FALSE]]
+X<-C(1,2,NA,4,NA,5)
+X<-c(1,2,NA,4,NA,5)
+x<-X
+bad<-is.bad(x)
+bad<-is.na(x)
+bad
+x[!bad]
+x[]
+x[c(0,0,1,0,1,0)]
+x[!c(0,0,1,0,1,0)]
+x[bad]
+y<-c("a","b",NA,"d",NA,"f")
+y
+complete.cases(x,y)->good
+good
+x
+y
+z<-c(y,"g")
+complete.cases(x,z)->good
+complete.cases(x,y)->good
+?complete.cases
+z<-c(1, NA, 2, 3, 4, 5, 6)
+complete.cases(x,z)
+length(z)
+length(x)
+z<-c(1, NA, 2, 3, 4, 5)
+complete.cases(x,z)
+x
+z
+x[good]
+x[good][1:3]
+?read.csv
+load(~/Downloads/hw1_data.csv)
+getwd()
+setwd("Dev/r/")
+getwd()
+setwd("datasciencecoursera/")
+load("hw1_data.csv")
+read.csv("hw1_data.csv")
+read.csv("hw1_data.csv")->data
+data[1]
+data[1:2]
+?sapply
+data[1,]
+?sapply
+sapply(data[1,], class)
+x<- "foo"
+dump(x, file="dat.R")
+rm(x)
+x
+source("dat.R")
+x<- "foo"
+dump("x", file="dat.R")
+rm(x)
+source("dat.R")
+x
+url("http://www.google.com")
+?file
+?str
+url("http://www.jhsph.edu","r")->con
+readlines(con)
+readLines(con)
