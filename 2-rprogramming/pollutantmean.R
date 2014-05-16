@@ -1,3 +1,16 @@
+## Copyright 2014
+## Robert Handsfield
+## 
+## IN : char directory - dir holding the files
+##      char pollutant - full name of the polutant to calculate
+##      num  id - id nums of the files to read 
+##
+## OUT: num  pollutantMean - mean value of all complete pollutant 
+##                           measurements in files
+##
+## Reads specified csv files and calculates the average of all the
+## existing measurements of a specified pollutant
+
 pollutantmean <- function(directory, pollutant, id = 1:332) {
         ## 'directory' is a character vector of length 1 indicating
         ## the location of the CSV files
@@ -71,7 +84,9 @@ pollutantmean <- function(directory, pollutant, id = 1:332) {
         ## calculate mean of all the pollutant values
         ## (for selected pollutant)
         #############################################
-        mean(pollutantList)
+        pollutantMean <- mean(pollutantList)
+
+        pollutantMean # return the average value
         
 }
 

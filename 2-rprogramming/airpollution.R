@@ -16,7 +16,7 @@ pollutantmean <- function(directory, pollutant, id = 1:332) {
         pollutantList <- c() # initialize the list of pollutant values
         pathToDir <- paste(directory, "/", sep="")
 
-        ## for every sensor in the directory
+        ## for every sensor in the argument 'id'
         for (i in id) {
         	## create the string pathToFile
         	## files named 004.csv, 012.csv, 315.csv, etc
@@ -90,6 +90,48 @@ complete <- function(directory, id = 1:332) {
         ## ...
         ## where 'id' is the monitor ID number and 'nobs' is the
         ## number of complete cases
+
+        pathToDir <- paste(directory, "/", sep="")
+        
+        ## create the data.frame to hold the results
+        numObs <- NULL # initialize a var to hold the df
+        # names(numObs) <- c("id", "nobs") # set the column names
+        # numObs <- numObs[-1,] # remove the dummy row
+
+
+        ## for every sensor in the argument 'id'
+        for (i in id) {
+                ## create the string pathToFile
+                ## files named 004.csv, 012.csv, 315.csv, etc
+                #############################################
+                if(i < 10) {
+                        ## add 2 zeroes to files 1-9
+                        fileName <- paste("00", i, ".csv", sep="")
+                }
+                else if(i>9 & i<100) {
+                        ## add 1 zero to files 10-99
+                        fileName <- paste("0", i, ".csv", sep="")
+                }
+                else {
+                        ## don't add any zeroes to files 100+
+                        fileName <- paste(i, ".csv", sep="")
+                }
+
+                ## combine the dir path and file name
+                pathToFile <- paste(pathToDir, fileName, sep="")
+                #print(pathToFile)
+
+                ## open the file
+                #############################################
+                data = read.csv(pathToFile)
+
+                numCompleteRows <- nrow(na.omit(data))
+                tmp <- data.frame(i, numCompleteRows)
+                numObs <- rbind(numObs, tmp)
+        }
+        
+        names(numObs) <- c("id", "nobs")
+        numObs
 }
 
 
@@ -103,4 +145,35 @@ corr <- function(directory, threshold = 0) {
         ## nitrate and sulfate; the default is 0
 
         ## Return a numeric vector of correlations
+
+        allRows <- NULL #initialize
+
+        ## get list of all files in dir
+        #############################################
+        fList <- list.files(directory, full.names=TRUE)
+
+        ## for each file in the list
+        #############################################
+        for (file in fList) {
+
+                data <- read.csv(file) # read the file
+                excised <- na.omit(data) # excise the empty rows
+                print(file)
+
+                allRows <- rbind(allRows, excised)# append to 
+        }
+
+        #allRows
+        numRows <- nrow(allRows)
+        if( numRows < threshold){ # if not enough measurements
+                corVec <- numeric() #assign a numeric vector of length 0
+        }
+        else {
+                sulfate <- allRows[,2]
+                nitrate <- allRows[,3]
+                print(c("sulf", length(sulfate), "nit", length(nitrate)))
+                corVec <- cor(sulfate, nitrate)
+        }
+
+        corVec #return the vector of correlations
 }

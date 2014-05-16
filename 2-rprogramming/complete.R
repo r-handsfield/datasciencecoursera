@@ -64,5 +64,6 @@ complete <- function(directory, id = 1:332) {
         }
         
         names(dfNumObs) <- c("id", "nobs") # add column names to data frame
-        dfNumObs
+        
+        dfNumObs # return the data frame
 }
