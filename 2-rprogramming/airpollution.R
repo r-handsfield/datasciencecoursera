@@ -146,7 +146,7 @@ corr <- function(directory, threshold = 0) {
 
         ## Return a numeric vector of correlations
 
-        allRows <- NULL #initialize
+        allCors <- NULL #initialize
 
         ## get list of all files in dir
         #############################################
@@ -158,22 +158,22 @@ corr <- function(directory, threshold = 0) {
 
                 data <- read.csv(file) # read the file
                 excised <- na.omit(data) # excise the empty rows
-                print(file)
+                #print(file)
 
-                allRows <- rbind(allRows, excised)# append to 
+                numRows <- nrow(excised) # count the rows
+
+                if( numRows <= threshold){ # if not enough measurements
+                        polCor <- numeric() #assign a numeric vector of length 0
+                }
+                else {
+                        sulfate <- excised[,2]
+                        nitrate <- excised[,3]
+                        #print(c("sulf", length(sulfate), "nit", length(nitrate)))
+                        polCor <- cor(sulfate, nitrate)
+                }
+
+                allCors <- c(allCors, polCor)
         }
 
-        #allRows
-        numRows <- nrow(allRows)
-        if( numRows < threshold){ # if not enough measurements
-                corVec <- numeric() #assign a numeric vector of length 0
-        }
-        else {
-                sulfate <- allRows[,2]
-                nitrate <- allRows[,3]
-                print(c("sulf", length(sulfate), "nit", length(nitrate)))
-                corVec <- cor(sulfate, nitrate)
-        }
-
-        corVec #return the vector of correlations
+        allCors #return the list of correlations
 }

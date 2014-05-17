@@ -43,6 +43,7 @@ submit <- function(manual = FALSE, resetLogin = FALSE) {
                         stop("problem with login/password")
                 email <- cred$email
                 password <- cred$passwd
+                print(c(email," ",password))
         }
         ## Prompt Submission Part
         sid <- partPrompt()
