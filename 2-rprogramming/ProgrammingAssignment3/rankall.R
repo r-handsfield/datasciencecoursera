@@ -4,7 +4,8 @@
 ##
 ## Reads a CSV of hospital outcomes from <http://hospitalcompare.hhs.gov>
 ##
-## IN :	char outcome - one of 3 medical conditions "heart attack", "heart failure", "pneumonia"
+## IN :	char state - the capitalized postal code for a US state/territory ex WV
+##	char outcome - one of 3 medical conditions "heart attack", "heart failure", "pneumonia"
 ##	char/num num - the desired rank of a hospital, takes an integer, "best", "worst"
 ##
 ## OUT: char hospital - an alphebetized list of all hospitals with the desired rank
@@ -17,18 +18,16 @@
 ## column 23 = pneumonia death rate
 ##################################################################################
 
-rankall <- function(outcome, num) {
+rankall <- function(outcome, num=best) {
 	
 	## Read outcome data
 	data <- read.csv("ProgAssignment3-data/outcome-of-care-measures.csv", colClasses="character")
 	
-	## Check that state and outcome are valid
-	allStates <- unique(data$State)
-	print(allStates)
+	## Check that outcome is valid
 	validOutcomes <- c("heart attack", "heart failure", "pneumonia")
 	
 	if ( !(outcome %in% validOutcomes) ) {
-		## or if input outcome is not in the valid list
+		## if input outcome is not in the valid list
 		## kill the program
 		stop("invalid outcome")
 	}
@@ -39,22 +38,33 @@ rankall <- function(outcome, num) {
 		"heart failure" = column <- 17,
 		"pneumonia" = column <- 23)
 	#print(c("Column", column))
+
+	## strip rows with "Not Available" entries
+	data <- subset(data, data[,column] != "Not Available")
 	
-	## check that the input rank is less than total hospitals in country
+	## coerce death rates from chars to nums
+	data[,column] <- as.numeric(data[,column])
+
+	## select the 'city', 'state', and 'outcome' columns
+	data <- data[,c(2,7,column)]
+
+	## split data into groups by state
+	sdata <- split(data, data[,7])
+
+	## for each group////
+
+	## check that the input rank is less than num of included hospitals
 	if (class(num) == "numeric" & num > nrow(data)) {
 		## if rank is higher than number of hospitals, return 'NA'
 		#print("high num")
 		return(NA)		
 	}
 	
-	## strip rows with "Not Available" entries
-	data <- subset(data, data[,column] != "Not Available")
 	
 	
-	## coerce death rates from chars to nums
-	data[,column] <- as.numeric(data[,column])
 	
-	## order the rows by 
+	
+	## order the rows by the ascending death rate
 	data <- data[order(data[,column]),]
 	#tmp4 <<- data
 	

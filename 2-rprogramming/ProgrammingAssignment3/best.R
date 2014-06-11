@@ -1,21 +1,12 @@
-## function best(state, outcome)
-## Returns the hospital in the given US state with the lowest 30-day death 
-## rate for a given illness.
 ##
-## Reads a CSV of hospital outcomes from <http://hospitalcompare.hhs.gov>
 ##
-## IN :	char state - the capitalized postal code for a US state/territory ex WV
-##	char outcome - one of 3 medical conditions "heart attack", "heart failure", "pneumonia"
-##
-## OUT: char hospital - an alphebetized list of all hospitals with lowest death rate
-##
-## Data Frame Columns:
+
 ## column 2 = hospital name
 ## column 7 = the US state
 ## column 11 = heart attack death rate
 ## column 17 = heart failure death rate
 ## column 23 = pneumonia death rate
-##################################################################################
+############
 
 best <- function(state, outcome) {
 	
