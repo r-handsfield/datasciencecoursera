@@ -1,11 +1,10 @@
-## function best(state, outcome)
-## Returns the hospital in the given US state with the given rank for the 
+## function rankall(outcome, num)
+## Returns the hospital in the every US state with the given rank for the 
 ## 30-day death rate of a given illness.
 ##
 ## Reads a CSV of hospital outcomes from <http://hospitalcompare.hhs.gov>
 ##
-## IN :	char state - the capitalized postal code for a US state/territory ex WV
-##	char outcome - one of 3 medical conditions "heart attack", "heart failure", "pneumonia"
+## IN :	char outcome - one of 3 medical conditions "heart attack", "heart failure", "pneumonia"
 ##	char/num num - the desired rank of a hospital, takes an integer, "best", "worst"
 ##
 ## OUT: char hospital - an alphebetized list of all hospitals with the desired rank
@@ -18,7 +17,7 @@
 ## column 23 = pneumonia death rate
 ##################################################################################
 
-rankall <- function(outcome, num=best) {
+rankall <- function(outcome, num='best') {
 	
 	## Read outcome data
 	data <- read.csv("ProgAssignment3-data/outcome-of-care-measures.csv", colClasses="character")
@@ -49,52 +48,34 @@ rankall <- function(outcome, num=best) {
 	  # in this subset, hospital, state, outcome become columns 1, 2, 3
 	data <- data[,c(2,7,column)]
 
+	## rename columns into readable form
+	colnames(data) <- c("hospital", "state", "outcome")
+	print(colnames(data))
 	## split data into groups by state
-	sdata <- split(data, data[,2])
+	sdata <- split(data, data[,"state"])
 
 	## order each group by the ascending death rate
-	sdata <- lapply(sdata, function(sdata) sdata[order(sdata[,3]),])
+	sdata <- lapply(sdata, function(sdata) sdata[order(sdata[,"outcome"]),])
 	# function selects all rows, all cols, then orders rows by col 3 - 'outcome'
+	#print(head(sdata),1)
 
+	## if rank is 'best' or 'worst', return the hospitals from the ordered list
+	if (num == "best") {
+		sdata <- lapply(sdata, function(sdata) head(sdata, n=1L))	
+	}
+	else if (num == "worst") {
+		sdata <- lapply(sdata, function(sdata) tail(sdata, n=1L))	
+	}
 
+	## if the desired rank is not "best" or "worst"
+	  ## check that the input rank is less than num of included hospitals in the state
+	if (class(num) == "numeric") {
 
-	## check that the input rank is less than num of included hospitals
-	if (class(num) == "numeric" & num > nrow(data)) {
-		## if rank is higher than number of hospitals, return 'NA'
-		#print("high num")
-		return(NA)		
+		sdata <- lapply(sdata, function(sdata) sdata[num,])
 	}
-	
-	
-	
-	
-	
-	
-	
-	## create a vector of unique death rates
-	## lowest rate will be in ranks[1], next lowest will be in ranks[2], etc.
-	#ranks <- unique(data[,column]) #this awesome solution doesn't meet the stupid requirements, use next line
-	ranks <- data[,column]
-	
-	## get the death rate corresponding to the desired rank
-	if ( num == "best") {
-		deathRate <- ranks[1]
-	}
-	else if ( num == "worst") {
-		deathRate <- tail(ranks, n=1)
-	}
-	else {
-		deathRate <- ranks[num]
-	}
-	#print(c("Death Rate", deathRate))
-	
-	## get all hospitals that share the corresponding death rate
-	hospital <- data$Hospital.Name[data[,column] == deathRate]
-	
-	## Return the alphabetized list of hospitals
-	
-	  ## If multiple hospitals are in the list, sort them alphabetically
-	  ## This command does not affect cases that return only 1 hospital
-	sort(hospital, decreasing=FALSE)
-		
+
+	sdata <- do.call(rbind.data.frame, sdata)[,1:2]
+	sdata[,"state"] <- rownames(sdata)
+
+	sdata
 }

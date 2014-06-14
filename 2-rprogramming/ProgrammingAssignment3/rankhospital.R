@@ -2,7 +2,7 @@
 ## Returns the hospital in the given US state with the given rank for the 
 ## 30-day death rate of a given illness.
 ##
-## Reads a CSV of hospital outcomes from <http://hospitalcompare.hhs.gov>
+## Reads a CSV of hospital outcomes from <http://hospitalcompare.hxhs.gov>
 ##
 ## IN :	char state - the capitalized postal code for a US state/territory ex WV
 ##	char outcome - one of 3 medical conditions "heart attack", "heart failure", "pneumonia"
