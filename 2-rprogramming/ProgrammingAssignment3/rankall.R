@@ -45,13 +45,18 @@ rankall <- function(outcome, num=best) {
 	## coerce death rates from chars to nums
 	data[,column] <- as.numeric(data[,column])
 
-	## select the 'city', 'state', and 'outcome' columns
+	## select the 'hospital', 'state', and 'outcome' columns
+	  # in this subset, hospital, state, outcome become columns 1, 2, 3
 	data <- data[,c(2,7,column)]
 
 	## split data into groups by state
-	sdata <- split(data, data[,7])
+	sdata <- split(data, data[,2])
 
-	## for each group////
+	## order each group by the ascending death rate
+	sdata <- lapply(sdata, function(sdata) sdata[order(sdata[,3]),])
+	# function selects all rows, all cols, then orders rows by col 3 - 'outcome'
+
+
 
 	## check that the input rank is less than num of included hospitals
 	if (class(num) == "numeric" & num > nrow(data)) {
@@ -64,9 +69,7 @@ rankall <- function(outcome, num=best) {
 	
 	
 	
-	## order the rows by the ascending death rate
-	data <- data[order(data[,column]),]
-	#tmp4 <<- data
+	
 	
 	## create a vector of unique death rates
 	## lowest rate will be in ranks[1], next lowest will be in ranks[2], etc.
