@@ -1,0 +1,286 @@
+nchar(ht1[lin])
+ht1[30]
+ls()
+?sqldf
+head(sqldf("select `rt` from `acs`", drv='SQLite'))
+con <- url("https://d396qusza40orc.cloudfront.net/getdata%2Fwksst8110.for")
+f <- readLines(con)
+f <- read.fwf(con)
+f <- read.fortran(con)
+?read.fwf
+?read.fwf
+f <- read.fwf(file=con, widths=c(9,8,8,8,8))
+?read.fortran
+install.package("fwf")
+install.packages("fwf")
+x <- read.fwf(#
+  file=url("http://www.cpc.ncep.noaa.gov/data/indices/wksst8110.for"),#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+head(x)
+x <- read.fwf(file=con, skip=4, widths=c(12,7,4,9,4,9,4,9,4))
+x <- read.fwf(#
+  file=con,#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+con=url("https://d396qusza40orc.cloudfront.net/getdata%2Fwksst8110.for")
+x <- read.fwf(#
+  file=con,#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+x <- read.fwf(#
+  file=url("https://d396qusza40orc.cloudfront.net/getdata%2Fwksst8110.for"),#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+con=url("http://www.cpc.ncep.noaa.gov/data/indices/wksst8110.for")
+x <- read.fwf(#
+  file=con,#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+close(con)
+x <- read.fwf(#
+  file=con,#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+x <- read.fwf(#
+  file=url("https://d396qusza40orc.cloudfront.net/getdata%2Fwksst8110.for"),#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+x <- read.fwf(#
+  file=url("http://www.cpc.ncep.noaa.gov/data/indices/wksst8110.for"),#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+x <- read.fwf(#
+  file=url("http://www.cpc.ncep.noaa.gov/data/indices/wksst8110.for"),#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+x <- read.fwf(#
+  file=url("http://www.cpc.ncep.noaa.gov/data/indices/wksst8110.for"),#
+  skip=4,#
+  widths=c(13, 6,4, 9,4, 9,4, 9,4))
+head(x)
+y <- read.fwf(#
+  file=url("http://www.cpc.ncep.noaa.gov/data/indices/wksst8110.for"),#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+head(c(x,y))
+head(x,y)
+head(x)
+head(y)
+head(x)
+x[4,]
+x[4,2:3]
+x[4,2:9]
+sum(x[4,2:3])
+x[1:3,4]
+sum(x[,4])
+x <- read.fwf(#
+  file=url("http://www.cpc.ncep.noaa.gov/data/indices/wksst8110.for"),#
+  skip=4,#
+  widths=c(12, 7,4, 9,4, 9,4, 9,4))
+sum(x[,4])
+cols<-2:9
+sum(x[,cols])
+cols<-c(2:9)
+sum(x[,cols])
+sum(x[,2])
+sum(x[,3])
+sum(x[,4])
+sum(x[,5])
+sum(x[,6])
+sum(x[,7])
+sum(x[,8])
+sum(x[,9])
+x[1,4]
+x[1:1254,4]
+sum(x[1:1254,4])
+oauth_endpoints("github")
+myapp <- oauth_app("github", "0def650fd7b8a0008709", "e9802547665dc759effb19225b709231fbbfe9fb")
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+req <- GET("https://api.github.com/users/jtleek/repos", config(token = github_token))
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+myapp <- oauth_app("github", "0def650fd7b8a0008709", "e9802547665dc759effb19225b709231fbbfe9fb")
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+oauth_endpoints("github")
+myapp <- oauth_app("github", "0def650fd7b8a0008709", "e9802547665dc759effb19225b709231fbbfe9fb")
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+oauth_endpoints("github")
+myapp <- oauth_app("github", "0def650fd7b8a0008709", "e9802547665dc759effb19225b709231fbbfe9fb")
+oauth_endpoints("github")
+myapp <- oauth_app("github", "0def650fd7b8a0008709", "e9802547665dc759effb19225b709231fbbfe9fb")
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+req <- GET("https://api.github.com/users/jtleek/repos", config(token = github_token))
+req
+class(req)
+tail(req)
+names(req)
+req$times
+req <- GET("https://api.github.com/users/jtleek/repos/orgs/:org/repos", config(token = github_token))
+req
+req <- GET("https://api.github.com/users/jtleek/repos/", config(token = github_token))
+req$config
+names(req)
+req$content
+req <- GET("https://api.github.com/users/jtleek/repos/", config(token = github_token))
+head(req)
+install.packages("httpuv")
+oauth_endpoints("github")
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+req <- GET("https://api.github.com/users/jtleek/repos/", config(token = github_token))
+head(reg)
+head(req)
+req$status_code
+content(req)
+install.packages("jsonlite")
+library(httpuv)
+library(jsonlite)
+req <- GET("https://api.github.com/users/jtleek/repos/", config(token = github_token))
+req$status_code
+content(req)
+oauth_endpoints("github")
+myapp <- oauth_app("github", "0def650fd7b8a0008709", "e9802547665dc759effb19225b709231fbbfe9fb")
+github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+req <- GET("https://api.github.com/users/jtleek/repos", config(token = github_token))
+req$status_code
+content(req)
+req$created_at
+req
+names(req)
+req$content
+head(content(req))
+x <- fromJSON(req)
+x <- fromJSON("https://api.github.com/users/jtleek/repos/")
+names(x)
+req$name
+names(req)
+req$status
+req$headers
+class(req)
+y <- toJSON(req, pretty=TRUE)
+y <- fromJSON(req)
+names(req)
+reg$url
+req$url
+req$content
+head(req$content)
+tail(req$content)
+content(req)
+content(req)$forks
+content(req)$has_wiki
+content(req)[[30]]
+content(req)[[1]]
+content(req)[[1]]
+names(req$content)
+content(req$content)
+names(req)
+req$content
+content(req)
+class(content(req))
+content(req)[[1]]$name
+repos<-list(1:30)
+content(req)[[list]]$name
+content(req)[[1:30]]$name
+for (i in repos) {content(req)[[i]]$name}
+y = jsonlite::fromJSON(toJSON(req))
+toJSON(req)
+fromJSON(req)
+?setOldClass
+setOldClass("response")
+setMethod(getGeneric("asJSON"), "response", funtion(req, ...){return("response!!")})
+setMethod(getGeneric("asJSON"), "response", funtion(req, ...) {return("response!!")})
+setMethod(getGeneric("asJSON"), "response", funtion(req, ...) return("response!!"))
+setMethod(getGeneric("asJSON"), "response", function(x, ...){return("response!!")})
+x
+setMethod(getGeneric("asJSON"), "response", funtion(req, ...){return("response!!")})
+setMethod(getGeneric("asJSON"), "response", function(x, ...){return("response!!")})
+setMethod(getGeneric("asJSON"), "response", funtion(req, ...){return("response!!")})
+setMethod(getGeneric("asJSON"), "response", function(req, ...){return("response!!")})
+setMethod(getGeneric("asJSON"), "response", function(x, ...){return("response!!")})
+y<-req
+class(y) <- "response"
+class(y)
+toJSON(Y)
+toJSON(y)
+install.packages(rjson)
+install.packages("rjson")
+library(rjson)
+class(y)
+toJSON(y)
+y = jsonlite::fromJSON(toJSON(req))
+library(jsonlite)
+y = jsonlite::fromJSON(toJSON(req))
+detach("package:rjson",unload=TRUE)
+y = jsonlite::fromJSON(toJSON(req))
+class(content(req))
+y<-fromJSON(toJSON(content(req)))
+y
+class(y)
+head(y)
+view(y)
+y<-fromJSON(toJSON(content(req, as="text")))
+class(y)
+y
+names(y)
+y$name
+?content
+y<-fromJSON(toJSON(content(req, as="parsed")))
+y
+y<-fromJSON(toJSON(content(req, as="text")))
+head(y)
+class(y)
+length(y)
+(toJSON(content(req, as="text")))
+class(toJSON(content(req, as="text")))
+class(toJSON(content(req, as="text"))) -> y
+prettify(y)
+y = jsonlite::fromJSON(toJSON(content(req)))
+class(y)
+y
+y = jsonlite::fromJSON(toJSON(content(req, as="text")))
+class(y)
+y
+y = jsonlite::fromJSON(toJSON(content(req)))
+class(y)
+y
+head(y)
+json <- fromJSON("https://api.github.com/users/jtleek/repos")
+class(json)
+head(json)
+names(json)
+json$name
+json$name$datasharing
+class(json$name)
+stop_for_status(req)
+content(req)
+y<-fromJSON(toJSON(content(req)))
+class(y)
+y
+y<-jsonlite::fromJSON(toJSON(content(req)))
+class(y)
+y
+y=jsonlite::fromJSON(toJSON(content(req)))
+y
+y=jsonlite::fromJSON(toJSON(content(req, as="text")))
+class(y)
+length(y)
+size(y)
+dim(y)
+nchar(y)
+nline(y)
+nlines(y)
+lines(y)
+json <- fromJSON("https://api.github.com/users/jtleek/repos")
+class(json$name)
+class(json)
+json[1:2,]
+json <- fromJSON("https://api.github.com/users/jtleek/repos")
+class(json$name)
+json$name
+which(json$name == "datasharing")
+json$name[5]
+name(json)
+names(json)
+json$created_at
+json$created_at[5]
+json$created_at[json$name == "datasharing"]
