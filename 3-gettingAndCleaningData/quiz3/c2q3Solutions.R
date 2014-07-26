@@ -71,9 +71,9 @@ gdp<-read.csv("getdata-data-GDP.csv", header=FALSE, skip=5, nrows=230,
 		col.names=c("CountryCode", "gdpRank", "V3", "name", "gdp", "notes", "V7", "V8", "V9","V10"),		
 	     )
 
-
 gdp<-gdp[,c(1:2,4:6)]
 //tail(gdp[order(gdp$gdpRank, na.last=FALSE,decreasing=TRUE),])
+
 # Load the educational data from this data set: 
 
 # https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv 
@@ -97,22 +97,51 @@ df<-merge(gdp, ed, by="CountryCode", all.x=TRUE, all.y=TRUE)
 # Sort the data frame in descending order by GDP rank (so United States is last). 
 head(gdp)
 //Rank is in named col df$gdpRank
-df<- plyr::arrange(df, df$gdpRank, na.last=TRUE, decreasing=TRUE)
-df<- plyr::arrange(df, df$gdpRank, na.last=TRUE, decreasing=TRUE)
+df<-plyr::arrange(df, df$gdpRank, na.last=TRUE, decreasing=TRUE)
 
 
 # What is the 13th country in the resulting data frame? 
 178, St. Kitts and Nevis
+//Correct answer is 189, St. Kitts and Nevis
 
 # Original data sources: 
 # http://data.worldbank.org/data-catalog/GDP-ranking-table 
 # http://data.worldbank.org/data-catalog/ed-stats
 
+# -----------------------------------------------------------------------------------
+
 
 # Question 4
 # What is the average GDP ranking for the "High income: OECD" and "High income: nonOECD" group?
 //col ed$Income.Group == "High income: OECD" && "High income: nonOECD"
+df2<-df[,c(1,2,7)]
+v<-df2$Income.Group=="High income: nonOECD" | df2$Income.Group=="High income: OECD"
+
+oecd<-df2[df2$Income.Group=="High income: OECD",]
+oecd<-oecd[complete.cases(oecd),]
+mean(oecd[,"gdpRank"])
+[1] 32.96667
+
+non<-df2[df2$Income.Group=="High income: nonOECD",]
+non<-non[complete.cases(non),]
+mean(non[,"gdpRank"])
+[1] 91.91304
+
+//Answer 32.96667, 91.91304 (C)
+# -----------------------------------------------------------------------------------
+
 
 # Question 5
-# Cut the GDP ranking into 5 separate quantile groups. Make a table versus Income.Group. How many 
-# countries are Lower middle income but among the 38 nations with highest GDP?
+# Cut the GDP ranking into 5 separate quantile groups. Make a table versus Income.Group. 
+# How many countries are Lower middle income but among the 38 nations with highest GDP?
+//Reorder ascending
+df<-plyr::arrange(df, df$gdpRank, na.last=TRUE, decreasing=FALSE)
+df2 <- df[1:38,]
+
+count(df2$Income.Group == "Lower middle income")
+      x freq
+1 FALSE   33
+2  TRUE    5
+
+# Answer 5 (A)
+
