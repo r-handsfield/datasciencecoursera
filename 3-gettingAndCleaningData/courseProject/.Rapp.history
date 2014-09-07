@@ -1,18 +1,372 @@
-setwd("datasciencecoursera/3-gettingAndCleaningData/courseProject/")
-source("testScripts.R")
-?merge.data.table
-merge.data.table(test,train,by="activity",all=TRUE,suffixes=c("_test","_train"))
-library(data.table)
-merge.data.table(test,train,by="activity",all=TRUE,suffixes=c("_test","_train"))
-require(plyr)
-all<-join(test,train,type="left")
-dim(all)
-dim(train)
-all<-join(train,test,type="left")
-dim(all)
-is.na(all)
-tail(all)
-?join
-rm(ls())
+varNames[grepl("^.+-(mean|std)", varNames$varName),]
+dfVarNames[grepl("^.+-(mean|std)", dfVarNames$varName),]
+?grepl
+?gsub
+grepl("^.+-(mean|std)", dfVarNames$varName)
+names(dfData)[grepl("^.+-(mean|std)", names(dfData)),]
+dfData<-dfMotionData; rm(dfMotionData);
+dfData<-rbind(dfTrainingData,dfTestData);
+names(dfData)[grepl("^.+-(mean|std)", names(dfData)),]
+head(names(dfData))
+class(names(dfData))
+dfVarNames[grepl("^.+-(mean|std)", dfVarNames$varName),]
+class(dfVarNames$varName)
+class(names(dfData))
+names(dfData)[grepl("^.+-(mean|std)", as.factor(names(dfData))),]
+dfVarNames[grepl("^.+-(mean|std)", dfVarNames$varName),]
+names(dfData)[grepl("^.+-(mean|std)", names(dfData)),]
+length(names(dfData))
+names(dfData)[grepl("^.+-(mean|std)", names(dfData))]
+tmp<-names(dfData)[,grepl("^.+-(mean|std)", names(dfData))]
+which(grepl("^.+-(mean|std)", names(dfData)))
+which(grepl("^.+-(mean|std)", names(dfData)))
+dfData[,which(grepl("^.+-(mean|std)", names(dfData)))]->tmp
+count(which(grepl("^.+-(mean|std)", names(dfData))))
+which(grepl("^.+-(mean|std)", names(dfData)))
+dim(tmp)
+dfData[,which(grepl("^.+-(mean|std)", names(dfData)))]->dfData
+dim(dfData)
+rm(tmp)
+names(dfData)
+count(grepl("^.+-(mean|std)", names(dfData)))
+head(iris)
+head(iris[,-(1:2)])
+head(iris[,-(3:5)])
+head(iris[,-3:5])
+grep("-meanFreq()", names(dfData))
+grepl
+grepl("-meanFreq()", names(dfData))
+grep
+grep("-meanFreq()", names(dfData))
+grep("^.+-(mean|std)", names(dfData))
+grep("-meanFreq()", names(dfData))
+!grep("-meanFreq()", names(dfData))
+-grep("-meanFreq()", names(dfData))
+names(dfData)[47]
+names(dfData)[-47]
+meanFreqCols<-grep("-meanFreq()", names(dfData))
+tmp<-dfData[,-meanFreqCols]
+length(meanFreqCols)
+dim(dfData); dim(tmp)
 rm(list=ls())
+path <- "./UCI HAR Dataset/";#
+dfActivityLabels <- read.table(paste(path,"activity_labels.txt", sep=""));#
+dfVarNames <- read.table(paste(path,"features.txt", sep=""), col.names=c("row","varName"));#
+path <- "./UCI HAR Dataset/test/";#
+dfTestSubjects <- read.table(paste(path,"subject_test.txt", sep=""), col.names="subject");#
+dfTestData <- read.table(paste(path,"X_test.txt", sep=""));#
+dfTestActivity <- read.table(paste(path,"Y_test.txt", sep=""), col.names="activity");#
+#
+path <- "./UCI HAR Dataset/train/";#
+dfTrainingSubjects <- read.table(paste(path,"subject_train.txt", sep=""), col.names="subject");#
+dfTrainingData <- read.table(paste(path,"X_train.txt", sep=""));#
+dfTrainingActivity <- read.table(paste(path,"Y_train.txt", sep=""),col.names="activity");#
+#
+rm(path)
+dfData<-rbind(dfTrainingData,dfTestData);#
+#
+# set test/training variable names (column names)#
+colnames(dfData)<-dfVarNames$varName;
+meanStdCols<-grep("^.+-(mean|std)", names(dfData));
+tmp<-[,meanStdCols];
+tmp<-dfData[,meanStdCols];
+length(meanStdCols); dim(tmp);
+dfData<-dfData[,meanStdCols];
+meanFreqCols<-grep("-meanFreq()",names(dfData));#
+tmp<-dfData[,-meanFreqCols];
+length(meanFreqCols); dim(tmp);
+dfData<-dfData[,-meanFreqCols];
+dim(dfData)
+create df factors to label experiment phases (test/training)#
+dfTestPhase<-data.frame("phase"=rep("test", nrow(dfTestData)),stringsAsFactors=TRUE);#
+dfTrainingPhase<-data.frame("phase"=rep("training", nrow(dfTrainingData)),stringsAsFactors=TRUE);#
+#
+# rbind the training and test phases, subjects, and activities#
+dfPhase<-rbind(dfTrainingPhase,dfTestPhase);#
+dfSubjects<-rbind(dfTrainingSubjects,dfTestSubjects);#
+dfActivity<-rbind(dfTrainingActivity,dfTestActivity);#
+#
+# cbind the phase, subject, activity, and data#
+dfMotion<-cbind( dfPhase, dfSubjects, dfActivity, dfData );
+dim(dfMotion)
+head(dfMotion[1:4])
 ls()
+rm(list=c(dfTestPhase,dfTrainingPhase,dfPhase, dfSubjects,dfTrainingActivity));
+rm(list=c("dfTestPhase","dfTrainingPhase","dfPhase", "dfSubjects","dfTrainingActivity"));
+ls()
+rm(list=c("dfTestPhase","dfTrainingPhase","dfPhase", "dfSubjects",#
+		"dfTrainingActivity","meanFreqCols","meanStdCols"));
+rm(tmp)
+ls
+ls()
+dfActivityLabels
+head(dfMotion[1:4])
+names(dfActivityLabels)<-c("number","label")
+dfActivityLabels
+head(dfMotion[1:4],20L)
+tmp<-dfMotion; tmpa<-dfActivityLabels;
+class(tmpa)
+dfActivityLabels$label[1]
+dfActivityLabels$label[[1]]
+dfActivityLabels$label[2]
+dfActivityLabels$label[3]
+dfActivityLabels$label[4]
+dfActivityLabels$label[5]
+dfActivityLabels$label[6]
+dfActivityLabels$label[7]
+head(dfMotion[1:4],20L)
+tmp$activity[]<-tmpa$label[tmp$activity[]]
+head(dfMotion[1:4],20L)
+head(tmp[1:4],20L)
+tmp<-dfMotion
+head(tmp[1:4],20L)
+tmp$activity[]<-tmpa$label[tmp$activity[]]
+head(tmp[1:4],20L)
+tmp$activity[]
+v1<-tmp$activity
+class(v1)
+length(v1)
+class(tmp$activity[])
+?replace
+v2<v1
+v2<-v1
+v2[1]<-dfActivityLabels$label[1]
+head(v2)
+dfActivityLabels$label[1]
+head(v1)
+dfA<dfActivityLabels
+dfA<-dfActivityLabels
+dfA<-dfA[2]
+dfA
+dfA[1]
+dfA[[1]]
+dfA[[[1]]]
+v1[1]
+tmp$activity[1]
+tmp$activity[2]
+tmp<-dfMotion
+tmp$activity[1]
+replaceAct<-function(x) {}
+dfActivityLabels$label[1]
+class(dfActivityLabels$label[1])
+class(dfA$label[1])
+dfA
+dfA<-dfActivityLabels
+dfA$label<-as.character(dfA$label)
+class(dfA$label[1])
+dfA$label<-as.factor(dfA$label)
+?sapply
+??plyr
+repAct<- function(x,dfA$label) {x<-dfA$label[x]}
+repAct<- function(x,dfA) {x<-dfA$label[x]}
+dim(tmp)
+head(tmp[1:4],20L)
+dim(dfA)
+sapply(tmp$activy,repAct)
+head(tmp[1:4],20L)
+class(tmp$activity[1])
+?gsub
+?factor
+tmpf<-factor(tmp$activity,levels=dfA$label)
+length(tmpf)
+tmpf
+dfA$label
+class(dfA$label)
+tmpf<-factor(tmp$activity,levels=as.character(dfA$label))
+tmpf
+head(tmp$activity)
+dfA
+tmpf<-factor(tmp$activity,levels=dfA$number, labels=dfA$label);
+tmpf
+dim(tmp)
+head(tmp[1:4])
+names(dfActivityLabels)
+names(dfActivityLabels)[1]<-activity
+names(dfActivityLabels)[1]<-"activity"
+names(dfActivityLabels)
+?merge
+tmp<-merge(tmp,dfActivityLabels, by="activity", all.x=TRUE, all.y=TRUE)
+head(tmp[1:4])
+dim(tmp)
+head(tmp[68:70])
+grep(pattern="activity")
+tmp<-dfMotion
+head(tmp[1:4])
+tmp$activity<-factor(tmp$activity,levels=dfA$number, labels=dfA$label);
+head(tmp[1:4])
+dfMotion$Activity<-factor(dfMotion$activity, levels=dfActivityLabels$number, labels=dfActivityLabels$label);
+dfActivityLabels
+dfMotion$Activity<-factor(dfMotion$activity, levels=dfActivityLabels$activity, labels=dfActivityLabels$label);
+head(tmp[1:4])
+head(dfMotion[1:4])
+dfMotion$activity<-factor(dfMotion$activity, levels=dfActivityLabels$activity, labels=dfActivityLabels$label);
+head(dfMotion[1:4])
+activityLabels<-factor(dfMotion$activity, levels=dfActivityLabels$activity, labels=dfActivityLabels$label);#
+#
+# replace the activity codes with names of the activities#
+dfMotion$activity<-activityLabels
+head(dfMotion[1:4])
+dfMotion$activity<-factor(dfMotion$activity, levels=dfActivityLabels$activity, labels=dfActivityLabels$label);
+head(dfMotion[1:4])
+rm(list=c("dfTestPhase","dfTrainingPhase","dfPhase","dfSubjects","dfTrainingActivity",#
+		"meanFreqCols","meanStdCols","activityLabels"));
+ls()
+rm(list=ls())
+path <- "./UCI HAR Dataset/";#
+dfActivityLabels <- read.table(paste(path,"activity_labels.txt", sep="")col.names=c("activity","label"));#
+dfVarNames <- read.table(paste(path,"features.txt", sep=""), col.names=c("row","varName"));#
+path <- "./UCI HAR Dataset/test/";#
+dfTestSubjects <- read.table(paste(path,"subject_test.txt", sep=""), col.names="subject");#
+dfTestData <- read.table(paste(path,"X_test.txt", sep=""));#
+dfTestActivity <- read.table(paste(path,"Y_test.txt", sep=""), col.names="activity");#
+#
+path <- "./UCI HAR Dataset/train/";#
+dfTrainingSubjects <- read.table(paste(path,"subject_train.txt", sep=""), col.names="subject");#
+dfTrainingData <- read.table(paste(path,"X_train.txt", sep=""));#
+dfTrainingActivity <- read.table(paste(path,"Y_train.txt", sep=""),col.names="activity");#
+#
+rm(path)#
+#
+# rbind the training and test frames together#
+dfData<-rbind(dfTrainingData,dfTestData);#
+#
+# add the experiment variable names to the col names of the data sets#
+colnames(dfData)<-dfVarNames$varName;#
+#
+# identify the mean & std measurements to extract#
+meanStdCols<-grep("^.+-(mean|std)", names(dfData));#
+#
+# extract the mean & std measurements by subsetting#
+dfData<-dfData[,meanStdCols];  ## verify by count(grepl("^.+-(mean|std)", names(dfData)));#
+#
+# remove the frequency domain "meanFreq" measurements#
+meanFreqCols<-grep("-meanFreq()",names(dfData));#
+dfData<-dfData[,-meanFreqCols];#
+#
+# create df factors to label experiment phases (test/training)#
+dfTestPhase<-data.frame("phase"=rep("test", nrow(dfTestData)),stringsAsFactors=TRUE);#
+dfTrainingPhase<-data.frame("phase"=rep("training", nrow(dfTrainingData)),stringsAsFactors=TRUE);#
+#
+# rbind the training and test phases, subjects, and activities#
+dfPhase<-rbind(dfTrainingPhase,dfTestPhase);#
+dfSubjects<-rbind(dfTrainingSubjects,dfTestSubjects);#
+dfActivity<-rbind(dfTrainingActivity,dfTestActivity);#
+#
+# cbind the phase, subject, activity, and data#
+dfMotion<-cbind( dfPhase, dfSubjects, dfActivity, dfData );#
+#
+# create a factor vector with the activity labels#
+activityLabels<-factor(dfMotion$activity, levels=dfActivityLabels$activity, labels=dfActivityLabels$label);
+rm(list=ls())
+path <- "./UCI HAR Dataset/";#
+dfActivityLabels <- read.table(paste(path,"activity_labels.txt", sep=""),col.names=c("activity","label"));#
+dfVarNames <- read.table(paste(path,"features.txt", sep=""), col.names=c("row","varName"));#
+path <- "./UCI HAR Dataset/test/";#
+dfTestSubjects <- read.table(paste(path,"subject_test.txt", sep=""), col.names="subject");#
+dfTestData <- read.table(paste(path,"X_test.txt", sep=""));#
+dfTestActivity <- read.table(paste(path,"Y_test.txt", sep=""), col.names="activity");#
+#
+path <- "./UCI HAR Dataset/train/";#
+dfTrainingSubjects <- read.table(paste(path,"subject_train.txt", sep=""), col.names="subject");#
+dfTrainingData <- read.table(paste(path,"X_train.txt", sep=""));#
+dfTrainingActivity <- read.table(paste(path,"Y_train.txt", sep=""),col.names="activity");#
+#
+rm(path)#
+#
+# rbind the training and test frames together#
+dfData<-rbind(dfTrainingData,dfTestData);#
+#
+# add the experiment variable names to the col names of the data sets#
+colnames(dfData)<-dfVarNames$varName;#
+#
+# identify the mean & std measurements to extract#
+meanStdCols<-grep("^.+-(mean|std)", names(dfData));#
+#
+# extract the mean & std measurements by subsetting#
+dfData<-dfData[,meanStdCols];  ## verify by count(grepl("^.+-(mean|std)", names(dfData)));#
+#
+# remove the frequency domain "meanFreq" measurements#
+meanFreqCols<-grep("-meanFreq()",names(dfData));#
+dfData<-dfData[,-meanFreqCols];#
+#
+# create df factors to label experiment phases (test/training)#
+dfTestPhase<-data.frame("phase"=rep("test", nrow(dfTestData)),stringsAsFactors=TRUE);#
+dfTrainingPhase<-data.frame("phase"=rep("training", nrow(dfTrainingData)),stringsAsFactors=TRUE);#
+#
+# rbind the training and test phases, subjects, and activities#
+dfPhase<-rbind(dfTrainingPhase,dfTestPhase);#
+dfSubjects<-rbind(dfTrainingSubjects,dfTestSubjects);#
+dfActivity<-rbind(dfTrainingActivity,dfTestActivity);#
+#
+# cbind the phase, subject, activity, and data#
+dfMotion<-cbind( dfPhase, dfSubjects, dfActivity, dfData );#
+#
+# create a factor vector with the activity labels#
+activityLabels<-factor(dfMotion$activity, levels=dfActivityLabels$activity, labels=dfActivityLabels$label);
+dfMotion$activity<-activityLabels;
+head(dfMotion[1:4])
+?split
+?aggregate
+dfMotionAvg<-dfMotion
+dim(dfMotionAvg)
+tmp<-aggregate(dfMotionAvg, dfMotionAvg$subject)
+tmp<-aggregate(dfMotionAvg, dfMotionAvg$subject, FUN=null)
+tmp<-aggregate(dfMotionAvg, dfMotionAvg$subject, FUN=NULL)
+tmp<-aggregate(dfMotionAvg, dfMotionAvg$subject, FUN=NA)
+tmp<-aggregate(dfMotionAvg, dfMotionAvg$subject, mean)
+tmp<-aggregate(dfMotionAvg, list(dfMotionAvg$subject), mean)
+warnings()
+tmp
+tmp <-aggregate(dfMotionAvg, by=list(subject,activity),FUN=mean)
+tmp <-aggregate(dfMotionAvg, by=list(dfMotionAvg$subject,dfMotionAvg$activity),FUN=mean)
+tmp <-aggregate(dfMotionAvg, by=list("subject","activity"),FUN=mean)
+attach(dfMotionAvg)
+length(subject)
+tmp <-aggregate(dfMotionAvg, by=list(subject,activity),FUN=mean)
+class(subject)
+class(activity)
+warnings()
+head(tmp[1:4])
+dim(tmp)
+dim(dfMotionAvg)
+tmp
+head(dfMotionAvg[1:4])
+dim(dfMotionAvg)
+detach()
+activity
+tmp<-aggregate(dfMotionAvg[3:69], by=list(dfMotionAvg$subject,dfMotionAvg$activity),mean);
+head(tmp[1:6])
+head(dfMotionAvg[1:4])
+tmp<-aggregate(dfMotionAvg[4:69], by=list(dfMotionAvg$subject,dfMotionAvg$activity),mean);
+head(tmp[1:6])
+tmp<-aggregate(dfMotionAvg[4:69], by=list(subject=dfMotionAvg$subject,activity=dfMotionAvg$activity),mean);
+head(tmp[1:5])
+dim(tmp)
+dfMotionAvg<-aggregate(dfMotion[4:69], by=list(subject=dfMotion$subject,activity=dfMotion$activity),mean);
+dim(dfMotionAvg)
+head(dfMotionAvg[1:5])
+tmp<-aggregate(dfMotion, by=list(subject=dfMotion$subject,activity=dfMotion$activity),means subset=vector(4:69));
+tmp<-aggregate(dfMotion, by=list(subject=dfMotion$subject,activity=dfMotion$activity),mean, subset=vector(4:69));
+head(tmp[1:5])
+?write.table
+write.table(dfMotionAvg, file="tidy_set.txt", sep = ",",#
+              row.names=FALSE, col.names = TRUE);
+?write.csv
+write.csv(dfMotionAvg, file="tidy_set.csv", sep = ",",#
+              row.names=FALSE, col.names = TRUE);
+write.csv(dfMotionAvg, file="tidy_set.csv", row.names=FALSE);
+.packages()
+print(.packages())
+rm(list=ls())
+source("run_analysis.R")
+run_analysis
+run_analysis.R
+source("run_analysis.R")
+run_analysis
+run_analysis()
+ls
+ls()
+dim(dfMotionAvg)
+head(dfMotionAvg[1:4])
+names(dfMotionAvg)
+names(dfMotionAvg)
