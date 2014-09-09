@@ -17,9 +17,8 @@ powerdata[3:9]<-apply(powerdata[3:9], MARGIN=2, FUN= as.numeric);
 powerdata$Datetime<-as.POSIXlt(paste(powerdata$Date, powerdata$Time), tz="UTC", format="%d/%m/%Y %H:%M:%S")
 
 
-png(file="plot3.png");
-# remove the background
-par(bg=NA);
+
+png(file="plot3.png", bg="transparent");
 with(powerdata, plot(Datetime, Sub_metering_1, type='l', xlab="", ylab="Energy sub metering"));
 with(powerdata, lines(Datetime, Sub_metering_2, col="red"));
 with(powerdata, lines(Datetime, Sub_metering_3, col="blue"));

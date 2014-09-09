@@ -17,8 +17,8 @@ powerdata[3:9]<-apply(powerdata[3:9], MARGIN=2, FUN= as.numeric);
 powerdata$Datetime<-as.POSIXlt(paste(powerdata$Date, powerdata$Time), tz="UTC", format="%d/%m/%Y %H:%M:%S")
 
 
-png(file="plot4.png");
-par(mfrow = c(2,2), bg=NA);
+png(file="plot4.png", bg="transparent");
+par(mfrow = c(2,2));
 
 # top left
 with(powerdata, plot(Datetime, Global_active_power, type='l', xlab="", ylab="Global Active Power" ));
@@ -37,4 +37,4 @@ with(powerdata, plot(Datetime, Global_reactive_power, type='l', xlab="datetime",
 
 dev.off();
 
-with(powerdata, plot(Datetime, Global_active_power, type='l', xlab="", ylab="Global Active Power (kilowatts)" ))
+#with(powerdata, plot(Datetime, Global_active_power, type='l', xlab="", ylab="Global Active Power (kilowatts)" ))
