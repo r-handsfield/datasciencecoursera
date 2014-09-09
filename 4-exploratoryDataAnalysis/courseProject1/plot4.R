@@ -18,7 +18,7 @@ powerdata$Datetime<-as.POSIXlt(paste(powerdata$Date, powerdata$Time), tz="UTC", 
 
 
 png(file="plot4.png");
-par(mfrow = c(2,2));
+par(mfrow = c(2,2), bg=NA);
 
 # top left
 with(powerdata, plot(Datetime, Global_active_power, type='l', xlab="", ylab="Global Active Power" ));

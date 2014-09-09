@@ -18,6 +18,8 @@ powerdata$Datetime<-as.POSIXlt(paste(powerdata$Date, powerdata$Time), tz="UTC", 
 
 
 png(file="plot2.png");
+# remove the background
+par(bg=NA);
 with(powerdata, plot(Datetime, Global_active_power, type='l', xlab="", ylab="Global Active Power (kilowatts)" ))
 dev.off();
 

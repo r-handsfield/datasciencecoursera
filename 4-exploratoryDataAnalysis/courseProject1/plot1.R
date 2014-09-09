@@ -14,6 +14,8 @@ powerdata<-powerdata[both,];
 powerdata[3:9]<-apply(powerdata[3:9], MARGIN=2, FUN= as.numeric);
 
 png(file="plot1.png");
+# remove the background
+par(bg=NA);
 with(powerdata, hist(Global_active_power, col="red", breaks=12, xlab="Global Active Power (kilowatts)", main="Global Active Power" ));
 dev.off();
 
