@@ -1,7 +1,12 @@
 
 Question 1
 Which of the following is a principle of analytic graphics?		
-Show comparisons
+1) Show comparisons.
+2) Show causality, mechanism, explanation, systematic structure.
+3) Show multivariate data.
+4) Integrate different modes of evidence.
+5) Describe and document the evidence with label, scales, sources, etc.
+6) Content is king.
 
 
 Question 2
@@ -16,7 +21,10 @@ Plots are created and annotated with separate functions
 
 Question 4
 Which of the following is an example of a valid graphics device in R?
-A PDF file
+1) A window on your computer (screen device).
+2) A PDF file (file device).
+3) A PNG or JPEG file (file device).
+4) A scalable vector graphics (SVG) file (file device).
 
 
 Question 5
@@ -31,7 +39,7 @@ Scatterplots with many many points
 
 Question 7
 Which of the following functions is typically used to add elements to a plot in the base graphics system?
-lines()
+lines(), points(), text(), title(), mtext(), axis()
 
 
 Question 8
