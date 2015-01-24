@@ -17,7 +17,7 @@ powerdata[3:9]<-apply(powerdata[3:9], MARGIN=2, FUN= as.numeric);
 powerdata$Datetime<-as.POSIXlt(paste(powerdata$Date, powerdata$Time), tz="UTC", format="%d/%m/%Y %H:%M:%S")
 
 
-png(file="plot4.png", bg="transparent");
+png(file="plot4.png", bg="white");
 par(mfrow = c(2,2));
 
 # top left
@@ -30,7 +30,7 @@ with(powerdata, plot(Datetime, Voltage, type='l', xlab="datetime", ylab="Voltage
 with(powerdata, plot(Datetime, Sub_metering_1, type='l', xlab="", ylab="Energy sub metering"));
 with(powerdata, lines(Datetime, Sub_metering_2, col="red"));
 with(powerdata, lines(Datetime, Sub_metering_3, col="blue"));
-legend("topright",lwd=1, col=c("black", "blue", "red"), legend=c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"), bty="n");
+legend("topright",lwd=1, col=c("black", "red", "blue"), legend=c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"), bty="n");
 
 # bottom right
 with(powerdata, plot(Datetime, Global_reactive_power, type='l', xlab="datetime", ylab="Global_reactive_power"));

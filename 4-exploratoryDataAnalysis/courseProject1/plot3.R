@@ -18,10 +18,10 @@ powerdata$Datetime<-as.POSIXlt(paste(powerdata$Date, powerdata$Time), tz="UTC", 
 
 
 
-png(file="plot3.png", bg="transparent");
+png(file="plot3.png", bg="white");
 with(powerdata, plot(Datetime, Sub_metering_1, type='l', xlab="", ylab="Energy sub metering"));
 with(powerdata, lines(Datetime, Sub_metering_2, col="red"));
 with(powerdata, lines(Datetime, Sub_metering_3, col="blue"));
-legend("topright",lwd=1, col=c("black", "blue", "red"), legend=c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"));
+legend("topright",lwd=1, col=c("black", "red", "blue"), legend=c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"));
 dev.off();
 
