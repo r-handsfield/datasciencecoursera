@@ -1,0 +1,15 @@
+---
+title: "First knitr Document"
+author: "Robert Handsfield"
+date: "01/18/2015"
+output: html_document
+---
+
+
+```{r messageFalse, results='markup'}
+summary(cars);
+```
+
+```{r resultsAsis, results='asis'}
+summary(cars);
+```

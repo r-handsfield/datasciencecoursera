@@ -1,0 +1,126 @@
+---
+title: "R Markdown Demonstration"
+author: "Robert Handsfield"
+date: "01/18/2015"
+output:
+  html_document:
+    theme: cerulean
+
+---
+
+My First R Markdown File
+=========================
+
+This is my first R markdown file.
+
+Load some data here.
+```{r}
+library(datasets);
+data(airquality);
+summary(airquality);
+```
+
+Make a pairs plot of the data.
+```{r}
+pairs(airquality)
+```
+Here's a regression model of ozone on wind, solar radiation, and temp.
+```{r}
+library(stats)
+fit <- lm(Ozone ~ Wind + Solar.R + Temp, data=airquality);
+summary(fit);
+```
+
+Emphasis
+
+*italic*   **bold**
+
+_italic_   __bold__
+Headers
+
+# Header 1
+
+## Header 2
+
+### Header 3
+Lists
+
+Unordered List
+* Item 1
+* Item 2
+    + Item 2a
+    + Item 2b
+Ordered List
+1. Item 1
+2. Item 2
+3. Item 3
+    + Item 3a
+    + Item 3b
+Manual Line Breaks
+
+End a line with two or more spaces:
+Roses are red,   
+Violets are blue.
+
+Blockquotes
+
+A friend once said:
+
+> It's always better to give 
+> than to receive.
+R Code Blocks
+
+R code will be evaluated and printed
+```{r}
+summary(cars$dist)
+summary(cars$speed)
+```
+Inline R Code
+
+There were `r nrow(cars)` cars studied
+Plain Code Blocks
+
+Plain code blocks are displayed in a fixed-width font but not evaulated
+```
+This text is displayed verbatim / preformatted
+```
+Inline Code
+
+We defined the `add` function to 
+compute the sum of two numbers.
+LaTeX Equations
+
+Inline Equation
+$equation$
+Display Equation
+$$ equation $$
+Horizontal Rule / Page Break
+
+Three or more asterisks or dashes:
+******
+
+------
+Tables
+
+First Header  | Second Header
+------------- | -------------
+Content Cell  | Content Cell
+Content Cell  | Content Cell
+-----
+
+
+Miscellaneous
+
+superscript^2^
+
+~~strikethrough~~
+
+
+
+
+
+
+
+
+
+
