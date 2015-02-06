@@ -17,7 +17,7 @@ powerdata[3:9]<-apply(powerdata[3:9], MARGIN=2, FUN= as.numeric);
 powerdata$Datetime<-as.POSIXlt(paste(powerdata$Date, powerdata$Time), tz="UTC", format="%d/%m/%Y %H:%M:%S")
 
 
-png(file="plot4.png", bg="white");
+png(file="plot4.png", bg="transparent");
 par(mfrow = c(2,2));
 
 # top left

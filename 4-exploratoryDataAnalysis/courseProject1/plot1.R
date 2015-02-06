@@ -13,7 +13,7 @@ powerdata<-powerdata[both,];
 #powerdata[,1]<-as.Date(powerdata[,1], format="%d/%m/%Y");
 powerdata[3:9]<-apply(powerdata[3:9], MARGIN=2, FUN= as.numeric);
 
-png(file="plot1.png", bg="white");
+png(file="plot1.png", bg="transparent");
 with(powerdata, hist(Global_active_power, col="red", breaks=12, xlab="Global Active Power (kilowatts)", main="Global Active Power" ));
 dev.off();
 
