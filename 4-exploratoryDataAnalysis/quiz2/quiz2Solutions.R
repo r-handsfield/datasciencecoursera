@@ -33,9 +33,9 @@ library(datasets);
 data(airquality);
 p <- xyplot(Ozone ~ Wind | factor(Month), data = airquality);
 
+Which of the following is an explanation for why no plot appears?
+
 Answer: The object 'p' has not yet been printed with the appropriate print method.
-
-
 
 
 Question 5
@@ -45,14 +45,10 @@ control the appearance of all lattice plots?
 Answer: trellis.par.set()
 
 
-
-
 Question 6
 What is ggplot2 an implementation of?
 
 Answer: the Grammar of Graphics developed by Leland Wilkinson
-
-
 
 
 Question 7
@@ -75,8 +71,6 @@ Question 8
 What is a geom in the ggplot2 system?
 
 Answer: a plotting object like point, line, or other shape
-
-
 
 
 Question 9

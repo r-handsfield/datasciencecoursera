@@ -11,8 +11,8 @@ Which of the following is a principle of analytic graphics?
 
 Question 2
 What is the role of exploratory graphs in data analysis?			
-The goal is for personal understanding.
-
+1) The goal is for personal understanding
+2) They are typically made very quickly.
 
 Question 3
 Which of the following is true about the base plotting system?			
