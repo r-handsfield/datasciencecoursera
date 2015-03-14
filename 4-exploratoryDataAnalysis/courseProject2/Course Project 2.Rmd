@@ -1,0 +1,592 @@
+---
+title: "Exploratory Data Analysis Course Project 2"
+author: "Robert Handsfield"
+date: "01/25/2015"
+output: html_document
+---
+
+```{r installPkgs}
+ipak <- function(pkg){
+new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+if (length(new.pkg))
+install.packages(new.pkg, dependencies = TRUE)
+sapply(pkg, require, character.only = TRUE)
+} 
+
+pkgs <- c("tidyr", "dplyr", "knitr", "rmarkdown", "lattice", "ggplot2");
+ipak(pkgs);
+
+rm(pkgs);
+```
+
+
+Introduction
+=====================
+
+Fine particulate matter (PM2.5) is an ambient air pollutant for which there is strong evidence that it is harmful to human health. In the United States, the Environmental Protection Agency (EPA) is tasked with setting national ambient air quality standards for fine PM and for tracking the emissions of this pollutant into the atmosphere. Approximatly every 3 years, the EPA releases its database on emissions of PM2.5. This database is known as the National Emissions Inventory (NEI). You can read more information about the NEI at the EPA National Emissions Inventory web site.
+
+For each year and for each type of PM source, the NEI records how many tons of PM2.5 were emitted from that source over the course of the entire year. The data that you will use for this assignment are for 1999, 2002, 2005, and 2008.
+
+
+
+Data
+==========================================
+
+The data for this assignment are available from the course web site as a single zip file:
+
+    Data for Peer Assessment [29Mb]
+
+The zip file contains two files:
+
+PM2.5 Emissions Data (summarySCC_PM25.rds): This file contains a data frame with all of the PM2.5 emissions data for 1999, 2002, 2005, and 2008. For each year, the table contains number of tons of PM2.5 emitted from a specific type of source for the entire year. Here are the first few rows.
+```{r }
+##     fips      SCC Pollutant Emissions  type year
+## 4  09001 10100401  PM25-PRI    15.714 POINT 1999
+## 8  09001 10100404  PM25-PRI   234.178 POINT 1999
+## 12 09001 10100501  PM25-PRI     0.128 POINT 1999
+## 16 09001 10200401  PM25-PRI     2.036 POINT 1999
+## 20 09001 10200504  PM25-PRI     0.388 POINT 1999
+## 24 09001 10200602  PM25-PRI     1.490 POINT 1999
+```
+-    fips: A five-digit number (represented as a string) indicating the U.S. county
+
+-    SCC: The name of the source as indicated by a digit string (see source code classification table)
+
+-   Pollutant: A string indicating the pollutant
+
+-    Emissions: Amount of PM2.5 emitted, in tons
+
+-   type: The type of source (point, non-point, on-road, or non-road)
+
+-    year: The year of emissions recorded
+
+Source Classification Code Table (Source_Classification_Code.rds): This table provides a mapping from the SCC digit strings in the Emissions table to the actual name of the PM2.5 source. The sources are categorized in a few different ways from more general to more specific and you may choose to explore whatever categories you think are most useful. For example, source “10100101” is known as “Ext Comb /Electric Gen /Anthracite Coal /Pulverized Coal”.
+
+You can read each of the two files using the readRDS() function in R. For example, reading in each file can be done with the following code:
+
+## This first line will likely take a few seconds. Be patient!
+NEI <- readRDS("summarySCC_PM25.rds")
+SCC <- readRDS("Source_Classification_Code.rds")
+
+as long as each of those files is in your current working directory (check by calling dir() and see if those files are in the listing).
+
+
+Get the source data
+--------------------------
+```{r getSourceData, echo=FALSE}
+
+# the data frame variables
+neiDF <- "nei";
+sccDF <- "scc";
+
+# the source data files
+neiFile <- "summarySCC_PM25.rds";
+sccFile <- "Source_Classification_Code.rds"
+
+dirFiles <- list.files();
+
+# url to the source archive
+fileUrl <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip";
+
+
+# Get the nei data frame if it's missing:
+############################################
+# if the nei data frame is not in the R environment, check for the source file
+if ( !(neiDF %in% ls()) ) {
+	print("NEI data frame 'nei' is missing, checking for source file . . .");
+	
+	# if the source RDS file is also missing, check for the source archive
+	if ( !( neiFile %in% dirFiles) ) {
+		print("NEI source file is missing, checking for archive 'neiData.zip' . . .");
+		
+		# if zip archive is missing, download it
+		if ( !("neiData.zip" %in% dirFiles) ) {	
+			print("Source archive is missing and will be downloaded to 'neiData.zip'");
+			download.file(fileUrl, destfile = "./neiData.zip", method = "curl" );	
+		}
+		
+		else {
+			print("Archive 'neiData.zip' is present and will be extracted");
+		}
+		
+		# unzip the archive which was here, or has just downloaded
+		print("Unzipping 'neiData.zip'");
+		unzip("neiData.zip");	
+	}
+	
+	# read in the nei data from the RDS file
+	print("Reading nei RDS file . . .");
+	nei <- readRDS("summarySCC_PM25.rds");	
+	
+
+}
+
+# nei was present, or has just been created
+print("NEI data frame is in variable: 'nei'");
+############################################
+
+
+# Get the scc data frame if it's missing:
+############################################
+# if the nei data frame is not in the R environment, check for the source file
+if ( !(sccDF %in% ls()) ) {
+	print("SCC data frame 'scc' is missing, checking for source file . . .");
+	
+	# if the source RDS file is also missing, check for the source archive
+	if ( !( sccFile %in% dirFiles) ) {
+		print("SCC source file is missing, checking for archive 'neiData.zip' . . .");
+		
+		# if zip archive is missing, download it
+		if ( !("neiData.zip" %in% dirFiles) ) {
+			print("Source archive is missing and will be downloaded to 'neiData.zip'");
+			download.file(fileUrl, destfile = "./neiData.zip", method = "curl" );		
+		}
+		
+		else {
+			print("Archive 'neiData.zip' is present and will be extracted");
+		}
+		
+		# unzip the archive which was here, or has just downloaded
+		print("Unzipping 'neiData.zip'");
+		unzip("neiData.zip");	
+	}	
+	
+	
+	# read in the nei data from the RDS file
+	print("Reading scc RDS file . . .");
+	scc <- readRDS("Source_Classification_Code.rds");
+}
+# scc was present, or has just been created
+print("SCC data frame is in variable: 'scc'");
+############################################
+
+# Clean up the environment 
+rm( list = c("dirFiles", "fileUrl", "neiDF", "neiFile", "sccDF", "sccFile"));
+unlink("neiData.zip");
+
+```  
+
+
+
+Assignment
+===========================
+
+The overall goal of this assignment is to explore the National Emissions Inventory database and see what it say about fine particulate matter pollution in the United states over the 10-year period 1999–2008. You may use any R package you want to support your analysis.
+
+
+Questions
+---------------------------
+
+You must address the following questions and tasks in your exploratory analysis. For each question/task you will need to make a **single plot**. Unless specified, you can use any plotting system in R to make your plot.
+
+1.    Have total emissions from PM2.5 decreased in the United States from 1999 to 2008? Using the base plotting system, make a plot showing the total PM2.5 emission from all sources for each of the years 1999, 2002, 2005, and 2008.
+
+2.    Have total emissions from PM2.5 decreased in the Baltimore City, Maryland (fips == "24510") from 1999 to 2008? Use the base plotting system to make a plot answering this question.
+
+3.    Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, which of these four sources have seen decreases in emissions from 1999–2008 for Baltimore City? Which have seen increases in emissions from 1999–2008? Use the ggplot2 plotting system to make a plot answer this question.
+
+4.    Across the United States, how have emissions from coal combustion-related sources changed from 1999–2008?
+
+5.    How have emissions from motor vehicle sources changed from 1999–2008 in Baltimore City?
+
+6.    Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?
+
+Making and Submitting Plots
+----------------------------------------
+
+For each plot you should
+
+-    Construct the plot and save it to a PNG file.
+
+-    Create a separate R code file (plot1.R, plot2.R, etc.) that constructs the corresponding plot, i.e. code in plot1.R constructs the plot1.png plot. Your code file should include code for reading the data so that the plot can be fully reproduced. You must also include the code that creates the PNG file. Only include the code for a single plot (i.e. plot1.R should only include code for producing plot1.png)
+
+-    Upload the PNG file on the Assignment submission page
+
+-    Copy and paste the R code from the corresponding R file into the text box at the appropriate point in the peer assessment.
+
+
+
+Question 1
+==========================
+Have total emissions from PM2.5 decreased in the United States from 1999 to 2008? Using the **base plotting system**, make a plot showing the **total PM2.5 emission from all sources** for each of the years 1999, 2002, 2005, and 2008.
+
+
+Need to sum all PM2.5 emissions for each year.
+```{r question1}
+# sum Emissions for each year
+print("Aggregating the emissions . . .");
+emissionsPerYear <- aggregate(nei$Emissions, by=list(nei$year), FUN = sum);
+names(emissionsPerYear) <- c("year", "emissions");
+
+```
+Build the plot and save to a .png file.
+```{r question1Plot}
+
+png(file="plot1.png", bg="white");
+
+# Suppress x-axis with "xaxt = 'n'"
+plot(emissionsPerYear, type = 'l', lwd = 8, col = "red", 
+     xlab = "Year", ylab = "Tons", xaxt = 'n');
+
+title(main = "Fine Particulates: Total Emissions Per Year");
+
+# Redraw x-axis with ticks at the data point locations
+axis(side = 1, at = c(1999,2002,2005,2008));
+
+dev.off();
+
+```
+
+
+
+Question 2
+==========================
+Have total emissions from PM2.5 decreased in the Baltimore City, Maryland (fips == "24510") from 1999 to 2008? Use the **base plotting system** to make a plot answering this question.
+
+Get emissions for every year in Baltimore and build the plot.
+```{r question2}
+
+# Get emissions for every year in Baltimore
+baltimore <- nei[nei$fips=="24510", ];
+
+# Aggregate the emissions
+baltimore <- aggregate(baltimore$Emissions, by=list(baltimore$year), FUN = sum);
+names(baltimore) <- c("year", "emissions");
+
+#png(file="plot2.png", bg="white");
+
+# Suppress x-axis with "xaxt = 'n'"
+plot(baltimore, type = 'h', lwd = 8, col = "red", 
+     xlab = "Year", ylab = "Tons", xaxt = 'n');
+
+title(main = "Fine Particulates in Baltimore City: Total Emissions Per Year");
+
+# Redraw x-axis with ticks at the data point locations
+axis(side = 1, at = c(1999,2002,2005,2008));
+
+#dev.off();
+
+```
+
+**Emissions have decreased in Baltimore City from 1999 to 2008.**
+
+
+
+Question 3
+==========================
+Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, which of these four sources have seen decreases in emissions from 1999–2008 for Baltimore City? *Which have seen increases in emissions from 1999–2008?* Use the **ggplot2** plotting system to make a plot answer this question.
+
+Install ggplot2 if necessary
+```{r question3installPkgs}
+
+if ( !("ggplot2" %in% installed.packages()) ) {
+	install.packages("ggplot2");
+}
+
+library("ggplot2");	
+
+```
+
+Sum the emissions of each type (point, nonpoint, onroad, nonroad) for each year in Baltimore
+```{r question3Calculate}
+
+baltimore <- nei[nei$fips=="24510", ];
+baltimore <- aggregate(baltimore$Emissions, by=list(baltimore$type, baltimore$year ), FUN = sum);
+names(baltimore) <- c("Type", "year", "emissions");
+
+# sort by type
+baltimore <- baltimore[order(baltimore$Type),]
+```
+At this point, we have
+
+|      Type|  year|   emissions|
+|---------:|-----:|-----------:|
+|  NONPOINT|  1999|  2107.62500|
+|  NON-ROAD|  1999|   522.94000|
+|   ON-ROAD|  1999|   346.82000|
+|     POINT|  1999|   296.79500|
+|  NONPOINT|  2002|  1509.50000|
+|  NON-ROAD|  2002|   240.84692|
+
+etc.
+
+Build the plot of emissions per year by type
+```{r question3Plot}
+
+png(file="plot3.png", bg="white");
+
+# as.factor(year) forces the x-axis labels to the data x-values
+g <- ggplot(data = baltimore, aes(as.factor(year),emissions));
+g <- g + geom_point(aes(color = Type));
+g <- g + geom_line(aes(group = Type, color = Type));
+g <- g + labs(title = "Baltimore Particulate Emissions by Type");
+g <- g + labs(x = "Year") + labs(y = "Emissions (tons)");
+# g <- g + facet_grid(eType ~ .);
+g;
+
+dev.off();
+
+```
+
+
+```{r question3Confirm}
+# Confirm success
+if ("plot3.png" %in% list.files()) {
+	print("Plot printed to plot3.png");
+}
+
+```
+
+
+
+Question 4
+==========================
+Across the United States, how have emissions from coal combustion-related sources changed from 1999–2008?
+
+Get the SCC codes for coal combustion related-sources
+```{r question4}
+View(scc);
+```
+
+Coal combustion processes will include "Combustion" in the Level One description,
+and "Coal" in the Level Three description.  Get the SCC codes from each of these
+rows.
+```{r question4}
+combustionRows <- grep(scc$SCC.Level.One, pattern = "Combustion"); 
+sccCoal <- scc[combustionRows, ];
+
+coalCombustionRows <- grep(sccCoal$SCC.Level.Three, pattern = "Coal");
+sccCoal <- sccCoal[coalCombustionRows, ];
+
+sccCodes <- sccCoal[ ,"SCC"];
+
+# clean the environment
+rm(list = c("combustionRows", "coalCombustionRows"));
+```
+
+Get the nei rows corresponding to the SCC codes for Coal combustion
+```{r question4}
+coalCombustionRows <- (which(nei$SCC %in% sccCoal$SCC));
+neiCoal <- nei[coalCombustionRows, ];
+```
+
+Sum and plot all the emissions from coal combustion
+```{r question4}
+sumCoal <- aggregate(neiCoal$Emissions, by=list(neiCoal$year ), FUN = sum);
+
+
+png(file="plot4.png", bg="white");
+
+plot(sumCoal, type = 'h', lwd = 8, col = "red", 
+     xlab = "Year", ylab = "Tons", xaxt = 'n');
+
+# Redraw x-axis with ticks at the data point locations
+axis(side = 1, at = c(1999,2002,2005,2008));
+
+title(main = "Annual Emissions from Coal Combustion");
+
+dev.off();
+```
+
+
+Confirm success
+```{r question4}
+if ("plot4.png" %in% list.files()) {
+	print("Plot printed to plot4.png");
+}
+```
+
+
+
+Question 5
+===========================
+How have emissions from **motor vehicle sources** changed from 1999–2008 in Baltimore City? 
+
+Find the SCC codes for motor vehicle emissions
+
+Find any columns containing "Vehicle"
+```{r question5}
+# install plyr if necessary
+{
+		if ( !("plyr" %in% installed.packages()) ) {
+		install.packages("plyr");
+	}
+	
+	library("plyr");
+}
+
+isVehicle <- function(x) { 
+	smm <- grep(x, pattern="Vehicle"); 
+	
+	# returns TRUE if "Vehicle" is in the col
+	sum(smm) > 0;
+}
+
+# apply to every col in df
+colwise(isVehicle)(scc);
+```
+Now we know which columns relate to vehicles, subset the cols, and examine the values
+```{r question5}
+
+cols <- colwise(isVehicle)(scc);
+
+names(scc[ , which(cols == TRUE)]);
+```
+
+Verify cols with grep
+```{r question5}
+
+length(grep(scc$Short.Name, pattern="Vehicle") )
+# [1] 260
+length(grep(scc$EI.Sector, pattern="Vehicle") )
+# [1] 1138
+length(grep(scc$SCC.Level.Two, pattern="Vehicle") )
+# [1] 1452
+length(grep(scc$SCC.Level.Three, pattern="Vehicle") )
+# [1] 552
+length(grep(scc$SCC.Level.Four, pattern="Vehicle") )
+# [1] 24
+```
+
+EI.Sector and SCC.Level.Two have the most entries, look at those first
+```{r question5}
+# using the names, look at unique values:
+unique(scc[(grep(scc$EI.Sector, pattern="Vehicle")), "EI.Sector"]);
+
+unique(scc[(grep(scc$SCC.Level.Two, pattern="Vehicle")), "SCC.Level.Two"]);
+```
+
+SCC.Level.Two seems like the best descriptor for motor vehicle use.
+```{r question5}
+
+# Get row numbers for vehicle rows
+vehicleRows <- grep(scc$SCC.Level.Two, pattern="Vehicle");
+
+# Subset the scc vehicle rows
+sccVehicle <- scc[vehicleRows, ];
+
+# Get the SCC codes for all instances of "Vehicle"
+vehicleRows <- (which(nei$SCC %in% sccVehicle$SCC));
+
+# Get all nei rows for vehicle emissions
+neiVehicle <- nei[vehicleRows, ];
+```
+
+
+Subset the nei vehicle emissions measured in Baltimore
+```{r question5}
+baltimore <- neiVehicle[neiVehicle$fips=="24510", ];
+baltimore <- aggregate(baltimore$Emissions, by=list(baltimore$year), FUN = sum);
+names(baltimore) <- c("year", "emissions");
+
+```
+
+Build the plot
+```{r question5}
+
+png(file="plot5.png", bg="white");
+
+plot(baltimore, type = 'h', lwd = 8, col = "red", 
+     xlab = "Year", ylab = "Tons", xaxt = 'n');
+
+# Redraw x-axis with ticks at the data point locations
+axis(side = 1, at = c(1999,2002,2005,2008));
+
+title(main = "Annual Emissions from \nMotor Vehicles in Baltimore");
+
+dev.off();
+```
+
+Confirm success
+```{r question5}
+if ("plot5.png" %in% list.files()) {
+	print("Plot printed to plot5.png");
+}
+```
+
+
+
+
+Question 6
+===========================
+Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?
+
+
+Subset the nei data frame Motor Vehicle emissions rows
+```{r question6}
+# Get row numbers for vehicle rows
+vehicleRows <- grep(scc$SCC.Level.Two, pattern="Vehicle");
+
+# Subset the scc vehicle rows
+sccVehicle <- scc[vehicleRows, ];
+
+# Get the SCC codes for all instances of "Vehicle"
+vehicleRows <- (which(nei$SCC %in% sccVehicle$SCC));
+
+# Get all nei rows for vehicle emissions
+neiVehicle <- nei[vehicleRows, ];
+```
+
+
+Subset rows for Baltimore and Los Angeles
+```{r question6}
+baltimore <- neiVehicle[neiVehicle$fips=="24510", ];
+losAngeles <- neiVehicle[neiVehicle$fips=="06037", ];
+
+cities <- rbind(losAngeles, baltimore);
+cities <- aggregate(cities$Emissions, by=list(cities$year, cities$fips), FUN = sum);
+names(cities) <- c("year", "city", "emissions");
+
+# Replace fips codes with city names
+cities[cities$city=="24510", "city"] <- "Baltimore";
+cities[cities$city=="06037", "city"] <- "Los Angeles";
+```
+
+
+Build the plot
+```{r question6}
+png(file="plot6.png", bg="white");
+
+# as.factor(year) forces the x-axis labels to the data x-values
+g <- ggplot(data = cities, aes(as.factor(year),emissions));
+g <- g + geom_point(aes(color = city));
+g <- g + geom_line(aes(group = city, color = city));
+g <- g + labs(title = "Motor Vehicle Emissions: \nBaltimore and Los Angeles");
+g <- g + labs(x = "Year") + labs(y = "Emissions (tons)");
+# g <- g + facet_grid(eType ~ .);
+g;
+
+dev.off();
+
+```
+
+
+
+```{r question6}
+
+```
+
+
+
+Confirm success
+```{r question6}
+if ("plot6.png" %in% list.files()) {
+	print("Plot printed to plot6.png");
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
