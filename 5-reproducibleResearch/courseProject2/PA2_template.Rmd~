@@ -1,0 +1,413 @@
+---
+title: "Social Costs of Weather Events: 1950 -- 2011"
+author: "Robert Handsfield"
+date: "02/02/2015"
+output:
+  html_document:
+    keep_md: yes
+    number_sections: yes
+    toc: yes
+---
+
+
+
+
+# Synopsis
+This document available at rpubs.com,  http://rpubs.com/r-handsfield/63104
+
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.  This project analyzes U.S. Government weather data to determine which kinds of weather are most damaging.  
+
+To determine the most damaging weather, this project focused on combined injuries and fatalities, collectively known as *casualties*, and *total monetary damage*, which includes crop and property damage.
+Data from 1950--2011, cataloguing 985 kinds of weather events, indicates that tornadoes have caused the most casualties, while floods have caused the most monetary damage.
+
+
+# Data Processing
+
+## Load Packages
+Rquired Packages
+
+* SOAR 
+* reshape2
+* ggplot2
+
+```{r}
+library(package = "ggplot2");
+library(package = "SOAR");
+library(package = "reshape2");
+```
+
+
+
+## Get the source data
+The dataset, codebooks, and supplementary information may be found at the following links.
+The analysis was performed on the NOAA Storm Data Set obtained on **February 2^nd^, 2015/*.
+
+* NOAA [Storm Data Set]("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2")
+* Storm Data [Documentation]("https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf")
+* NCDC Storm Events [FAQ]("https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf")
+* Proprietary [Codebook]("https://ire.org/nicar/database-library/databases/storm-events/") from IRE
+* [Revisions]("https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf") to the data set
+
+
+Download the file
+```{r downloadSource, echo=TRUE, cache=TRUE}
+
+fileUrl <-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2";
+
+if ( !("Stormdata.csv.bz2" %in% list.files()) ) {
+	download.file(fileUrl, destfile = "./Stormdata.csv.bz2", method = "curl" );
+}
+```  
+
+The file is a .bz2 archive, which can be read into an R data frame
+```{r readSource, cache=TRUE}
+if ( !("dfStorm" %in% ls() ) ) {
+	dfStorm <- read.csv(bzfile("Stormdata.csv.bz2"));	
+}
+```
+
+As a first analysis, examine data frame column names
+```{r examineDfStorm}
+names(dfStorm);
+```
+
+To answer questions about health and economic impact of weather, focus on the following columns:
+```{r makeDfEconHealth, cache=TRUE}
+cols <- c("STATE", "EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP");
+dfEconHealth <- dfStorm[,cols];
+```
+
+## Which events are most harmful to **public health**? 
+Which EVTYPE values correlate to the highest FATALITIES and INJURIES values?
+
+Look at the most harmful weather *events*.
+```{r orderByWorst}
+# order descending by injuries, using fatalities as a tie breaker
+head( dfEconHealth[with(dfEconHealth, order(-INJURIES, -FATALITIES)),]); 
+
+# order descending by fatalities, using injuries as a tie breaker
+head( dfEconHealth[with(dfEconHealth, order(-FATALITIES, -INJURIES)),]);
+```
+
+Historically, the most injuries during a single event were caused by a TORNADO.  The most fatalities from a single event were caused by HEAT.
+
+For the next step, sum all fatalities and injuries by event type.
+```{r aggInjFatByEvt, cache=TRUE}
+dfHealth <- aggregate.data.frame(x = list(dfEconHealth$FATALITIES, dfEconHealth$INJURIES), by = list(dfEconHealth$EVTYPE), FUN = sum);
+names(dfHealth) <- c("evtype", "fatalities", "injuries");
+
+# a casualty is an injury or fatality
+# sumCasualties = injuries + fatalities
+dfHealth$sumCasualties <- dfHealth$fatalities + dfHealth$injuries;
+
+# order descending by injuries
+head(dfHealth[with(dfHealth, order(-injuries)),]);
+
+# order descending by fatalities
+head(dfHealth[with(dfHealth, order(-fatalities)),]); 
+
+# order descending by total casualties
+head(dfHealth[with(dfHealth, order(-sumCasualties)),], 15L); 
+```
+
+
+The top 3 weather events that have **injured** the most people since 1950 are
+TORNADO, Thunderstorm Wind, FLOOD; while the top 3 events that have **killed** the most people are
+TORNADO, EXCESSIVE HEAT, FLASH FLOOD.  A *casualty* is an injury or fatality, so let's focus on the **total casualties**.
+
+Select arbitrarily, weather types that have caused at least 1000 casualties since 1950.  
+A visual inspection of the ordered casualty list shows 14 weather types that meet this criterion.
+```{r subsetWorstWeather}
+# subset the top 14 most harmful weathers
+dfHealthWorst <- head(dfHealth[with(dfHealth, order(-sumCasualties)),], 14L); 
+
+# EVTYPE factor levels are in alphabetical order, so
+# re-order the event types by ASCENDING total casualties (for easy plotting later)
+dfHealthWorst$evtype = factor(dfHealthWorst$evtype, levels = dfHealthWorst$evtype[order(dfHealthWorst$sumCasualties)], ordered=TRUE);
+
+```
+
+We now have a data frame of the most injurious weather events.  It looks like
+```{r headDfHealthWorst}
+head(dfHealthWorst, 6L);
+```
+While not shown above, the default factor order is the same as the total casualties.
+
+Prepare the data frame for plotting
+```{r prepCasDfForPlot}
+
+# need to reshape the data frame from wide to long to allow easy plotting
+dfTmp <- reshape2::melt(dfHealthWorst[1:3])
+names(dfTmp) <- c("evtype", "castype", "casualties");
+
+# re-order casualtyType factor so fatality block appears on top in plot
+dfTmp <- rbind(dfTmp[15:28,], dfTmp[1:14,]);
+
+# table is now in long form, and evtype factor levels are still in casualty order
+
+# EVTYPE order should be by total casualties, NOT alphabetical  
+str(dfTmp);
+
+# copy data to allow facet plotting with and without TORNADO row
+wt <- dfTmp; # series with tornado
+wot <- dfTmp[c(2:14, 16:28),]; # series without tornado
+
+# add facet factor 
+wt$wT <- as.factor("with TORNADO");
+wot$wT <- as.factor("without TORNADO");
+
+dfTmp <- rbind(wt,wot);
+
+dfTmpH <- dfTmp;
+
+# clean up workspace
+rm(list = c("wt","wot"));
+
+```
+
+For a plot of the most harmful kinds of weather, see [Plot1](#Plot1)
+
+
+## Which events are most **expensive**? 
+Which EVTYPE values correlate to the highest PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP values?
+
+Examine the structure of the economic impact columns PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP
+```{r examineDfEcon}
+
+dfEcon <- dfEconHealth[,c(2,5:8)]
+
+str(dfEcon);
+```
+
+The column names and data types suggest a numeric value PROPDMG, multiplied by a power of 10 PROPDMGEXP.
+
+$$
+\mbox{Cash Property Damage} = PROPDMG \times {PROPDMGEXP} \mbox{ with } {PROPDMGEXP} = 10^n
+$$
+  and
+$$
+\mbox{Cash Crop Damage} = CROPDMG \times {CROPDMGEXP} \mbox{ with } {CROPDMGEXP} = 10^n
+$$
+
+Unfortunately, the exponent columns contain non-numeric entries:
+```{r uniqueFactorsDfEcon}
+unique(dfEcon$PROPDMGEXP); unique(dfEcon$CROPDMGEXP);
+```
+
+Based on the 
+[conclusions]("https://class.coursera.org/repdata-011/forum/thread?thread_id=39#comment-66")
+of 
+[Eddie Song]("https://class.coursera.org/repdata-011/forum/profile?user_id=10852314"), 
+the character codes do represent multipliers,  but the numeric codes are buffer overflows from the preceding columns, and symbols (+,-,?) are errors.  From his analysis, we handle these anomalies by omitting any row that has a non-character exponent code, because it is at least two orders of magnitude smaller than any other damage multiplier.
+
+There are only 341 of these problematic rows, comprising less than 0.1% of the data; omitting them should not affect the results.
+```{r omitBadCodes}
+numRow <-
+length(  grep("[0-8]", dfEcon$PROPDMGEXP )  ) + 
+length(  grep("[-?+]", dfEcon$PROPDMGEXP )  ) +
+length(  grep("[-?+]", dfEcon$CROPDMGEXP )  ) + 
+length(  grep("[0-8]", dfEcon$CROPDMGEXP )  );
+
+numRow;
+
+numRow / nrow(dfEcon);
+```
+
+Remove rows with non-alphabetical damage exponent codes
+```{r removeBadCodeRows}
+
+dfEcon <- dfEconHealth[,c(2,5:8)]
+
+# order of this regex matters; alternatively, try combos of ("[-]" | "[?]" | "[+]")
+badRows <- c(  grep("[0-8+?-]", dfEcon$PROPDMGEXP ), grep("[0-8+?-]", dfEcon$CROPDMGEXP )  ); 
+
+# remove unused factor levels part 1
+dfEcon$PROPDMGEXP <- as.character(dfEcon$PROPDMGEXP);
+dfEcon$CROPDMGEXP <- as.character(dfEcon$CROPDMGEXP);
+
+# subset
+dfEcon <- dfEcon[-badRows,];
+
+# clean up workspace
+rm(badRows);
+
+# remove unused factor levels part 2
+dfEcon$PROPDMGEXP <- as.factor(dfEcon$PROPDMGEXP);
+dfEcon$CROPDMGEXP <- as.factor(dfEcon$CROPDMGEXP);
+
+# check factor levels
+levels(dfEcon$PROPDMGEXP);
+levels(dfEcon$CROPDMGEXP);
+```
+
+Interpret damage exponent character codes as follows:
+
+> Hh ==> 1e2  
+> Kk ==> 1e3  
+> Mm ==> 1e6  
+> Bb ==> 1e9  
+
+For convenience, synonymous EXP character codes should be simplified
+```{r simplifyChars}
+# inspecting str() & unique() shows that only h,m, m,k must be replaced
+str(dfEcon); unique(dfEcon$PROPDMGEXP); unique(dfEcon$CROPDMGEXP);
+
+# convert all character values to upper case
+
+# gsub fails here, try df index:
+dfEcon[grep("h", dfEcon$PROPDMGEXP), "PROPDMGEXP"] = "H";
+dfEcon[grep("m", dfEcon$PROPDMGEXP), "PROPDMGEXP"] = "M";
+
+dfEcon[grep("k", dfEcon$CROPDMGEXP), "CROPDMGEXP"] = "K";
+dfEcon[grep("m", dfEcon$CROPDMGEXP), "CROPDMGEXP"] = "M";
+```
+
+To make things convenient, create 2 columns `p.dmg.mult` and `c.dmg.mult` containing values for numeric damage multipliers for property and crops. In R, the form **1e6** is classed as numeric, so when possible, use this form in the new multiplier columns.  
+
+```{r createMultipliers}
+
+# initialize new columns
+dfEcon$p.dmg.mult <- rep(NA, nrow(dfEcon)); # property damage multiplier
+dfEcon$c.dmg.mult <- rep(NA, nrow(dfEcon)); # crop damage multiplier
+
+# insert the correct multiplier values
+dfEcon[grep("B", dfEcon$PROPDMGEXP), "p.dmg.mult"] = 1e9;  
+dfEcon[grep("H", dfEcon$PROPDMGEXP), "p.dmg.mult"] = 1e2;
+dfEcon[grep("K", dfEcon$PROPDMGEXP), "p.dmg.mult"] = 1e3;
+dfEcon[grep("M", dfEcon$PROPDMGEXP), "p.dmg.mult"] = 1e6;  
+dfEcon[which(is.na(dfEcon$p.dmg.mult)), "p.dmg.mult"] = 1e0; # no damage code
+
+dfEcon[grep("B", dfEcon$CROPDMGEXP), "c.dmg.mult"] = 1e9;
+dfEcon[grep("H", dfEcon$CROPDMGEXP), "c.dmg.mult"] = 1e2;
+dfEcon[grep("K", dfEcon$CROPDMGEXP), "c.dmg.mult"] = 1e3;
+dfEcon[grep("M", dfEcon$CROPDMGEXP), "c.dmg.mult"] = 1e6;
+dfEcon[which(is.na(dfEcon$c.dmg.mult)), "c.dmg.mult"] = 1e0; # no damage code
+
+# verify the damage exponent factor levels
+str(dfEcon);
+
+```
+
+The economic damage data frame now includes numeric damage multipliers
+```{r headDfEcon}
+head(dfEcon);
+```
+
+
+Create columns for **cash damage**, the product of **damage** and **multiplier**
+```{r createCashDmg}
+# initialize cash damage columns
+dfEcon$p.dmg.cash <- rep(NA, nrow(dfEcon)); # property damage cash value
+dfEcon$c.dmg.cash <- rep(NA, nrow(dfEcon)); # crop damage cash value
+
+dfEcon$p.dmg.cash <- dfEcon$PROPDMG * dfEcon$p.dmg.mult;
+dfEcon$c.dmg.cash <- dfEcon$CROPDMG * dfEcon$c.dmg.mult;
+```
+
+Aggregate monetary damages by weather type
+```{r aggCashByEvt, cache=TRUE}
+dfEconWorst <- aggregate.data.frame(x = list(dfEcon$p.dmg.cash, dfEcon$c.dmg.cash), by = list(dfEcon$EVTYPE), FUN = sum);
+names(dfEconWorst) <- c("evtype", "prop.damage", "crop.damage");
+```
+
+Calculate net damage, the sum of property and crop damage
+```{r }
+# initialize net damage column
+dfEconWorst$net.damage <- rep(NA, nrow(dfEconWorst)); # property damage cash value
+
+dfEconWorst$net.damage <- dfEconWorst$prop.damage + dfEconWorst$crop.damage;
+
+# sort df in descending net.damage order
+dfEconWorst <- dfEconWorst[with(dfEconWorst, order(-net.damage)),];
+
+# sort evtype levels in ascending net.damage order
+dfEconWorst$evtype = with(dfEconWorst, factor(evtype, levels = evtype[order(net.damage)], ordered=TRUE));
+
+# view descending by property damage
+head(dfEconWorst[with(dfEconWorst, order(-prop.damage)),], 10L);
+
+# view ascending by crop damage
+head(dfEconWorst[with(dfEconWorst, order(-crop.damage)),], 10L);
+
+# view ascending by net damage
+head(dfEconWorst[with(dfEconWorst, order(-net.damage)),], 10L);
+```
+
+Prepare the data frame for plotting
+```{r prepdfEconForPlot}
+
+dfTmp <- dfEconWorst[1:20,1:3];
+
+# reshape from wide to long
+dfTmp <- reshape2::melt(dfTmp);
+names(dfTmp) <- c("evtype", "dmg.type", "dmg.amount");
+
+# copy data to allow facet plotting with and without FLOOD row
+wf <- dfTmp; # series with flood
+wof <- dfTmp[c(2:20, 22:40),]; # series without flood
+
+# add facet factor 
+wf$wF <- as.factor("with FLOOD");
+wof$wF <- as.factor("without FLOOD");
+
+dfTmp <- rbind(wf,wof);
+
+dfTmpE <- dfTmp;
+
+rm(list = c("wf","wof"));
+```
+
+For a plot of the most costliest kinds of weather, see [Plot2](#Plot2)
+
+
+# Results
+
+### Plot1
+<a name="Plot1"></a>
+```{r plotCasDf}
+p <- ggplot(data=dfTmpH, 
+       aes(x=evtype, y=casualties, fill=castype)); # separate bars by castype
+
+p <- p + geom_bar(stat="identity"); # draw bar for each castype
+
+p <- p + facet_grid(wT~., # row for each: w/ TORNADO or w/o TORNADO
+	     scales = "free_y"); # uniqe y scale for each facet 
+
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5, size = 8), # rotate x-axis text
+	       strip.text.y = element_text(angle=90)); # rotate facet label text
+
+p <- p + ylab("Casualties") + xlab("Weather Type");
+
+p <- p + ggtitle("Deadliest Weather Events Since 1950");
+
+print(p);
+```
+
+When it comes to public health, tornadoes are the most damaging weather event, causing almost 10 times as many casualties as the 2^nd^ most dangerous weather, excessive heat.  Omitting the tornado data magnifies the differences between the remaining types.
+
+### Plot2
+<a name="Plot2"></a>
+```{r plotCashDmg}
+
+p <- ggplot(data=dfTmpE, aes(x=evtype, y=dmg.amount, fill=dmg.type));
+
+p <- p + geom_bar(stat="identity");
+
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5, size = 6),  strip.text.y = element_text(angle=90)); # rotate facet label text);
+
+p <- p + facet_grid(wF~., # row for each: w/ FLOOD or w/o FLOOD
+	     scales = "free_y"); # uniqe y scale for each facet 
+
+p <- p + ylab("Cost ($)") + xlab("Weather Type");
+
+p <- p + ggtitle("20 Costliest Weather Types Since 1950");
+
+print(p);
+```
+
+Property damage makes up most of the economic costs due to weather.  Flooding is most expensive, costing twice as much in damage as the next costliest, hurricane/typhoon.  Omitting flooding magnifies the differences between the remaining types.
+
+This document available on rpubs.com,  http://rpubs.com/r-handsfield/63104
+
+
+
