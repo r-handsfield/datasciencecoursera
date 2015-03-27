@@ -1,303 +1,437 @@
 ---
-title: "Reproducible Research Peer Assessment 1"
+title: "PA2_template.Rmd"
+author: "Robert Handsfield"
+date: "02/15/2015"
 output:
-  html_document: default
+  html_document:
+    keep_md: yes
+    number_sections: yes
+    toc: yes
 ---
 
-This assignment requires the packages: caTools, dplyr, graphics, grDevices, knitr, lattice, methods,  rmarkdown, stats, utils.
 
-This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day. The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+Introduction
+----------------------------------------------
 
-Variables: 
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.
 
-- steps: Number of steps taking in a 5-minute interval (missing values are coded as NA)
+This project involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
 
-- date: The date on which the measurement was taken in YYYY-MM-DD format
 
-- interval: Identifier for the 5-minute interval in which measurement was taken
+Load Packages
+----------------------------------------------
+
+Rquired Packages
+
+* SOAR 
+* reshape2
+* ggplot2
+
+```{r}
+library(package = "ggplot2");
+library(package = "SOAR");
+library(package = "reshape2");
+```
+
 
 
 Get the source data
 ----------------------------------------------
-The file is a .zip archive, which needs to be extracted
-```{r downloadSource, echo=TRUE}
-fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip";
-download.file(fileUrl, destfile = "./activity.zip", method = "curl" );
+
+* NOAA [Storm Data Set]("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2");
+* Storm Data [Documentation]("https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf");
+* NCDC Storm Events [FAQ]("https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf");
+
+The events in the database start in the year 1950 and end in November 2011. In the earlier years of the database there are generally fewer events recorded, most likely due to a lack of good records. More recent years should be considered more complete.
+
+The file is a .bz2 archive, which needs to be extracted.
+```{r downloadSource, echo=TRUE, cache=TRUE}
+
+fileUrl <-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2";
+
+if ( !("Stormdata.csv.bz2" %in% list.files()) ) {
+	download.file(fileUrl, destfile = "./Stormdata.csv.bz2", method = "curl" );
+}
 ```  
 
 
-Extract "activity.csv"" from "activity.zip", and remove the .zip
-```{r extractSource}
-df <- read.csv(unz("./activity.zip", "activity.csv"));
-write.csv(df, file="./activity.csv", row.names=FALSE);
-unlink("./activity.zip");
-```
-Data is stored in 'df'.
-
-
-What is the mean total of steps taken per day?
-----------------------------------------------
-For this part of the assignment, I ignore the missing values in the dataset.  
-FYI: *step* is the only variable with NA values.
-
-```{r removeNA}
-dff <- df[complete.cases(df),];
-```
-
-### 1. Make a histogram of the total number of steps taken each day
-
-Find the total number of steps each day
-```{r stepTotal}
-stepSum <- data.frame(aggregate(dff$steps, by=list(dff$date), FUN=sum));
-names(stepSum) <- c("date", "steps");
-```
-
-
-Build the histogram
-```{r stepHistogram, tidy=FALSE}
-lattice::histogram(~steps, data=stepSum, type="count", nint=22, 
-		   endpoints=c(0,22000), xlab="Daily Step Count", ylab="Frequency",
-		   main="Step Counts per 24 Hour Periods");
-```
-
-### 2. Calculate the mean and median
-Calculate and report the **mean** and **median** number of steps taken per day
-```{r stepMeanMed}
-mean(stepSum$steps); 
-median(stepSum$steps);
-```
-
-
-What is the average daily activity pattern?
-----------------------------------------------
-### 1. Make a time series plot
-Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and 
-the average number of steps taken, averaged across all days (y-axis)
-
-Calculate the daily step average of each 5-min interval
-```{r stepAvg}
-dff$interval <- as.factor(dff$interval);
-stepAvg <- aggregate(dff$steps, by = list(dff$interval), FUN = mean);
-names(stepAvg) <- c("interval", "steps");
-```
-
-Build the time series plot
-```{r timeSeries, tidy=FALSE}
-
-# build the plot
-# convert x to numeric to allow axis auto-scaling
-lattice::xyplot(steps ~ as.numeric(interval), data=stepAvg, type = 'l',
-		xlab="Interval", ylab="Average Steps", 
-		main="Average Steps per 5 Minute Interval");
-```
-
-
-```{r timeSeries, timeSeriesPrev, echo=FALSE, eval=FALSE}
-Previous version of preceding block
-
-# add numeric 'intervals' count to allow x-axis auto-scaling
-# creates: $interval = 0    --> $intervalCount = 1
-#          $interval = 5    --> $intervalCount = 2 
-#	                   . . . 
-#          $interval = 2355 --> $intervalCount = 288
-
-#stepAvg$intervalCount <- as.numeric(stepAvg$interval);  
-
-# build the plot
-lattice::xyplot(steps ~ as.numeric(interval), data=stepAvg, type = 'l',
-		xlab="Interval", ylab="Average Steps", 
-		xlim=1:288, ylim=0:210,
-		scale=list(x=list(tick.number=20, rot=90)),
-		main="Average Steps per 5 Minute Interval");
-```
-
-
-
-
-### 2. Where is the maximum?
-Which **5-minute interval**, on average across all the days in the dataset, contains
-the maximum number of steps?
-
-```{r maxAverage}
-maxrow <- which( stepAvg$steps == max(stepAvg$steps));
-stepAvg[maxrow,];
-```
-
-The highest 5-minute average step count occurs during the 104<sup>th</sup> interval,
-which corresponds to minutes 835 -- 839.  Or 13 hours, 55 minutes after the first interval of the day.
-
-
-Imputing missing values
-----------------------------------------------
-
-Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
-
-### 1. Calculate the number of missing values
-Calculate and report the total number of missing values in the dataset (i.e.
-the total number of rows with NAs)
-
-Count the number of rows with NAs:
-```{r totalNA}
-nrowNA <- sum(!complete.cases(df));
-nrowNA;
-```
-
-
-### 2. Fill in the missing values
-Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
-
-Strategy: Replace NAs in the step column with the interval step-average.
-
-1.  Copy the source data frame to a new df
-2.  Find the rows with NAs to replace
-3.  For those rows
-	1. Get the time interval
-	2. Find the row corresponding to that interval in the data frame of interval-averaged step counts.
-	3. Get the average step count from the row from (2)
-	4. Replace the NA with the average step count from (3)
-
-
-### 3. Create a new dataset
-Create a new dataset that is equal to the original dataset but with the missing
-data filled in.
-
-Create a data frame to modify:
-```{r createDF}
-completeDf <- df;
-```
-
-Find the rows to fix (replace NA value):
-```{r findNA}
-fixMe <- which(!complete.cases(completeDf));
-dfFixMe <- data.frame(fixMe);
-names(dfFixMe) <- "rows";
-```
-
-Get the time intervals from the faulty rows:
-```{r getInterval}
-intervalToMatch <- completeDf[fixMe, "interval"];
-```
-
-Replace NAs with time interval step averages:
-```{r getStepAvg}
-for (i in 1:length(fixMe)) {
-	# get the df row to modify
-	theRow <- fixMe[i];
-	
-	# get the time interval of the current row
-	itm <- intervalToMatch[i]; 
-	
-	# get the interval average steps from the stepAvg df
-	theAvg <- stepAvg[which(stepAvg$interval == itm),"steps"];
-	
-	# insert the step average into the current df row
-	completeDf$steps[theRow] <- theAvg;
+```{r readSource, cache=TRUE}
+if ( !("dfStorm" %in% ls() ) ) {
+	dfStorm <- read.csv(bzfile("Stormdata.csv.bz2"));	
 }
 ```
-The new, complete data frame lists average step counts for each of the 8 days
-that were missing data.
 
 
-### 4. Make a histogram
-Make a histogram of the total number of steps taken each day and Calculate and
-report the mean and median total number of steps taken per day. Do these values
-differ from the estimates from the first part of the assignment? What is the
-impact of imputing missing data on the estimates of the total daily number of
-steps?
 
-Calculate the new step total:
-```{r newTotal}
-newSum <- data.frame(
-		aggregate(completeDf$steps, by=list(completeDf$date), FUN=sum)
-	  );
-names(newSum) <- c("date", "steps");
+Questions
+-----------------------------------------------------
+
+Your data analysis must address the following questions:
+
+1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+2. Across the United States, which types of events have the greatest economic consequences?
+
+Consider writing your report as if it were to be read by a government or municipal manager who might be responsible for preparing for severe weather events and will need to prioritize resources for different types of events. However, there is no need to make any specific recommendations in your report.
+
+By examining variable names,
+```{r examineDfStorm}
+
+names(dfStorm);
 ```
 
 
-Build the histogram
-```{r newHist}
-lattice::histogram(~steps, data=stepSum, type="count", nint=22, 
-		   endpoints=c(0,22000), xlab="Total", ylab="Frequency",
-		   main="Step Totals per 24 Hour Periods");
+
+It seems we should focus on the following columns to answer questions about health and economic impact of weather:
+```{r makeDfEconHealth, cache=TRUE}
+cols <- c("STATE", "EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP");
+dfEconHealth <- dfStorm[,cols];
 ```
 
 
-Calculate and report the new **mean** and **median** total number of steps taken per day
-```{r newMeanMed}
-# Previous mean and median
-mean(stepSum$steps); median(stepSum$steps);
 
-# Mean and median after imputing values
-mean(newSum$steps); median(newSum$steps);
+# 1. Which events are most harmful? ####################
+Which EVTYPE values correlate to the highest FATALITIES and INJURIES values?
+
+As a first examination, look at the most harmful weather *events*.
+```{r orderByWorst}
+# order descending by injuries, using fatalities as a tie breaker
+head( dfEconHealth[with(dfEconHealth, order(-INJURIES, -FATALITIES)),]); 
+
+# order descending by fatalities, using injuries as a tie breaker
+head( dfEconHealth[with(dfEconHealth, order(-FATALITIES, -INJURIES)),]);
 ```
 
-Replacing NAs with average step counts has no effect on the mean, and a very small effect on the median.
+Historically, the most injuries during a single event were caused by a TORNADO.  The most fatalities from a single event were caused by HEAT.
 
-Differences between weekdays and weekends
+For the next step, sum all fatalities and injuries by event type.
+```{r aggInjFatByEvt, cache=TRUE}
+dfHealth <- aggregate.data.frame(x = list(dfEconHealth$FATALITIES, dfEconHealth$INJURIES), by = list(dfEconHealth$EVTYPE), FUN = sum);
+names(dfHealth) <- c("evtype", "fatalities", "injuries");
+
+# a casualty is an injury or fatality
+# sumCasualties = injuries + fatalities
+dfHealth$sumCasualties <- dfHealth$fatalities + dfHealth$injuries;
+
+# order descending by injuries
+head(dfHealth[with(dfHealth, order(-injuries)),]);
+
+# order descending by fatalities
+head(dfHealth[with(dfHealth, order(-fatalities)),]); 
+
+# order descending by total casualties
+head(dfHealth[with(dfHealth, order(-sumCasualties)),], 15L); 
+```
+
+
+The top 3 weather events that have **injured** the most people since 1950 are
+TORNADO, Thunderstorm Wind, FLOOD; while the top 3 events that have **killed** the most people are
+TORNADO, EXCESSIVE HEAT, FLASH FLOOD.  A **casualty** is an injury **or** fatality, so let's focus on the *total casualties**.
+
+Select arbitrarily, weather types that have caused at least 1000 casualties since 1950.  
+A visual inspection of the ordered casualty list shows 14 weather types that meet this criterion.
+```{r subsetWorstWeather}
+# subset the top 14 most harmful weathers
+dfHealthWorst <- head(dfHealth[with(dfHealth, order(-sumCasualties)),], 14L); 
+
+# the subset metadata still contains 985 factor levels for 'evtype'
+# do the following to remove the unused factor levels
+dfHealthWorst <- data.frame(as.matrix(dfHealthWorst));
+
+dfHealthWorst$injuries <- as.numeric(dfHealthWorst$injuries);
+dfHealthWorst$fatalities <- as.numeric(dfHealthWorst$fatalities);
+dfHealthWorst$sumCasualties <- as.numeric(dfHealthWorst$sumCasualties);
+
+# there are now only 14 evtype factors, but their levels are in alphabetical order
+# re-order the event types by ASCENDING total casualties (for easy plotting later)
+dfHealthWorst$evtype = factor(dfHealthWorst$evtype, levels = dfHealthWorst$evtype[order(dfHealthWorst$sumCasualties)], ordered=TRUE);
+
+```
+
+We now have a data frame that looks like
+```{r headDfHealthWorst}
+head(dfHealthWorst, 6L);
+```
+While not shown above, the default factor order is the same as the total casualties
+
+Prepare the data frame for plotting
+```{r prepCasDfForPlot}
+# need to reshape the data frame from wide to long to allow easy plotting
+
+dfTmp <- reshape2::melt(dfHealthWorst[1:3])
+names(dfTmp) <- c("evtype", "castype", "casualties");
+
+# re-order casualtyType factor so fatality block appears on top in plot
+dfTmp <- rbind(dfTmp[15:28,], dfTmp[1:14,]);
+
+# table is now in long form, and evtype factor levels are still in casualty 
+# order, which you can verify by 
+str(dfTmp);
+
+# copy data to allow facet plotting with and without TORNADO row
+
+wt <- dfTmp; # series with tornado
+wot <- dfTmp[c(2:14, 16:28),]; # series without tornado
+
+# add facet factor 
+wt$wT <- as.factor("with TORNADO");
+wot$wT <- as.factor("without TORNADO");
+
+dfTmp <- rbind(wt,wot);
+
+rm(list = c("wt","wot"));
+
+```
+
+Combining injuries and fatalities, and arbitrarily choosing only events that have caused at least 1000 casualties since 1950, we see that tornadoes are the most harmful by nearly an order of magnitude.  Plotting again, without including tornado casualties, hilights casualty differences from the subsequent 13 most harmful kinds weather events.
+
+Plot
+```{r plotCasDf}
+p <- ggplot(data=dfTmp, 
+       aes(x=evtype, y=casualties, fill=castype)); # separate bars by castype
+
+p <- p + geom_bar(stat="identity"); # draw bar for each castype
+
+p <- p + facet_grid(wT~., # row for each: w/ TORNADO or w/o TORNADO
+	     scales = "free_y"); # uniqe y scale for each facet 
+
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5), # rotate x-axis text
+	       strip.text.y = element_text(angle=90)); # rotate facet label text
+
+p <- p + ggtitle("Deadliest Weather Events Since 1950");
+
+print(p);
+```
+
+
+
+
+
+
+
+
+
+
+
+
+# 2. Which events are most expensive? ##################
+Which EVTYPE values correlate to the highest PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP values?
+
+As a first examination, examine the structure of the economic impact columns PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP
+```{r examineDfEcon}
+
+dfEcon <- dfEconHealth[,c(2,5:8)]
+
+str(dfEcon);
+
+# order descending by injuries, using fatalities as a tie breaker
+# head( dfEcon[with(dfEcon, order(-(PROPDMG + CROPDMG))),]); 
+
+```
+
+The column names and data types suggest a numeric value PROPDMG, multiplied by a power of 10 PROPDMGEXP.
+
+$$
+\mbox{Cash Property Damage} = PROPDMG \times {PROPDMGEXP} \mbox{ with } {PROPDMGEXP} = 10^n
+$$
+  and
+$$
+\mbox{Cash Crop Damage} = CROPDMG \times {CROPDMGEXP} \mbox{ with } {CROPDMGEXP} = 10^n
+$$
+
+Unfortunately, the exponent columns contain non-numeric entries:
+```{r uniqueFactorsDfEcon}
+unique(dfEcon$PROPDMGEXP); unique(dfEcon$CROPDMGEXP);
+```
+
+Based on the [conclusions]("https://class.coursera.org/repdata-011/forum/thread?thread_id=39#comment-66") of [Eddie Song] ("https://class.coursera.org/repdata-011/forum/profile?user_id=10852314"), the character codes do represent multipliers,  but the numeric codes are buffer overflows from the preceding columns, and symbols (+,-,?) are errors.  From his analysis, we handle these anomalies by omitting any row that has a non-character exponent code, because it is at least two orders of magnitude smaller than any other damage multiplier.
+
+Additionally, there are only 341 of these problematic rows, comprising less than 0.1% of the data.
+```{r omitBadCodes}
+numRow <-
+length(  grep("[0-8]", dfEcon$PROPDMGEXP )  ) + 
+length(  grep("[-?+]", dfEcon$PROPDMGEXP )  ) +
+length(  grep("[-?+]", dfEcon$CROPDMGEXP )  ) + 
+length(  grep("[0-8]", dfEcon$CROPDMGEXP )  );
+
+numRow;
+
+numRow / nrow(dfEcon);
+```
+
+
+Interpret damage exponent character codes as follows:
+
+> Hh ==> 1e2
+> Kk ==> 1e3
+> Mm ==> 1e6
+> Bb ==> 1e9
+
+
+To make things convenient, add 2 columns containing the values of the damage multipliers for property and crops.  The damage multipliers are calculated according to the formulas above.  
+In R, the form **1e6** is classed as numeric, so when possible, use this form in the new multiplier columns.  Also add columns for the **cash damage**, the product of **damage** and **multiplier**.
+
+
+Remove rows with non-alphabetical damage exponent codes
+```{r removeBadCodeRows}
+
+dfEcon <- dfEconHealth[,c(2,5:8)]
+
+# order of this regex matters; alternatively, try combos of ("[-]" | "[?]" | "[+]")
+badRows <- c(  grep("[0-8+?-]", dfEcon$PROPDMGEXP ), grep("[0-8+?-]", dfEcon$CROPDMGEXP )  ); 
+
+# remove unused factor levels part 1
+dfEcon$PROPDMGEXP <- as.character(dfEcon$PROPDMGEXP);
+dfEcon$CROPDMGEXP <- as.character(dfEcon$CROPDMGEXP);
+
+# subset
+dfEcon <- dfEcon[-badRows,];
+
+# clean up workspace
+rm(badRows);
+
+# remove unused factor levels part 2
+dfEcon$PROPDMGEXP <- as.factor(dfEcon$PROPDMGEXP);
+dfEcon$CROPDMGEXP <- as.factor(dfEcon$CROPDMGEXP);
+
+# check factor levels
+levels(dfEcon$PROPDMGEXP);
+levels(dfEcon$CROPDMGEXP);
+```
+
+
+
+Clean the exponent columns, add the exponent value columns
+```{r addMultipliers}
+# initialize new columns
+dfEcon$p.dmg.mult <- rep(NA, nrow(dfEcon)); # property damage multiplier
+dfEcon$c.dmg.mult <- rep(NA, nrow(dfEcon)); # crop damage multiplier
+
+# convert all character values to upper case
+# inspecting str() & unique() shows that only h,m, m,k must be replaced
+# gsub fails here, try df index:
+
+dfEcon[grep("h", dfEcon$PROPDMGEXP), "PROPDMGEXP"] = "H";
+dfEcon[grep("m", dfEcon$PROPDMGEXP), "PROPDMGEXP"] = "M";
+
+dfEcon[grep("k", dfEcon$CROPDMGEXP), "CROPDMGEXP"] = "K";
+dfEcon[grep("m", dfEcon$CROPDMGEXP), "CROPDMGEXP"] = "M";
+
+
+# insert the correct multiplier values
+dfEcon[grep("B", dfEcon$PROPDMGEXP), "p.dmg.mult"] = 1e9;
+dfEcon[grep("H", dfEcon$PROPDMGEXP), "p.dmg.mult"] = 1e2;
+dfEcon[grep("K", dfEcon$PROPDMGEXP), "p.dmg.mult"] = 1e3;
+dfEcon[grep("M", dfEcon$PROPDMGEXP), "p.dmg.mult"] = 1e6;
+dfEcon[which(is.na(dfEcon$p.dmg.mult)), "p.dmg.mult"] = 1e0; # no damage code
+
+dfEcon[grep("B", dfEcon$CROPDMGEXP), "c.dmg.mult"] = 1e9;
+# dfEcon[grep("H", dfEcon$CROPDMGEXP), "c.dmg.mult"] = 1e2;
+dfEcon[grep("K", dfEcon$CROPDMGEXP), "c.dmg.mult"] = 1e3;
+dfEcon[grep("M", dfEcon$CROPDMGEXP), "c.dmg.mult"] = 1e6;
+dfEcon[which(is.na(dfEcon$c.dmg.mult)), "c.dmg.mult"] = 1e0; # no damage code
+
+# verify the damage exponent factor levels
+str(dfEcon);
+
+```
+
+We now have a data frame that looks like this
+```{r headDfEcon}
+head(dfEcon);
+```
+
+
+Add columns for cash damage, and calculate
+```{r calcCashDmg}
+# initialize cash damage columns
+dfEcon$p.dmg.cash <- rep(NA, nrow(dfEcon)); # property damage cash value
+dfEcon$c.dmg.cash <- rep(NA, nrow(dfEcon)); # crop damage cash value
+
+dfEcon$p.dmg.cash <- dfEcon$PROPDMG * dfEcon$p.dmg.mult;
+dfEcon$c.dmg.cash <- dfEcon$CROPDMG * dfEcon$c.dmg.mult;
+```
+
+Aggregate the total monetary damage by weather type
+```{r aggCashByEvt, cache=TRUE}
+dfEconWorst <- aggregate.data.frame(x = list(dfEcon$p.dmg.cash, dfEcon$c.dmg.cash), by = list(dfEcon$EVTYPE), FUN = sum);
+names(dfEconWorst) <- c("evtype", "prop.damage", "crop.damage");
+
+dfEconWorst$net.damage <- dfEconWorst$prop.damage + dfEconWorst$crop.damage;
+
+# sort df in descending net.damage order
+dfEconWorst <- dfEconWorst[with(dfEconWorst, order(-net.damage)),];
+
+# sort evtype levels in ascending net.damage order
+dfEconWorst$evtype = with(dfEconWorst, factor(evtype, levels = evtype[order(net.damage)], ordered=TRUE));
+
+# order descending by property damage
+head(dfEconWorst[with(dfEcon, order(-prop.damage)),], 10L);
+
+# order ascending by crop damage
+head(dfEconWorst[with(dfEcon, order(-crop.damage)),], 10L);
+
+# order ascending by net damage
+head(dfEconWorst[with(dfEcon, order(-net.damage)),], 10L);
+```
+
+Prepare the data frame for plotting
+```{r prepdfEconForPlot}
+
+dfTmp <- dfEconWorst[1:20,1:3];
+
+# reshape from wide to long
+dfTmp <- reshape2::melt(dfTmp);
+names(dfTmp) <- c("evtype", "dmg.type", "dmg.amount");
+
+# copy data to allow facet plotting with and without FLOOD row
+wf <- dfTmp; # series with flood
+wof <- dfTmp[c(2:20, 22:40),]; # series without flood
+
+# add facet factor 
+wf$wF <- as.factor("with FLOOD");
+wof$wF <- as.factor("without FLOOD");
+
+dfTmp <- rbind(wf,wof);
+
+rm(list = c("wf","wof"));
+```
+
+Plot
+```{r plotCashDmg}
+
+p <- ggplot(data=dfTmp, aes(x=evtype, y=dmg.amount, fill=dmg.type)); # separate bars by castype
+
+p <- p + geom_bar(stat="identity"); # draw bar for each castype
+
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5),  strip.text.y = element_text(angle=90)); # rotate facet label text);
+
+p <- p + facet_grid(wF~., # row for each: w/ FLOOD or w/o FLOOD
+	     scales = "free_y"); # uniqe y scale for each facet 
+
+p <- p + ylab("Cost ($)") + xlab("Weather Type");
+
+p <- p + ggtitle("20 Costliest Weather Types Since 1950");
+
+print(p);
+```
+
+Property damage makes up most of the economic costs due to weather.  Flooding is costliest, costing twice as much in damage as the next costliest, hurricane/typhoon.  Omitting flooding magnifies the differences between the remaining types.
+
+
+
+Title
 ----------------------------------------------
-Are there differences in activity patterns between weekdays and weekends?
+Your document should have a title that briefly summarizes your data analysis
 
-For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+Synopsis
+----------------------------------------------
+Immediately after the title, there should be a synopsis which describes and summarizes your analysis in at most 10 complete sentences.
 
-### 1. Create a new factor 
-Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
-
-```{r}
-# create & initialize the new factor column with NAs
-completeDf$isWeekend <- rep(NA, nrow(completeDf));
-
-# create a temporary vector to hold converted dates
-tmpDay <- weekdays(as.Date(completeDf$date));
-
-# loop through the rows
-for (i in 1:nrow(completeDf)) {
-	
-	# if a date is a weekend day
-	if (tmpDay[i] == "Saturday" || tmpDay[i] == "Sunday") {
-		# set $isWeekend to TRUE
-		# completeDf[i, 'isWeekend'] <- TRUE;
-		completeDf[i, 'isWeekend'] <- "Weekend";
-	}
-	else {
-		# set $isWeekend to FALSE
-		# completeDf[i, 'isWeekend'] <- FALSE;
-		completeDf[i, 'isWeekend'] <- "Weekday";
-	}
-}
-
-# convert isWeekend to a factor
-completeDf$isWeekend <- as.factor(completeDf$isWeekend);
-
-# delete the temporary vector
-rm(tmpDay);
-
-```
+Data Processing
+----------------------------------------------
+There should be a section titled Data Processing which describes (in words and code) how the data were loaded into R and processed for analysis. In particular, your analysis must start from the raw CSV file containing the data. You cannot do any preprocessing outside the document. If preprocessing is time-consuming you may consider using the cache = TRUE option for certain code chunks.
 
 
-### 2. Make a panel plot
-Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
-
-Calculate average step counts per interval, factored additionally by weekday/weekend
-```{r}
-dayAvg <- aggregate(completeDf$steps, by=list(completeDf$isWeekend, completeDf$interval), FUN=mean);
-names(dayAvg) <- c("isWeekend", "interval", "steps");
-
-```
-
-Build the plot
-```{r}
-lattice::xyplot(steps ~ interval | isWeekend, data = dayAvg, type = 'l', 
-		layout = c(1,2), xlab="Steps", ylab="Interval",       
-		main="Average Step Counts per 5-Minute Interval");
-```
-
-
-
-
-
-
-
-
-
-
+Results
+----------------------------------------------
 
