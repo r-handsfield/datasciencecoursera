@@ -1,0 +1,424 @@
+---
+title: "c7w1 lecture notes"
+author: "Robert Handsfield"
+date: "04/11/2015"
+output:
+  html_document:
+    toc: yes
+---
+
+# 0101 Regressions
+
+
+## 0101a Introduction to Regression 
+
+We can use regressions to 
+
+* predict child heights from parent heights
+* find simple mean relationships between parent and child heights
+* investigate _residual variance_
+	+ child trait variance that appears unrelated to parent trait variance
+* quantify non-height parent genotypes impacting child height
+* generalize beyond the data sets
+* explain regression to the mean
+
+## 0101b Basic Least Squares
+
+Francis Galton was a statistician who invented the concepts pf regression and correlation. His data is available in `UsingR::galton`
+```{r message=FALSE, results='hide'}
+library("UsingR");
+```
+```{r}
+data(galton);
+head(galton);
+```
+### Galton Format
+A data frame with 928 observations on the following 2 variables.
+
+1. __child:__ The child’s height
+2. __parent:__ The “midparent” height
+
+### Galton Details
+The midparent’s height is an average of the fathers height and 1.08 times the mother’s.  In the data there are 205 different __parents__ and 928 __children__. The data here is truncated at the ends for both parents and children so that it can be treated as numeric data. The data were tabulated and consequently made discrete. The `father.son` data set is similar data used by Galton and is continuous.
+
+### Finding the Middle via Least Squares
+```{r fig.align='center'}
+par(mfrow=c(1,2));
+hist(galton$child, col="blue", breaks=100);
+hist(galton$parent, col="blue", breaks=100);
+```
+
+These plots show the marginal distributions. ***Marginal*** means that parents and children are shown separately; all correlations are lost as a consequence.
+
+#### Procedure for finding the middle
+Let $Y_i$ be a child's height. The middle is defined as the value of $\mu$ that minimizes
+
+$$ \sum_{i=1}^{n}(Y_i - \mu)^2 $$
+
+That value is the physical center of "mass" of the histogram, and is the sample mean: $\mu = \bar{X}$
+
+
+## 0101c More Least Squares - finding the middle
+Use R Studio's `manipulate` package to find the value of $/mu$ that minimizes 
+$\sum_{i=1}^{n}(Y_i - \mu)^2$
+
+```{r results='hide'}
+library("manipulate");
+```
+```{r}
+myHist <- function(mu) {
+	hist(galton$child, col="blue", breaks=100);
+	lines( c(mu,mu), c(0,150), col="red", lwd=5 );
+	
+	# mean square error
+	mse <- mean((galton$chile - mu)^2);
+	
+	text(63, 150, paste("mu = ", mu));
+	text(63, 140, paste("MSE = ", round(mse,2)));
+}
+```
+
+```{r eval=FALSE}
+manipulate(myHist(mu), mu = slider(62,74, step=0.5));
+```
+
+```{r}
+myHist(68);
+```
+
+
+By moving the slider, we visually put the middle value at around $\mu = 68$. The least squares process does this automatically. In this case, because we know that minimal $\mu$ is equal to the sample mean, we can calculate directly with
+```{r}
+mean(galton$child);
+```
+<br />
+
+#### Proof
+Prove that the least squares mean $\mu$ is equal to the empirical mean $\bar{X}$
+$$ 
+\begin{align} 
+\sum_{i=1}^n \left(Y_i - \mu\right)^2 & = \ \sum_{i=1}^n \left(Y_i - \bar Y + \bar Y - \mu\right)^2 
+\\
+& = \sum_{i=1}^n \left(Y_i - \bar Y\right)^2 + \ 2 \sum_{i=1}^n \left(Y_i - \bar Y\right) \left(\bar Y - \mu\right) +\ \sum_{i=1}^n \left(\bar Y - \mu\right)^2
+\\
+& = \sum_{i=1}^n \left(Y_i - \bar Y\right)^2 + \ 2 \left(\bar Y - \mu\right) \sum_{i=1}^n \left(Y_i - \bar Y\right) +\ \sum_{i=1}^n \left(\bar Y - \mu\right)^2 \ 
+\\
+& = \sum_{i=1}^n \left(Y_i - \bar Y\right)^2 + \ 2 \left(\bar Y - \mu\right) \left(\left(\sum_{i=1}^n Y_i\right) -\ n \bar Y\right) +\ \sum_{i=1}^n \left(\bar Y - \mu\right)^2 \ 
+\\
+& = \sum_{i=1}^n \left(Y_i - \bar Y\right)^2 + \ \sum_{i=1}^n \left(\bar Y - \mu\right)^2\ 
+\\
+& \geq \sum_{i=1}^n \left(Y_i - \bar Y\right)^2 \ 
+\end{align} 
+$$
+
+## 0101d Regression Through the Origin
+
+Galton's parent-child height data
+```{r}
+plot(galton$parent, galton$child, pch=19, col="blue");
+```
+
+Because the values are discrete, basic scatterplots will overplot many of the points multiple times. We can prevent this by making a histogram-type plot, using size of symbol to represent counts.
+
+```{r results='hide'}
+library(dplyr)
+```
+
+```{r fig.align='center'}
+freqData <- as.data.frame(table(galton$child, galton$parent))
+names(freqData) <- c("child", "parent", "freq")
+
+freqData$child <- as.numeric(as.character(freqData$child))
+freqData$parent <- as.numeric(as.character(freqData$parent))
+
+g <- ggplot(filter(freqData, freq > 0), aes(x = parent, y = child))
+g <- g  + scale_size(range = c(2, 20), guide = "none" )
+g <- g + geom_point(colour="#5D5D5D", aes(size = freq+4, show_guide = FALSE))
+g <- g + geom_point(aes(colour=freq, size = freq))
+g <- g + scale_colour_gradient(low = "lightblue", high="white")                    
+g
+```
+How do we best fit a line through this?
+
+#### Procedure for Regression Through the Origin
+Imagine fixing a line $y = x \beta$ at the origin, and rotating it until the squared distances are minimized. Fixing an intercept in this manner limits parameters to the slope $\beta$, which simplifies the problem. 
+
+We want to find the slope $\beta$ that minimizes
+
+$$
+\sum_{i=1}^{n}(Y_i - X_i \beta)^2
+$$
+
+Notice that a line representing height, going through $(0,0)$ doesn't make sense. We can fix this problem by subtracting the mean from all the data points. Then, the origin is the sample mean, and a line intersecting it has sensible meaning.
+
+Again, we can use R `manipulate()` to experiment and find the best fit line; we can also calculate it directly with `stats::lm()`
+
+
+```{r fig.align='center'}
+y <- galton$child - mean(galton$child)
+x <- galton$parent - mean(galton$parent)
+
+freqData <- as.data.frame(table(x, y))
+names(freqData) <- c("child", "parent", "freq")
+
+freqData$child <- as.numeric(as.character(freqData$child))
+freqData$parent <- as.numeric(as.character(freqData$parent))
+
+myPlot <- function(beta){
+    g <- ggplot(filter(freqData, freq > 0), aes(x = parent, y = child))
+    g <- g  + scale_size(range = c(2, 20), guide = "none" )
+    g <- g + geom_point(colour="#5D5D5D", aes(size = freq+4, show_guide = FALSE))
+    g <- g + geom_point(aes(colour=freq, size = freq))
+    g <- g + scale_colour_gradient(low = "lightblue", high="white")                     
+    g <- g + geom_abline(intercept = 0, slope = beta, size = 3)
+    
+    mse <- mean( (y - beta * x) ^2 )
+    
+    g <- g + ggtitle(paste("beta = ", beta, "mse = ", round(mse, 3)))
+    g
+}
+
+```
+
+```{r eval=FALSE}
+manipulate(myPlot(beta), beta = slider(0.6, 1.2, step = 0.02))
+```
+
+```{r echo=FALSE}
+myPlot(0.6);
+```
+
+```{r}
+
+# subtract means so that we fit to the sample average
+
+# protect the data types from factor coercion with Inhibit: I()
+# '- 1' means "don't fit an intercept"
+lm( formula = I(child - mean(child)) ~ I(parent - mean(parent)) - 1, data = galton )
+```
+<br />
+For this set,  &nbsp;
+$y = x \beta + 0$  &nbsp; and &nbsp;  $\beta = 0.6463$
+
+```{r echo=FALSE, fig.align='center'}
+y <- galton$child - mean(galton$child)
+x <- galton$parent - mean(galton$parent)
+
+freqData <- as.data.frame(table(x, y))
+names(freqData) <- c("child", "parent", "freq")
+
+freqData$child <- as.numeric(as.character(freqData$child))
+freqData$parent <- as.numeric(as.character(freqData$parent))
+
+g <- ggplot(filter(freqData, freq > 0), aes(x = parent, y = child))
+g <- g  + scale_size(range = c(2, 20), guide = "none" )
+g <- g + geom_point(colour="#5D5D5D", aes(size = freq+4, show_guide = FALSE))
+g <- g + geom_point(aes(colour=freq, size = freq))
+g <- g + scale_colour_gradient(low = "lightblue", high="white")                     
+g <- g + geom_abline(intercept = 0, slope = 0.6463, size = 3)
+
+mse <- mean( (y - 0.6463 * x) ^2 )
+
+g <- g + ggtitle(paste("beta = 0.6463  ", "mse = 5.000"))
+g
+```
+
+
+
+# 0102
+
+## 0102a Basic Notation and Background
+
+* $X_1, X_2,...,X_n$ describes $n$ data points
+	+ for $\{1,2,5\}$: &nbsp; $X_1=1, X_2=2, X_3=5, n=3$
+
+* capital letters are conceptual randomized variables
+* lowercase letters are observed values
+	+ $\therefore  P(X_i > x)$ 
+	+ $X$ is the variable, $x$ is a number
+	
+* The __Empirical Mean__ is $$\bar{X} = \frac{1}{n}\sum_{i=1}^{n}X_i$$
+
+* If we subtract the mean from a set, the set's new mean is zero
+	+ $\tilde{X} = X_i - \bar{X} \rightarrow  \overline{\tilde{X}} = 0$
+	+ This is called _centering_ the random variables
+
+* The mean $\mu$ is the least squares solution for minimizing $$\sum_{i=1}^{n}(X_i - \mu)^2$$
+
+
+
+## 0102b Noramalization and Correlations
+
+### _Empirical_ Standard Deviation
+
+* The empirical variance is
+$$ S^2 = \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar X)^2 = \frac{1}{n-1} \left( \sum_{i=1}^n X_i^2 - n \bar X ^ 2 \right) $$
+
+* The empirical standard deviation is $S = \sqrt{S^2}$
+
+* We can force $S = 1$ if we divide by $S$: $X_i / s$
+	+ this is called _scaling_ the data
+	
+* Using $1 \over {n-1}$	 in $S^2$ produces unbiased estimates
+	+ people sometimes use $1 \over n$ to produce biased estimates
+	
+	
+### Normalization	
+
+* Normalize data by _centering_, then _scaling_: $Z_i = {{X_i - \bar{X}} \over s}$
+	+ normalized data has empirical mean zero and empirical standard deviation 1
+	
+* Normalized data has units of standard deviations
+	+ a value of 2 from normalized data means that point was 2 standard deviations above the mean
+	
+### Empirical Covariance
+
+For pairs of data $(X_i, Y_i)$, their empirical covariance is
+
+$$ Cov(X, Y) = \frac{1}{n-1}\sum_{i=1}^n (X_i - \bar X) (Y_i - \bar Y) = \frac{1}{n-1}\sum_{i=1}^n (\tilde{X}\tilde{Y}) = \frac{1}{n-1} \sum_{i=1}^n \left( X_i Y_i - n \bar X \bar Y\right) $$
+
+The correlation is dimensionless and varies between $\pm1$
+
+$$ Cor(X, Y) = \frac{Cov(X, Y)}{S_x S_y} $$ 
+
+$S_x$ and $S_y$ are the estimates of standard deviations for the $X$ observations and $Y$ observations, respectively. Correlation values of $\pm1$ mean perfect, positive or negative correlation; value of zero means no linear relationship.
+
+# 0103
+
+## 0103a Linear Least Squares
+
+Fit a line to the `galton` height data set.
+```{r echo=FALSE}
+#library(UsingR)
+#data(galton)
+#library(dplyr); library(ggplot2)
+
+freqData <- as.data.frame(table(galton$child, galton$parent))
+names(freqData) <- c("child", "parent", "freq")
+
+freqData$child <- as.numeric(as.character(freqData$child))
+freqData$parent <- as.numeric(as.character(freqData$parent))
+
+g <- ggplot(filter(freqData, freq > 0), aes(x = parent, y = child))
+g <- g  + scale_size(range = c(2, 20), guide = "none" )
+g <- g + geom_point(colour="#5D5D5D", aes(size = freq+4, show_guide = FALSE))
+g <- g + geom_point(aes(colour=freq, size = freq))
+g <- g + scale_colour_gradient(low = "lightblue", high="white")  
+g
+```
+
+1. Let $C_i$ be the i^th^ child's height and $P_i$ be the i^th^ parents' height
+2. Find the best fit line: $y = \beta_1 x + \beta_0 \rightarrow C_i =  \beta_1 P_i + \beta_0$
+3. Use the least squares method $$ \sum_{i=1}^{n}\{Y_i - (\beta_0 + \beta_1 X_i)\} \rightarrow \sum_{i=1}^{n}\{C_i - (\beta_0 + \beta_1 P_i)\} $$
+
+The previous formula tells the total difference between observed and predicted heights. Minimizing that difference gives us our best predictive model.
+
+__How do we do it?__
+
+For the general solution,
+
+1. Substitute $\mu_i = \beta_0 + \beta_1 X_i$
+2. Define the estimated output for specific inputs as $\hat{\mu_i} = \hat{\beta_0} + \hat{\beta_1}X_i$
+3. Expand the sum of deviations by adding and subtracting a $\hat{\mu_i}$ 
+$$
+\dagger \sum_{i=1}^{n}(Y_i-\mu_i)^2 = \sum_{i=1}^{n}(Y_i-\hat{\mu_i})^2 + 2\sum_{i=1}^{n}(Y_i-\hat{\mu_i})(\hat{\mu_i}-\mu_i) + \sum_{i=1}^{n}(\hat{\mu_i}-\mu_i)^2
+$$
+
+<br />
+
+The best possible $\hat{\mu_i}$ has the consequence that the middle term of the expansion is zero
+$$\sum_{i=1}^{n}(Y_i-\hat{\mu_i})(\hat{\mu_i}-\mu_i) = 0$$
+
+The expansion then bcomes 
+$$
+\dagger = \sum_{i=1}^{n}(Y_i-\mu_i)^2 + \sum_{i=1}^{n}(\hat{\mu_i}-\mu_i)^2 \geq \sum_{i=1}^{n}(Y_i-\mu_i)^2
+$$
+
+
+## 0103b Linear Least Squares Special Cases
+
+### Horizontal Regression
+So, if $$\sum_{i=1}^{n}(Y_i-\hat{\mu_i})(\hat{\mu_i}-\mu_i) = 0$$
+
+<br />
+
+where $\mu_i = \beta_0 + \beta_1 X_i$ &nbsp; and &nbsp; $\hat{\mu_i} = \hat{\beta_0} + \hat{\beta_1}X_i$, then the __least squares line__ is
+
+$$Y = \hat{\beta_0} + \hat{\beta_1}X$$
+
+* If we force $\beta_1 = \hat{\beta_1} = 0$ (horizontal lines), the solution is
+$$\hat{\beta_0} = \bar{Y} \rightarrow Y = \bar{Y}$$
+
+### Regression through the Origin
+
+The least squares best fit line is $Y = \hat{\beta_0} + \hat{\beta_1}X$
+
+* If we force $\beta_0 = \hat{\beta_0} = 0$ (lines through the origin), the solution is
+$$
+\hat{\beta_1} = { {\sum_{i=1}^{n}Y_i X_i} \over {\sum_{i=1}^{n}X_i^2} } \rightarrow 
+Y = { {\sum_{i=1}^{n}Y_i X_i} \over {\sum_{i=1}^{n}X_i^2} }X
+$$
+
+
+## 0103c Linear Least Squares Solved
+
+If we don't restrict either $\hat{\beta_0}$ &nbsp; or &nbsp; $\hat{\beta_1}$, and we solve for both parameters, we get
+
+$$\hat{\beta_1} = Cor(Y,X) \cdot { {Sd(Y)} \over {Sd(X)} }$$
+
+and $$\hat{\beta_0} = \bar{Y} - \hat{\beta_1}\bar{X} $$
+
+### Check this using Galton's data
+Use the R functions `stats::cor()`, `stats:sd()`, `stats::coef()`, `stats::lm()`, and the models developed in the previous section:
+
+$$\hat{\beta_1} = Cor(Y,X) \cdot { {Sd(Y)} \over {Sd(X)} }$$
+
+$$\hat{\beta_0} = \bar{Y} - \hat{\beta_1}\bar{X} $$
+
+```{r}
+y <- galton$child
+x <- galton$parent
+
+beta1 <- cor(y, x) *  sd(y) / sd(x)
+beta0 <- mean(y) - beta1 * mean(x)
+
+# first row are our calculations
+# second row is coefficients from stats::lm()
+rbind(c(beta0, beta1), coef(lm(y ~ x)))
+```
+
+We get the exact same slope by regression through the origin _if_ we center the data first
+```{r}
+yc <- y - mean(y) # y-centered
+xc <- x - mean(x) # x-centered
+
+beta1 <- sum(yc * xc) / sum(xc ^ 2)
+
+c(beta1, coef(lm(y ~ x))[2])
+```
+
+
+Swap the x and y axes (reverse the outcome/predictor relationship)
+```{r}
+# the dependent variable (now x) goes on top: sd(x) / sd(y)
+beta1 <- cor(y, x) *  sd(x) / sd(y)
+
+#  ~ x = my + b  
+beta0 <- mean(x) - beta1 * mean(y)
+
+# 1st row are our calcs, 2nd row from lm() fit
+rbind(c(beta0, beta1), coef(lm(x ~ y)))
+```
+
+
+
+# 0104
+
+## 0104a Regression to the Mean
+
+## 0104b Regression to the Mean Example
+
+
+
+
+

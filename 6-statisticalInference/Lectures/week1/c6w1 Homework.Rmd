@@ -1,0 +1,280 @@
+---
+title: "c6w1h1"
+author: "Robert Handsfield"
+date: "04/16/2015"
+output:
+  html_document:
+    toc: yes
+---
+
+# Question 1
+
+>Consider influenza epidemics for two parent heterosexual families. Suppose that the probability is 15% that at least one of the parents has contracted the disease. The probability that the father has contracted influenza is 10% while that the mother contracted the disease is 9%. What is the probability that both contracted influenza expressed as a whole number percentage?
+
+a) 15%
+b) 10%
+c) 9%
+d) 4%
+
+[Watch video solution](https://www.youtube.com/watch?v=CvnmoCuIN08&index=1&list=PLpl-gQkQivXhHOcVeU3bSJg78zaDYbP9L)
+
+## Solution:
+$P(M \cap F) = ?$
+
+Need 
+
+$$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
+$$\rightarrow P(M \cup F) = P(M) + P(F) - P(M \cap F)$$
+
+$P(M \cup F) = 15\%$
+
+$P(M) = 9\%$
+
+$P(F) = 10\%$
+
+<br />
+
+$P(M \cap F) = P(M) + P(F) - P(M \cup F)$
+$P(M \cap F) = .10 + .09 - .15$
+
+```{r}
+.10 + .09 - .15
+```
+
+__Answer:__ $P(M \cap F) = 4\%$
+
+<br />
+
+# Question 2
+
+>A random variable, $X$, is uniform, a box from $0$ to $1$ of height $1$. (So that its density is $f(x)=1$ for $0≤x≤1$) What is its median expressed to two decimal places?
+
+a) 1.00
+b) 0.75
+c) 0.50
+d) 0.25
+
+[Watch video solution](https://www.youtube.com/watch?v=UXcarD-1xAM&index=2&list=PLpl-gQkQivXhHOcVeU3bSJg78zaDYbP9L)
+
+## Solution
+```{r echo=FALSE, fig.width=4.2, fig.height=3, fig.align='center'}
+library("ggplot2")
+ggplot() + aes(x=c(-.5,0,0,1,1,1.5), y=c(0,0,1,1,0,0)) + geom_line() + xlab("") + ylab("") +
+	   geom_rect(xmin=0, xmax=1, ymin=0, ymax=1, fill="#FF000006") + 
+	   geom_hline(yintercept=0.5, color="blue")
+```
+
+The density is uniform, and the median is the value at which _50% of the total density lies below._ The blue line at $y=0.50$ is the median.
+
+__Answer:__ The median is $0.50$
+
+<br />
+
+# Question 3
+
+>You are playing a game with a friend where you flip a coin and if it comes up heads you give her $X$ dollars and if it comes up tails she gives you $Y$ dollars. The odds that the coin is heads is $d$. What are your expected earnings?
+
+a) $-X{d \over 1+d} + Y{1 \over 1+d}$
+b)  $X{d \over 1+d} + Y{1 \over 1+d}$
+c)  $X{d \over 1+d} - Y{1 \over 1+d}$
+d) $-X{d \over 1+d} - Y{1 \over 1+d}$
+
+[Watch video solution](https://www.youtube.com/watch?v=5J88Zq0q81o&list=PLpl-gQkQivXhHOcVeU3bSJg78zaDYbP9L&index=3)
+
+## Solution
+
+* odds of heads = $d$
+* heads means $-X$ dollars
+* tails means $+Y$ dollars
+
+
+Win     | I win ($p$)   | You win ($1-p$) 
+------- | ------------- | ----------------
+$P(w)$	| $p$		| $1-p$
+
+	
+Over time, I expect $[Earnings] = Y(1-p) - Xp$	
+
+__Odds $(d)$ are defined as__ $Odds = {p \over 1-p} \therefore  p = {d \over 1 + d}$
+
+Substitute for $p$:  
+
+$$[Earnings] = Y(1 - {d \over 1 + d} - X{d \over 1 + d})$$
+
+$$[Earnings] = Y({1+d - d} \over 1+d) -  X{d \over 1 + d})$$
+
+__Answer:__ $$[Earnings] = Y(1 \over 1+d) -  X{d \over 1 + d})$$
+	
+
+
+# Question 4
+
+>A random variable takes the value -4 with probability .2 and 1 with probability .8. What is the variance of this random variable?
+
+a) 0
+b) 4
+c) 8
+d) 16
+
+[Watch video solution](https://www.youtube.com/watch?v=Em-xJeQO1rc&index=4&list=PLpl-gQkQivXhHOcVeU3bSJg78zaDYbP9L)
+
+## Solution
+
+The variance is defined in terms of expectated values: $Var(X) = E[X^2] - E[X]^2$
+
+The expected value is the sum of possible values and their probabilities:
+
+$x$	| $p(x)$  | $x^2$ | $p(x^2)$
+------- | ------- | ----- | ---------
+-4	| 0.2	  | 16	  | 0.2
+1	| 0.8	  | 1	  | 0.8
+
+$E[X] = -4 * 0.2 + 1 * 0.8 = 0 \therefore E[X]^2 =0$
+
+$E[X^2] = 16 * 0.2 + 1 * 0.8 = 4.0$
+
+$\sigma^2 = E[X^2] - E[X]^2 = 4.0 - 0 = 4$
+
+```{r}
+# var = E[X^2] - E[X]^2
+16 * .2 + 1 * .8 - (-4*.2 +1*.8)
+```
+
+__Answer:__ Variance = 4
+
+<br />
+
+
+# Question 5
+
+>If $\bar{X}$ and $\bar{Y}$ are comprised of n iid random variables arising from distributions having means $μ_x$ and $μ_y$, respectively and common variance $σ^2$ what is the variance $\bar{X} - \bar{Y}$? 
+
+a) $0$
+b) $2\sigma^2 / n$
+c) $\mu_x - \mu_y$
+d) $2\sigma^2$ 
+
+[Watch video solution](https://www.youtube.com/watch?v=7zJhPzX6jns&list=PLpl-gQkQivXhHOcVeU3bSJg78zaDYbP9L&index=5)
+
+## Solution
+
+```{r echo=FALSE, fig.width=4.2, fig.height=3, fig.align='center'}
+set.seed(12343);
+x <- seq(-10,10,length=1000);
+pop <- dnorm(x,mean=0, sd=3);
+samp <- dnorm(x, mean=0, sd=1);
+
+library("ggplot2")
+ggplot() + geom_line(aes(x=x, y=pop)) + geom_line(aes(x=x, y=samp), color="red");
+```
+The population distribution in black. A random sample (red) taken from the population will always be narrower and maybe taller. 
+
+The variance of the population is $\sigma^2$ and the variance of the sample mean is $Var(\bar{x}) = {\sigma^2 \over n}$
+
+Since $\bar{X}$ and $\bar{Y}$ are independent, 
+
+$$Var(\bar{X} - \bar{Y}) \rightarrow Var(\bar{X}) - Var(\bar{Y})$$
+
+But, variances __always__ add, so 
+
+$$Var(\bar{X}) + Var(\bar{Y}) = {\sigma^2 \over n} + {\sigma^2 \over n} = {2\sigma^2 \over n}$$
+
+__Answer:__ $Var(\bar{X} - \bar{Y}) = {2\sigma^2 \over n}$
+
+# Question 6
+
+>Let $X$ be a random variable having standard deviation $σ$. What can be said about $X/σ$?
+
+
+a) Nothing
+b) It must have variance 1
+c) It must have mean 0
+d) It must have variance 0
+
+[Watch video solution](https://www.youtube.com/watch?v=0WUj18_BUPA&list=PLpl-gQkQivXhHOcVeU3bSJg78zaDYbP9L&index=6)
+
+## Solution
+
+From the statement, $Var(X) = \sigma^2$
+
+We know that $E \left[ {X \over \sigma} \right] = {E[X] \over \sigma}$
+
+What about the variance of $X$? From the identity $Var(aX) = a^2Var(X)$, we get
+
+$Var {X \over \sigma} = {1 \over \sigma^2}Var(X) = {\sigma^2 \over \sigma^2} = 1$ 
+
+__Answer:__ $Var({X \over \sigma}) = 1$
+
+
+
+# Question 7
+
+>If a continuous density that never touches the horizontal axis is symmetric about zero, can we say that its associated median is zero?
+
+
+a) Yes
+b) No
+c) It can not be determined given the information given
+
+
+[Watch video solution](https://www.youtube.com/watch?v=sn48CGH_TXI&list=PLpl-gQkQivXhHOcVeU3bSJg78zaDYbP9L&index=7)
+
+## Solution
+
+__Answer:__ Yes
+
+# Question 8
+
+>Consider the following pmf given in R
+```{r}
+
+p <- c(.1, .2, .3, .4)
+x <- 2 : 5
+
+```
+>What is the variance expressed to 1 decimal place?
+
+a) 1.0
+b) 4.0
+c) 6.0 
+d) 17.0
+
+[Watch video solution](https://www.youtube.com/watch?v=sn48CGH_TXI&list=PLpl-gQkQivXhHOcVeU3bSJg78zaDYbP9L&index=7)
+
+## Solution
+
+$Var(X) = E[X^2] - E[X]^2$
+
+```{r}
+
+p <- c(.1, .2, .3, .4)
+x <- 2 : 5
+sum(x*x*p) - sum(p*x)^2
+```
+
+__Answer:__ $Var(X) = 1.0$
+
+# Question 9
+
+
+a)
+b)
+c)
+d)
+
+[Watch video solution]
+
+## Solution
+
+
+# Question 10
+
+
+a)
+b)
+c)
+d)
+
+[Watch video solution]
+
+## Solution

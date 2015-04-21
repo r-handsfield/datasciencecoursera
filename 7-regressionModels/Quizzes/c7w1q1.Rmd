@@ -1,0 +1,326 @@
+---
+title: "c7w1q1"
+author: "Robert Handsfield"
+date: "04/12/2015"
+output: html_document
+---
+
+
+
+# Question 1 
+
+Consider the data set given below
+```{r}
+x <- c(0.18, -1.54, 0.42, 0.95)
+```
+
+And weights given by
+```{r}
+w <- c(2, 1, 3, 1)
+```
+
+Give the value of $\mu$ that minimizes the least squares equation $\sum_{i=1}^n{w_i(x_i-\mu)^2}$
+
+a) __0.1471__
+b) 0.300
+c) 1.077
+d) 0.0025
+
+## Solution
+Use
+
+```{r}
+# finishes with errors
+lm(x~x, weights=w);
+
+#Or, plug each answer into sum(w*(x-u)^2) 
+sum(w*(x-.1471)^2); 
+sum(w*(x-.3)^2); 
+sum(w*(x-1.077)^2); 
+sum(w*(x-.0025)^2);
+```
+
+__Answer 1:__ 0.1471
+
+# Question 2 
+
+Consider the following data set
+
+```{r}
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05)
+```
+
+
+Fit the regression through the origin and get the slope treating y as the outcome and x as the regressor. (Hint, do not center the data since we want regression through the origin, not through the means of the data.)
+
+a) 0.59915
+b) -0.04462
+c) -1.713
+d) __0.8263__
+
+## Solution
+
+Use $\hat{\beta_1} = { {\sum_{i=1}^{n}Y_i X_i} \over {\sum_{i=1}^{n}X_i^2} }$
+```{r}
+sum(x*y)/sum(x^2);
+```
+
+
+__Answer 2:__ 0.8263
+
+
+
+
+# Question 3 
+
+Do `data(mtcars)` from the datasets package and fit the regression model with mpg as the outcome and weight as the predictor. Give the __slope coefficient__.
+
+a) __-5.344__
+b) -9.559
+c) 0.5591
+d) 30.2851
+
+## Solution
+```{r}
+data(mtcars);
+
+# X = wt, Y = mpg; form is lm(y~x, ...)
+lm(formula = mpg ~ wt, data=mtcars);
+```
+
+__Answer 3:__ -5.344
+
+
+
+# Question 4
+
+Consider data with an outcome (Y) and a predictor (X). The standard deviation of the predictor is one half that of the outcome. The correlation between the two variables is .5. What value would the slope coefficient for the regression model with Y as the outcome and X as the predictor?
+
+a) 0.25  
+b) __1__  
+c) 3  
+d) 4
+
+## Solution
+$Sd(X) = {Sd(Y) \over 2}$
+
+$Cor(Y,X) = 0.5$
+
+$\hat{\beta_1} = ?$
+
+Use   
+$\hat{\beta_1} = Cor(Y,X) \cdot { {Sd(Y)} \over {Sd(X)} }$  
+
+$\therefore$  
+
+$\hat{\beta_1} = 0.5 * {2Sd(X) \over Sd(X)} = 0.5 * 2 = 1$
+
+__Answer 4:__ 1
+
+
+
+
+# Question 5
+
+Students were given two hard tests and scores were normalized to have empirical mean 0 and variance 1. The correlation between the scores on the two tests was 0.4. What would be the expected score on Quiz 2 for a student who had a normalized score of 1.5 on Quiz 1?
+
+a) 0.16
+b) 0.4
+c) 1.0
+d) __0.6__
+
+## Solution
+
+If sets are normalized, then $Y_i = X_i * Cor(X,Y)$
+```{r}
+1.5 * 0.4;
+```
+
+__Answer 5:__ 0.6
+
+
+# Question 6
+
+Consider the data given by the following
+
+```{r}
+x <- c(8.58, 10.46, 9.01, 9.64, 8.86)
+```
+
+
+What is the value of the __first measurement__ if x were normalized (to have mean 0 and variance 1)?
+a) __-0.9719__
+b) 8.58
+c) 9.31
+d) 8.86
+
+## Solution
+
+Normalize data by centering, then scaling: $Z_i= {{X_i−\bar{X}} \over S}$
+
+```{r}
+z <- ( (x - mean(x)) / sd(x) );
+
+z;
+```
+
+__Answer 6:__ -0.9719
+
+
+
+# Question 7
+
+Consider the following data set (used above as well). What is the intercept for fitting the model with x as the predictor and y as the outcome?
+```{r}
+
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05)
+```
+
+
+a) __1.567__
+b) 2.105
+c) 1.252
+d) -1.713
+
+## Solution
+
+Use  
+
+$\hat{\beta_1} = Cor(Y,X) \cdot { {Sd(Y)} \over {Sd(X)} }$ and $\hat{\beta_0} = \bar{Y} - \hat{\beta_1}\bar{X}$
+
+```{r}
+ym <- mean(y); xm <- mean(x);
+ys <- sd(y); xs <- sd(x);
+
+b0 <- ym - (cor(x,y)*ys/xs) * xm; 
+
+print(b0); print(lm(y~x));
+```
+
+Answers check out.
+
+__Answer 7:__ 1.567
+
+
+
+
+# Question 8
+
+You know that both the predictor and response have mean 0. What can be said about the intercept when you fit a linear regression?
+
+_a) It must be identically 0._
+b) Nothing about the intercept can be said from the information given.
+c) It is undefined as you have to divide by zero.
+d) It must be exactly one.
+
+## Solution
+X and Y both having mean 0 means they have been centered by subtracting the means:
+$$\tilde{X} = X_i - \bar{X} $$
+
+The centering moves the origin $\{0,0\}$ to the middle of the plot, and the best linear fit line will go right through it.
+
+```{r}
+library("ggplot2");
+
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42);
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05);
+
+xc <- x-mean(x); 
+yc <- y-mean(y);
+
+ggplot() + aes(xc,yc) + geom_point() + 
+	geom_point(aes(x=0,y=0), color="red", size=4) +
+	geom_abline(aes(intercept = coef(lm(yc~xc))[1], slope = coef(lm(yc~xc))[2]), color="red");
+
+round(coef(lm(yc~xc)), 3);
+```
+
+__Answer 8:__ The intercept must be identically 0
+
+
+
+# Question 9 
+
+Consider the data given by
+
+```{r}
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42)
+```
+
+What value minimizes the sum of the squared distances between these points and itself?
+
+_a) 0.573_
+b) 0.8
+c) 0.36
+d) 0.44
+
+## Solution
+
+For $\sum_{i=1}^{n}(X_i - \mu)^2$, the minimizing value is the sample mean: $\mu_min = \bar{X}$
+
+```{r}
+mean(x);
+```
+
+__Answer 9:__ 0.573
+
+
+
+# Question 10
+
+Let the _slope_ having fit Y as the outcome and X as the predictor be denoted as $\beta_1$. Let the slope from fitting X as the outcome and Y as the predictor be denoted as $\gamma_1$. Suppose that you divide $\beta_1$ by $\gamma_1$; in other words consider $\beta_1 / \gamma_1$. What is this ratio always equal to?
+
+a) Var(Y)/Var(X)
+b) 2SD(Y)/SD(X)
+c) 1
+d) Cor(Y,X)
+
+## Solution
+
+Use $\hat{\beta_1} = Cor(Y,X) \cdot { {Sd(Y)} \over {Sd(X)} }$
+
+$$
+{\beta_1 \over \gamma_1} = Cor(Y,X) \cdot { {Sd(Y)} \over {Sd(X)} \div Cor(X,Y) \cdot { {Sd(X)} \over {Sd(Y)} }
+$$
+
+$by Cor(Y,X) = Cor(X,Y). . .$
+
+$$
+{\beta_1 \over \gamma_1} = { {Sd(Y)} \over {Sd(X)} \div { {Sd(X)} \over {Sd(Y)} }
+= { {Sd(Y)} \over {Sd(X)} \cdot { {Sd(Y)} \over {Sd(X)}
+$$
+
+$$
+\therefore {\beta_1 \over \gamma_1} = {Var(Y) \over Var{X}}
+$$
+
+Verify this
+```{r}
+x <- c(0.8, 0.47, 0.51, 0.73, 0.36, 0.58, 0.57, 0.85, 0.44, 0.42);
+y <- c(1.39, 0.72, 1.55, 0.48, 1.19, -1.59, 1.23, -0.65, 1.49, 0.05);
+
+# beta1
+beta1 <- coef(lm(y~x))[2];
+
+# gamma1
+gamma1 <- coef(lm(x~y))[2];
+
+beta1 / gamma1;
+
+# a)
+var(y) / var(x); # <-- this is it
+
+# b
+2*sd(y)/sd(x)
+
+# c
+1;
+
+# d)
+cor(x,y);
+```
+
+__Answer 10:__ var(y) / var(x)
+

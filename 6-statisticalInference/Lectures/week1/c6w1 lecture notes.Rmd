@@ -1,0 +1,767 @@
+---
+title: "c6w1 lecture notes"
+author: "Robert Handsfield"
+date: "02/08/2015"
+output:
+  html_document:
+    toc: yes
+---
+
+# 0101 Introduction to Statistical Inference
+
+Statistical inference is the process of *__generating conclusions__ about a 
+population from a noisy sample*. Statistical inference allows us to step outside
+our data, and relate the sample to the real world by drawing 
+conclusions and making predictions.
+
+In terms of Bayesian vs Frequency statistics, this course will use frequency
+statistics for inferences exclusively.
+
+The formal process of statistical inference is using data from a sample to 
+estimate population traits.  A sample median will estimate the population 
+median, a sample variance will estimate a population variance, etc.  The estimation
+is done by connecting the sample to a population through a _probability model_
+(which requires assumptions).  In all cases, the sample trait is called the 
+__estimator__, and the population trait is called the __estimand__.
+ 
+
+# 0201 Introduction to Probability
+
+For more detailed info, refer to Brian Caffo's 
+[Biostatistics Bootcamp Lectures](https://www.youtube.com/watch?v=jkUqDVtpKs4&list=PLpl-gQkQivXhk6qSyiNj51qamjAtZISJ-)
+on youtube.
+
+ * Given a random experiment, like rolling a die, any probability measure is a population quantity that summarizes the randomness.  
+ * The probabilities are __not__ functions of rolling the die, they are intrinsic properties of the die
+themselves.
+
+
+## Probability Calculus
+
+The Probability Calculus is the set of rules that probability must always follow.
+
+All the rules are restatements or consequences of  
+
+Probability:
+
+ 1. operates on the potential _outcomes_ from an experiment 
+ 2. assigns the outcome a number between 0 and 1
+ 3. Such that there is a probability of 1 that _something_ occurs (when a die is rolled),
+ 4. And the probability of any 2 sets of independent outcomes is the __sum__ of their respective probabilities
+ 	+ Probability of A __or__ B, *exclusive probability spaces*:
+ 	+ $P(A \cup B) = P (A) + P (B)$
+ 	
+
+### The Rules
+
+#### The probability that:
+
+ 1. Nothing happens is 0
+ 2. Anything happens is 1	
+ 3. Something happens is 1 minus the probability of the opposite thing happening (something not happening)
+ 	+ $P(A) = 1 - P(\not{A})$
+ 4. At least 1 of many mutually exclusive things happens, is the sum of all their respective probabilities 
+ 	+ $P(A \cup B) = P (A) + P (B)$
+ 
+#### If:
+ 5. B must happen in order for A to happen, then A's probability is less than B
+ 	+ $P(A) < P(B)$
+ 
+#### For any two outcomes:
+ 6. The probability that at least 1 happens is the sum of their probabilities minus their intersection
+ 	+ __In English:__ You can't add probabilities if they have something in common
+ 	+ In math: Their union is their sum, minus their intersection
+ 	+ Probability of A __or__ B, *exclusive probability spaces*:
+ 	+ $P(A \cup B) = P (A) + P (B) - P(A \cap B) ~=~ P(A) + P(B) - P(A) \times P(B)$
+
+### Example:
+The National Sleep Foundation ([www.sleepfoundation.org](http://www.sleepfoundation.org/)) reports that around 3% of the American population has sleep apnea. They also report that around 10% of the North American and European population has restless leg syndrome. Does this imply that 13% of people will have at least one sleep problems of these sorts?
+
+__No__, we can't just add the probabilities because some people may have both.  
+The outcomes are __not mutually exclusive__.
+
+To find the percentage of people with at least 1 sleep disorder, must add their
+probabilities, then subtract __1__ of their intersections:
+
+$$P(Apnea \cup RLS) = P (Apnea) + P (RLS) - P(Apnea \cap RLS)$$
+$$P(Apnea \cup RLS) = P (Apnea) + P (RLS) - P(Apnea) \times P(RLS)$$
+
+
+## 0202 Probability Mass Functions
+Probability calculus is fine for understanding results from a single experiment.
+To understand results from millions of repetitions of that experiement, we need
+probability densities, and mass functions.
+
+Densities and Mass Functions are also _population quantities_, intrinsic properties
+of the populations themselves.  They tell nothing about what occurs in the data.
+In fact, we use the data to _estimate_ properties of the population.
+
+ * A __random variable__ is a _numerical outcome_ of an event
+ 	+ they can be discrete or continuous
+ 	
+Examples of Discrete Variables:
+
+* the binary outcome of a coin flip
+* the outcome of a die roll
+* website traffic on a given day (often modeled w/ Poisson distributions)
+* the hypertension _status_ of a person randomly drawn from a population
+* the number of people clicking a banner ad
+
+
+Examples of Continuous Random Variables:
+ * the BMI of a subject 4 years after baseline measurement
+ * the score from an IQ test
+
+### The Probability Mass Function
+The probability mass function evaluated at a value yields the probability that a
+random variable takes that value.  Probability mass functions _generate_ probability densities.
+
+To be a valid _pmf_, a function $p(x)$ must satisfy:
+
+ 1. It must always be greater than, or equal to zero
+ 	+ $p(x) \geq 0$
+ 2. The sum of all possible outputs must add up to 1
+ 	+ \sum_{i}^{n} p\left ( x \right )_i = 1
+ 	
+_(FYI: the binomial pmf canonically models coin flips, and the Poisson pmf 
+canonically models counts.)_ 	
+ 	
+#### Example -- A die roll: 
+The pmf for a die roll assigns probability $1 \over 6$ to each outcome.
+
+
+#### Example -- A coin flip:
+A binomial pmf creates the well-known _Bernoulli distribution_ .
+
+_An upper-case letter $\left( X \right)$ denotes a known output of the pmf._
+In the case of a coin flip, it's $0$ or $1$. 
+
+$$\mbox{Heads: }X = 0 $$  $$\mbox{Tails: }X = 1$$
+
+Lower case letters are just variable place holders in the pmf $p(x)$:
+$$p(x) = \left( 1 \over 2 \right)^{x} \times \left( 1 \over 2 \right)^{1-x} \quad \mbox{for} \quad x = 0,1$$
+
+Meaning, there is probability $1 \over 2$ that the random variable $x$ takes the
+value $0$, and probability $1 \over 2$  that it takes the value $1$
+
+Plugging these values in for $x$:
+$$p(0) = \left( 1 \over 2 \right)^{0} \times \left( 1 \over 2 \right)^{1-0} = {1 \over 2}$$
+$$p(1) = \left( 1 \over 2 \right)^{1} \times \left( 1 \over 2 \right)^{1-1} = {1 \over 2}$$
+
+For an unfair coin, we introduce the parameter theta, with value between 0 and 1
+$$0 \leq \theta \leq 1$$
+
+The pmf  $p(x)$ becomes 
+$$p(x) = \left( \theta \right)^{x} \times \left( 1 - \theta \right)^{1-x} \quad \mbox{for} \quad x = 0,1$$
+
+The constant probabilities  $1 \over 2$  are now  $\theta ~ \mbox{ and } ~ {1 - \theta}$
+
+Plugging in our values $x = 0,1$
+$$p(0) = \left( \theta \right)^{0} \times \left( 1 - \theta \right)^{1-0} = {1 - \theta}$$
+$$p(1) = \left( \theta \right)^{1} \times \left( 1 - \theta \right)^{1-1} = {\theta}$$
+
+We can now model a binary population that tends toward one outcome or another
+
+## 0203 Probability Density Functions
+Like the pmf, valid probability density functions also must satisfy certain conditions.
+
+To be a valie _pdf_, a function $f$ must satisfy:
+
+ 1. The pdf must be greater than, or equal to zero everywhere
+ 	+ $f(x) \geq 0$
+ 2. The area under the pdf must equal 1
+ 	+ $\int_{-\infty}^{\infty} {f(x) ~ dx = 1}$
+ 	
+Areas under a pdf correspond to probabilites for the random variable $x$.  
+A larger area means higher probability.
+
+When we model continuous random variables this way, the mathematical probability
+that the random variable takes any single value is 0, because the area of a 
+finite line is 0.  TODO add picture
+
+### Examples
+
+#### A triangular pdf
+Assume this models the proportion of tech support calls that get addressed in a day
+
+$$f(x) = \left\{\begin{matrix}
+2x ~\mbox{ for }~ {0 < x < 1}
+\\ 
+0 ~~~~~\mbox{ otherwise}
+\end{matrix}\right.$$
+
+
+```{r, fig.height = 5, fig.width = 5, echo = FALSE, fig.align='center'}
+x <- c(-0.5, 0, 1, 1, 1.5); y <- c( 0, 0, 2, 0, 0)
+plot(x, y, lwd = 3, frame = FALSE, type = "l")
+```
+The total area of this triangle (probability of _anything_ happening, is 1).
+
+The probability that between 20% and 60% of the calls get addressed
+is represented by this region.
+```{r}
+plot(x, y, lwd = 3, frame = FALSE, type = "l")
+polygon(c(0.2, .6, .6, 0.2), c(0, 0, 1.2, 0.4), lwd = 3, col = "lightblue")
+```
+
+What is the probability that 75% _or fewer_ of the calls get addressed?  That probability 
+is represented by this region.
+```{r, fig.height = 5, fig.width = 5, echo = FALSE, fig.align='center'}
+plot(x, y, lwd = 3, frame = FALSE, type = "l")
+polygon(c(0, .75, .75, 0), c(0, 0, 1.5, 0), lwd = 3, col = "lightblue")
+```
+Doing the area calculation gives us the numeric probability.
+
+$$A = {{b * h} \over 2}$$
+
+```{r}
+0.75 * 1.5 /2
+```
+
+This is a special case of a known density called the _beta distribution_.
+
+Beta probability distribution function:
+$$f(x; \alpha, \beta) = k \cdot x^{\alpha-1}(1-x)^{\beta -1}$$
+The constant $k$ ensures that the probability integrates to 1. It is calculated from the __beta function.__
+
+<br />
+
+We can use R to get the probability directly from the cumulative distribution
+function of the beta distribution, via the _R probability function_ for the _beta distribution_:
+```{r}
+# q = x,   shape1 = alpha,   shape2 = beta
+pbeta(q=0.75, shape1=2, shape2=1)
+```
+
+### CDF and Survival Function
+The cumulative distribution function $F(x)$ tells us the probability of a certain 
+relationship between $X$  and  $x$.  Specifically, the cdf tells us the 
+probability that the random variable $X$ has a value less than or equal to whatever $x$ is.
+
+$$F(x) = P(X \leq x)$$
+
+Which means "the probability that a specific known outcome is less than a random
+input".  In the case of our previous example:
+
+ > What is the probability that only 75% of the calls get addressed?
+ 
+The pbeta function
+```{r, eval=FALSE}
+pbeta(q=0.75, shape1=2, shape2=1)
+```
+returns the probability of a random input generating an output (which is also a
+probability) less than 0.75, $(X)$.
+
+The survival function  $S(x)$  is sort of the opposite of the cdf.
+$$S(x) = P(X > x)$$
+
+Also,  sf = 1 - cdf:  $S(x) = 1 - F(x)$
+
+If we want to know the probability that 60% _or more_ of the calls get addressed,
+we could calculate $S(0.6)$.  More commonly, we calculate $1 - F(x)$; in R:
+```{r}
+1 - pbeta(0.6, 2, 1);
+```
+
+
+### Quantiles
+A _sample quantile_ is the nth percentile of a croup of measurements.  To find
+the 80th percentile, for example, we order all the measurements, and the find
+the one such that 80% of the measurements are below it, and 20% are above.
+
+In probability distributions, the  $\alpha^{th}$ **quantile** of a distribution with function $F(x_\alpha)$ is the point $x_\alpha$ so that
+$$
+F(x_\alpha) = \alpha
+$$
+
+It's the same principle as working with sample quantiles, just more complicated to calculate.
+
+#### Example - Median of a distribution
+What is the median (50th percentile) of our previous distribution of calls?
+
+I need to calculate the random input $x$ for the CDF equaling one half $F(x) = 0.5$.  Fortunatey the beta distribution is just triangles, and $X$ vanishes, making it easy:
+$$F(x) = P(X \leq x) = {1 \over 2} Base \times Height = {1 \over 2}(x) \times (2x) = x^2$$
+
+$$\therefore F(x) = x^2$$
+
+We need to solve now
+$$0.5 = F(x) = (x)^2 \therefore x = \sqrt{(0.5)} = 0.7071$$
+__This means that __
+
+1. On 50% of the days, less than 70% of the calls get answered
+2. On 50% of the days, more than 70% of the calls get answered
+3. 70% is the median ratio of calls that get answered
+4. Half the time, more are answered
+5. Half the time, fewer are answered
+
+Again, we can do this with the _R quantile function_ for the _beta distribution_
+```{r}
+qbeta(p = 0.5, shape1 = 2, shape2 = 1)
+```
+
+
+
+## 0301 Conditional Probability
+Also called _Bayesian_.  Bayesian statistics _condition_ a system based on the 
+current state of that system.
+
+### Example - Lightning:
+There is a 1 in 7 million chance of dieing from a lightning strike.  However, if
+you're standing in an empty field during a thunderstorm, you must _condition_ 
+your probability due to the current system state -- that you're standing in a fucking
+thunderstorm.  Your actual probability is much higher than 1 in 7 million.
+
+### Example - A Die:
+Each face on a die has a $1 \over 6$ probability of occuring.  But, if you know
+that the result of a previous roll was an odd number, you would use that information to _condition_ the
+outcome probabilities such that  $P(1 \cup 3 \cup 5) = 1$  and  $P(2 \cup 4 \cup 6) = 0$
+
+### Definition
+The probabilitiy of outcome A, __if__ outcome B has __already__ happened, is the quotient of the 
+probabilities of both A and B happening, and only B happening.  (The probability of the AB intersection
+divided by the probability of B)
+
+$$P(A | B) = {{P(A \cap B)} \over {P(B)}}$$
+
+If A and B are _statistically independent_, then the probability of A, __if__ B has already happened, is
+$$P(A | B) = {{P(A) \times P(B)} \over {P(B)}} = P(A)$$
+The new information that B has occurred tells us nothing about the probability of A occurring.
+
+#### Example - A Die Roll:
+If a die roll is odd, then what is the probability that a 1 is rolled?
+
+$$A = {1}$$ $$B = {1,3,5}$$
+
+$$P(A | B) = {P(A \cap B) \over P(B)} $$
+Since the set A lies _completely_ within the set B $\left ( A  \in B\right )$, the conditional probability formula reduces to 
+$$P(A | B) = {P(A) \over P(B)}$$
+
+$$P(A | B) = { 1/6 \over 3/6} = {1 \over 3}$$
+
+## 0302 Bayes' Rule
+Bayes' rule allows us to reverse A and B.  If we know the probability that A occurs, what is the
+probability that the broader event B occurs?
+
+Or
+
+If we know $P(A | B)$  then what is  $P(B|A)$  ?
+
+
+$$
+P(B | A) =  
+{
+{P(A|B)P(B)} 
+\over 
+{P(A|B)P(B) + { P(A|B^c)P(B^c)}} 
+}
+$$
+Which is $P(A|B)P(B)$, divided by itself plus a conditioning parameter.
+
+### Diagnostic Tests
+Apply conditional probability to medical diagnostic tests.
+
+Define :
+
+ * $+$ = a positive test result
+ * $-$ = a negative test result
+ * $D$ = person really has the disease (outcome)
+ * $D^c$ = person doesn't really have the disease (outcome)
+ * $tp$ = true positive 
+ * $tn$ = true negative 
+ * $fp$ = false positive
+ * $fn$ = false negative
+
+
+ * Sensitivity = probability of true positives	
+ 	+ __If__ a person has the disease, __then__ what is the probability of a positive test result?
+	+ $Sensitivity = P(tp) = P(+ | D)$
+
+
+ * Specificity = probability of true negatives
+ 	+ __If__ a person is healthy, __then__ what is the probability of a negative test result?
+	+ $Specificity = P(tn) = P(- | D^c)$
+
+ 
+ * Positive predictive value = probability of disease, given a $+$ test result
+ 	+ the Bayesian reversal of the Sensitivity
+ 	+ $\mbox{Positive Predictive Value} = P(D | +)$
+ 
+  * Negative predictive value = probability of health, given a $-$ test result
+ 	+ the Bayesian reversal of the Specificity
+ 	+ $\mbox{Negative Predictive Value} = P(D^c | -)$
+ 
+  * Prevalence of disease =  probability having the disease; independent to test results	
+  	+ $\mbox{Prevalence of Disease} = P(D)$
+
+
+#### Example - HIV Tests:
+> HIV tests have a sensitivity of 99.7% and a specificity of 98.5%.  A population has a 0.1% prevalence of
+> HIV, and a person from this group has a positive test.  What is the associated positive predictive value>?
+
+We have enough information to solve directly
+
+$$
+P(B | A) =  {
+{P(A|B)P(B)} 
+\over 
+{P(A|B)P(B) + { P(A|B^c)P(B^c)}} }
+$$
+
+__Note:__    $P(+|D^c) = (1 - P(-|D^c))$
+
+$$
+P(D | +) = {
+{P(+|D)P(D)} 
+\over 
+{P(+|D)P(D) + { (1 - P(-|D^c))P(D^c)}} }
+$$
+
+$$
+P(D | +) = {
+{Sensitivity \times Prevalence} 
+\over 
+{Sensitivity \times Prevalence  + {(1 - Specificity) \times (1-Prevalence)}} }
+$$
+
+
+$$
+P(D | +) = {
+{.997 \times .001} 
+\over 
+{.997 \times .001  + { (1 - .985) \times (1-.001)}} }
+$$
+
+```{r}
+
+(.997 * .001)/ (.997*.001 + (1-.985)*(1-.001))
+
+```
+
+The positive predictive value of this test for this population is 6%.  When a person from this group
+tests positive, there is only a 6% chance that they really have HIV.
+
+> What if a person from this population is an IV drug user who has sex with HIV-positive partners?
+
+This changes the _condition_ of the system.  The prevalence of disease $P(D)$ for this person is higher, which increases the PPD of this test for the individual.
+
+
+### Likelihood Ratios
+The positive predictive value is the probability of a __true positive__, and depends only on the sensitivity, specificity, and prevalence of disease.
+$$
+P(D | +) = {
+{P(+|D)P(D)} 
+\over 
+{P(+|D)P(D) + { (1 - P(-|D^c))P(D^c)}} }
+$$
+
+The probability of a __false positive__ also depends only on the sensitivity, specificity, and prevalence.  It is equal to 1 minus the PPD.
+
+$$
+P(D^c|+) = 1 - P(D | +) = {
+{P(+|D^c)P(D^c)} 
+\over 
+{P(+|D)P(D) + { P(+|D^c)P(D^c)}} }
+$$
+
+__Note:__    $P(+|D^c) = (1 - P(-|D^c))$
+
+$$
+P(D^c | +) = {
+{(1 - Specificity) \times (1 - Prevalence)} 
+\over 
+{Sensitivity \times Prevalence  + { (1 - Specificity) \times (1-Prevalence)}} }
+$$
+
+The __likelihood ratio__ is the true positive probability, divided by the false positive probability.  
+Dividing our long tp and fp equations simplifies to:
+$${P(D|+) \over P(D^c|+)} = {P(+|D) \over P(+|D^c)} \times {P(D) \over P(D^c)}$$
+
+In general, $P \over {1-P}$ gives us the _odds_ of something occuring.  In our example the far left term gives the odds of having HIV, if you get a positive test result.  The far right term is the odds of having HIV in this population (unrelated to testing).  The middle term is the __diagnostic likelihood ratio__ for a positive test result.
+
+Simply:
+$$\mbox{Post-test odds of disease} = \mbox{Diagnostic likelihood ratio} \times \mbox{Pre-test odds of disease}$$
+
+or
+
+$$D_{post} = DLR_+ \times D_{pre}$$
+
+or
+
+$$tp = DLR_+ \times fn $$
+
+or
+
+$$Sensitivity = DLR_+ \times (1 - Specificity)$$
+
+
+
+> Apply this to the HIV example
+
+$$DLR_{HIV+} = {Sensitivity \over (1 - Specificity)} = {.997 \over (1 - .985) \approx 66}$$
+
+Interpretation:
+
+ * If you have a positive test, post-test odds of disease are 66 times greater than pre-test odds
+ * Hypothesis of disease is 66 times more supported by the data than hypothesis of no-disease
+ * Small pre-test odds don't really change when multiplied by 66
+ * Large pre-test odds increase quite a bit
+ 
+
+What should we think about a negative HIV test?
+
+$$\mbox{Post-test odds of disease} = \mbox{Diagnostic likelihood ratio} \times \mbox{Pre-test odds of disease}$$
+
+or
+
+$$D_{post}^{c} = DLR_- \times D_{pre}^{c}$$
+
+or
+
+$$fp = DLR_- \times tn $$
+
+or
+
+$$(1 - Sensitivity) = DLR_- \times Specificity$$
+
+> Find the diagnostic likelihood ratio of a negative test 
+
+$$DLR_- = { (1 - Sensitivity) \over Specificity = { (1 - .997) \over .985 } \approx .003 }$$
+
+Interpretation:
+
+ * If you have a negative test, post-test odds of disease are .003 times the pre-test odds
+ * Hypothesis of disease is .003 times more supported by the data than hypothesis of no-disease
+ * Both Large & Small pre-test odds change significantly when multiplied by .003
+ 
+
+## 0303 Independence
+
+
+
+
+
+
+## 0401 Expected Values
+Rather than talking about the mass and density functions, we'll restrict ourselves to talking about
+_characteristics_ of these functions.  Because of math, these characteristics also characterize the random variables $X$ that are drawn from these functions.
+
+Sample quantiles are one of these characteristics.  Another is the _Expected Value_.
+
+The distribution mean is the most expected value.  It's a characterization of the distribution's center.  Variance is another expected value -- the spread-outedness of a distribution.
+
+Just as sample quantiles estimate population quantiles (0203), _sample_ expected values estimate 
+_population_ expected values.  Ex: the sample mean will be an estimate of the population mean.
+
+The expected value of the random variable $X$ is the sum of all possible values it can take, multiplied by the probability of each value.
+
+$$E[X] = \sum_x xp(x)$$
+
+The expectation value is like the center of mass of a distribution of outcomes.  In this analogy, each mass is the probability of an outcome (often plotted as height), and the outcome itself is the displacement from the mean.
+
+If all outcomes are equally likely, then the 'center of mass' of the data is the _empirical mean_
+$$
+\bar X = \sum_{i=1}^n x_i p(x_i)
+$$
+where $p(x_i) = 1/n$
+
+
+### Example - Find the center of mass of the bars
+```{r galton, fig.height=6,fig.width=12, fig.align='center', echo = FALSE, message =FALSE, warning=FALSE}
+library(manipulate);
+library(UsingR); data(galton); library(ggplot2)
+library(reshape2)
+longGalton <- melt(galton, measure.vars = c("child", "parent"))
+g <- ggplot(longGalton, aes(x = value)) + geom_histogram(aes(y = ..density..,  fill = variable), binwidth=1, colour = "black") + geom_density(size = 2)
+g <- g + facet_grid(. ~ variable)
+g
+```
+
+#### Using manipulate
+```{r, eval=FALSE}
+library(manipulate)
+myHist <- function(mu){
+    g <- ggplot(galton, aes(x = child))
+    g <- g + geom_histogram(fill = "salmon", 
+      binwidth=1, aes(y = ..density..), colour = "black")
+    g <- g + geom_density(size = 2)
+    g <- g + geom_vline(xintercept = mu, size = 2)
+    mse <- round(mean((galton$child - mu)^2), 3)  
+    g <- g + labs(title = paste('mu = ', mu, ' MSE = ', mse))
+    g
+}
+manipulate(myHist(mu), mu = slider(62, 74, step = 0.5))
+```
+
+---
+#### The center of mass is the empirical mean
+```{r lsm, dependson="galton",fig.height=7,fig.width=7, fig.align='center', echo = FALSE}
+    g <- ggplot(galton, aes(x = child))
+    g <- g + geom_histogram(fill = "salmon", 
+      binwidth=1, aes(y = ..density..), colour = "black")
+    g <- g + geom_density(size = 2)
+    g <- g + geom_vline(xintercept = mean(galton$child), size = 2)
+    g
+```
+
+
+
+
+
+
+## 0402 Expected Value Examples
+
+### Example of a population mean
+A coin is flipped. $X$ = 0,1, corresponding to Heads, Tails.
+
+What is the expected value of $X$?
+
+$E \left [  X \right ] = .5 \times 0 + .5 \times 1 = .5$
+
+The discrete outcome $\{0,1\}$ can never equal the expected value $0.5$
+
+### What about a biased coin?
+An unfair coin will show $\{H,T\}$ at some probability $\{p, 1-p \}$
+
+$P(X=1) = p$ and $P(X=0) = (1-p)$
+
+$$E[X] = \sum_x xP(x) = 1 * P(1) + 0 * P(0)$$
+$$\quad =  1 * p + 0 * (1-p) = p$$
+
+### A Die
+A die is rolled. $X$ is the resulting number $1:6$.
+
+What is the expected value of $X$ ?
+
+
+All outcomes are equally likely (p is the same for all)
+$$E[X] = \sum_{i=1}^n x_i p(x_i) = p(x_i) sum_{i=1}^n x_i $$
+$$\quad = {1 \over 6 * (1+2+3+4+5+6)} = {21 \over 6} = 3.5$$
+
+Again, the outcome ${1:6}$ can never equal $3.5$, but if you line up 6 bars, $3.5$ is in the geometric center of the alignment.
+```{r fig.align='center', fig.height=2, fig.width=6}
+library("ggplot2");
+
+h <- 1:6; v <- rep(.167,6);
+ggplot() + aes(h,v) + geom_bar(stat="identity", fill="salmon") + scale_x_continuous(breaks=seq(1,6,1));
+```
+
+
+## 0403 Expected Values for Probability Density Functions
+The expected value is still the _center_ of the density function. Think about the middle of the normal distribution, or any gaussian curve.
+
+
+### Example - The uniform density
+The expected value of the uniform density is $0.5$
+
+```{r, fig.height = 3, fig.width = 3, echo = FALSE, fig.align='center'}
+x <- c(-.5, 0, 0, 1, 1, 1.5); y <- c( 0, 0, 1, 1, 0, 0)
+ggplot() + aes(x,y) + geom_line() + ggtitle("The Uniform Density")
+```
+
+**Facts about expected values**
+
+1. Expected values are _properties_ of distributions
+2. The average of all the random variable values is also a random variable
+	+ The average's associated distribution has an expected value
+3. **The average's expected value is the SAME as the population's expected value**
+4. ... The centers of the population and sample mean distributions are the same
+	+ When this happens, the _estimator_ (sample mean) is unbiased
+
+### Example - The Normal Distribution
+
+The blue region is the normal distribution, sampled 10,000 times. The pink region is the distribution of averages of 10 of the normal samples.
+```{r, fig.height=6, figh.width=6, fig.align='center', echo = FALSE}
+library(ggplot2)
+nosim <- 10000; n <- 10
+dat <- data.frame(
+    x = c(rnorm(nosim), apply(matrix(rnorm(nosim * n), nosim), 1, mean)),
+    what = factor(rep(c("Obs", "Mean"), c(nosim, nosim))) 
+    )
+ggplot(dat, aes(x = x, fill = what)) + geom_density(size = 2, alpha = .2); 
+
+```
+The two distributions are both centered at zero.
+
+### Example - 10,000 Die rolls
+
+1. Facet 1: 1 die roll - sampled 10,000 times
+2. Facet 2: Average of 2 die rolls (population mean of) 
+3. Facet 3: Average of 3 die rolls (population mean of) 
+4. Facet 4: Average of 4 die rolls (population mean of) 
+
+```{r, fig.align='center',fig.height=5, fig.width=10, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE} 
+nosim <- 10000; n <- 10
+
+dat <- data.frame(
+  x = c(sample(1 : 6, nosim, replace = TRUE),
+        apply(matrix(sample(1 : 6, nosim * 2, replace = TRUE), 
+                     nosim), 1, mean),
+        apply(matrix(sample(1 : 6, nosim * 3, replace = TRUE), 
+                     nosim), 1, mean),
+        apply(matrix(sample(1 : 6, nosim * 4, replace = TRUE), 
+                     nosim), 1, mean)
+        ),
+  size = factor(rep(1 : 4, rep(nosim, 4))))
+g <- ggplot(dat, aes(x = x, fill = size)) + geom_histogram(alpha = .20, binwidth=.25, colour = "black") 
+g + facet_grid(. ~ size)
+```
+
+### Example - 10,000 Coin Flips
+
+Facet 1: Results of coin flips ${0,1}$
+Facet 2: Average value of 10 coin flips
+Facet 3: Average value of 20 coin flips
+Facet 4: Average value of 30 coin flips
+
+```{r, fig.align='center',fig.height=5, fig.width=10, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+dat <- data.frame(
+  x = c(sample(0 : 1, nosim, replace = TRUE),
+        apply(matrix(sample(0 : 1, nosim * 10, replace = TRUE), 
+                     nosim), 1, mean),
+        apply(matrix(sample(0 : 1, nosim * 20, replace = TRUE), 
+                     nosim), 1, mean),
+        apply(matrix(sample(0 : 1, nosim * 30, replace = TRUE), 
+                     nosim), 1, mean)
+        ),
+  size = factor(rep(c(1, 10, 20, 30), rep(nosim, 4))))
+g <- ggplot(dat, aes(x = x, fill = size)) + geom_histogram(alpha = .20, binwidth = 1 / 12, colour = "black"); 
+g + facet_grid(. ~ size)
+```
+
+## Summary of Expected Values
+
+1. Expected values are _properties_ of distributions
+2. The population mean is the center (of mass) of the _population distribution_
+3. The sample mean is the center (of mass) of the _observed data_
+4. The sample mean is always an estimate of the population mean
+5. The sample mean is unbiased
+	+ The population mean of the sample mean distribution is the mean that the sample mean is trying to estimate
+6. The more observations in the sample mean, the more it's mass/density function concentrates around the population mean
+	+ ~ the sample mean density function is the Fourier transform of the population distribution ??
+
+
+![alt text](/home/rh/Pictures/french_railway.jpg "A photo")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+```
+

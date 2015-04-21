@@ -1,0 +1,75 @@
+---
+title: "c6w2l2"
+author: "Robert Handsfield"
+date: "04/19/2015"
+output:
+  html_document:
+    toc: yes
+---
+
+# The Variance
+
+Variance measures a random variable's spread about it's mean. 
+
+$$Var(X) = E[(X-\mu)^2] = E[X^2] - E[X]^2$$
+
+Variance is converted to standard deviation simply to move from units of $X^2$ to units of $X$.
+
+$$SD(X) = \sqrt{Var(X)}$$
+
+## Examples of Calculating the Variance
+
+### Example 1 - Calculate the Variance of a Die Roll
+
+$$Var(X) = E[X^2] - E[X]^2$$
+
+$E[X]=3.5$
+
+$E[X^2] = 1^2 \times {1 \over 6} + 2^2 \times {1 \over 6} + 3^2 \times {1 \over 6} + 4^2 \times {1 \over 6} + 5^2 \times {1 \over 6} + 6^2 \times {1 \over 6} = 15.17$
+
+$Var(X) = E[X^2] - E[X]^2 = 15.17 - 3.5^2 \approx  2.92$
+
+
+### Example 2 - Calculate the Variance of a Coin Toss
+What's the variance from the result of a coin toss with probability of heads(1) of $p$?
+
+$$Var(X) = E[X^2] - E[X]^2$$
+
+$E[X] = 0 \times (1 - p) + 1 \times p = p$
+
+$E[X^2] = 0^2 \times (1-p) + 1^2 \times p = p$ 
+
+$Var(X) = E[X^2] - E[X]^2 = p - p^2 = p(1 - p)$
+
+
+## Sample Variance vs Population Variance
+Just like sample mean is analogous to population mean:
+
+2. The population mean is the center (of mass) of the _population distribution_
+3. The sample mean is the center (of mass) of the _observed data_
+4. The sample mean is always an estimate of the population mean
+5. The sample mean is unbiased
+	+ The population mean of the sample mean distribution is the mean that the sample mean is trying to estimate
+6. The more observations in the sample mean, the more it's mass/density function concentrates around the population mean
+
+The sample variance is analogous to the population variance:
+
+1. The population variance is the expected squared distance between a random variable and the population mean
+	+ $Var(X) = E[(X-\mu)^2] = E[X^2] - E[X]^2$
+2. The sample variance is the average squared distance between the observed values and the sample mean
+	+ $S^2 = \frac{\sum_{i=1} (X_i - \bar X)^2}{n-1}$
+3. The variance of the sample variance is also a random variable with a population distribution
+4. The expected value of the sample variance's variance is the population variance, which the sample variance is trying to estimate
+	+ As samples increase, the distribution of the sample variance collapses around the population variance
+
+
+
+
+
+
+
+
+
+
+
+
