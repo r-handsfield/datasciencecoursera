@@ -27,6 +27,7 @@ __Answer:__ 0.11
 # P(F) = .12
 # P(M and F) = .06
 
+.17 + .06 - .12
 ```
 
 Question 2
@@ -34,6 +35,8 @@ Question 2
 A random variable, $X$ is uniform, a box from 0 to 1 of height 1. (So that its density is $f(x)=1 \mbox{ for } 0≤x≤1$.) What is its 75th percentile?
 
 (Hints, look at lecture 2 around 21:30 and homework 1 page 4/10. Also, look up the help function for the `qunif` command in R.)
+
+<br />
 
 If (0 < x < 1) and y(x) = 1, at what value of x is 75% of the box area to the left?
 
@@ -62,7 +65,7 @@ You are playing a game with a friend where you flip a coin and if it comes up he
 
 See c6w1q1.svg
 
-__Answer__ ${p \over {1-p}} = {Y \over X}$  
+__Answer:__ ${p \over {1-p}} = {Y \over X}$  
 
 
 
@@ -76,6 +79,7 @@ A density that looks like a normal density (but may or may not be exactly normal
 
 (Hints, look at quantiles from Lecture 2 around 21:30 and the problem on page 9/10 from Homework 1.)
 
+<br />
 
 This seems like the median is at zero, but it's only true if the CDF never touches the horizontal axis.
 So the "may or may not be exactly normal" line is important, and probably means the answer is
