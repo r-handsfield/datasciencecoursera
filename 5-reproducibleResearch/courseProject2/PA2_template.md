@@ -36,11 +36,11 @@ library(package = "reshape2");
 The dataset, codebooks, and supplementary information may be found at the following links.
 The analysis was performed on the NOAA Storm Data Set obtained on **February 2^nd^, 2015**.
 
-* NOAA [Storm Data Set]("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2")
-* Storm Data [Documentation]("https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf")
-* NCDC Storm Events [FAQ]("https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf")
-* Proprietary [Codebook]("https://ire.org/nicar/database-library/databases/storm-events/") from IRE
-* [Revisions]("https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf") to the data set
+* NOAA [Storm Data Set](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2)
+* Storm Data [Documentation](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
+* NCDC Storm Events [FAQ](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf)
+* Proprietary [Codebook](https://ire.org/nicar/database-library/databases/storm-events/) from IRE
+* [Revisions](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf) to the data set
 
 
 Download the file
