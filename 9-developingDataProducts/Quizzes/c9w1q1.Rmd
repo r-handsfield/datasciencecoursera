@@ -1,0 +1,127 @@
+---
+title: "c9w1 quiz"
+author: "Robert Handsfield"
+date: "05/10/2015"
+output: html_document
+---
+
+
+# Question 1
+Consider the following code for the cars data set
+
+```{r}
+library(manipulate)
+myPlot <- function(s) {
+    plot(cars$dist - mean(cars$dist), cars$speed - mean(cars$speed))
+    abline(0, s)
+}
+```
+
+This function plots distance versus speed, each de-meaned and an associated line of slope s. Which of the following code will make a manipulate plot that creates a slider for the slope?
+
+a) __manipulate(myPlot(s), s = slider(0, 2, step = 0.1))__
+b) manipulate(myPlot(s), x.s = slider(0, 2, step = 0.1))
+c) manipulate(myPlot, s = slider(0, 2, step = 0.1))
+d) manipulate(myPlot(s), slider = x(0, 2, step = 0.1))
+
+## Solution
+
+__Answer:__
+
+# Question 2
+Which of the following code uses the rCharts package to create a sortable and searchable data table for the airquality data set? Assume the rCharts package and the airquality data set have already been loaded into R.
+
+a) __dTable(airquality, sPaginationType = "full_numbers")__
+b) d <- data.frame(airquality, stringsAsFactors = FALSE) print(d)
+c) airquality
+d) head(airquality)
+
+## Solution
+
+__Answer:__
+
+# Question 3
+A basic shiny data product requires:
+
+a) A shiny.R file.
+b) __A ui.R and server.R file or a A server.R file and a directory called www containing the relevant html files__
+c) A server.R file only.
+d) A ui.R file only.
+
+
+## Solution
+
+__Answer:__
+
+# Question 4
+What is incorrect about the followig syntax in ui.R?
+
+```{r}
+library(shiny)
+shinyUI(pageWithSidebar(
+  headerPanel("Data science FTW!"),
+  sidebarPanel(
+    h2('Big text')
+    h3('Sidebar')
+  ),
+  mainPanel(
+      h3('Main Panel text')
+  )
+))
+```
+
+a) The "Sidebar" should say "Sidebar text".
+b) The h3 command should be an h2 command.
+c) The h2 command has the wrong arguments.
+d) __Missing a comma in the sidebar panel__
+
+## Solution
+
+__Answer:__
+
+# Question 5
+Consider the following code in ui.R
+
+```{r}
+shinyUI(pageWithSidebar(
+  headerPanel("Example plot"),
+  sidebarPanel(
+    sliderInput('mu', 'Guess at the mu',value = 70, min = 60, max = 80, step = 0.05,)
+  ),
+  mainPanel(
+    plotOutput('newHist')
+  )
+))
+```
+
+And the following server.R code.
+
+```{r}
+library(UsingR)
+data(galton)
+
+shinyServer(
+  function(input, output) {
+    output$myHist <- renderPlot({
+      hist(galton$child, xlab='child height', col='lightblue',main='Histogram')
+      mu <- input$mu
+      lines(c(mu, mu), c(0, 200),col="red",lwd=5)
+      mse <- mean((galton$child - mu)^2)
+      text(63, 150, paste("mu = ", mu))
+      text(63, 140, paste("MSE = ", round(mse, 2)))
+      })
+    
+  }
+)
+```
+
+
+
+Why isn't it doing what we want?
+
+a) The phrase "Guess at the mu value" should say "mean" instead of "mu"
+b) __The server.R output name isn't the same as the plotOutput command used in ui.R.__
+c) The limits of the slider are set incorrectly and giving an error.
+d) It should be mu <- input$mean in server.R
+
+

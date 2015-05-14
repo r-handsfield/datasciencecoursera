@@ -1,0 +1,103 @@
+---
+title: "c7w1q1"
+author: "Robert Handsfield"
+date: "05/10/2015"
+output: html_document
+---
+
+# Question 1
+
+Which of the following are steps in building a machine learning algorithm? 
+
+a) __Asking the right question__
+b) Artificial intelligence
+c) Data mining
+d) Training and test sets 
+
+## Solution
+
+From 002__ page 4
+
+> 1. question
+> 2. input data
+> 3. features
+> 4. algorithm
+> 5. parameters
+> 6. evaluation
+
+
+# Question 2
+
+Suppose we build a prediction algorithm on a data set and it is 100% accurate on that data set. Why might the algorithm not work well if we collect a new data set? 
+
+a) We have too few predictors to get good out of sample accuracy.
+b) __Our algorithm may be overfitting the training data, predicting both the signal and the noise.__
+c) We are not asking a relevant question that can be answered with machine learning.
+d) We have used neural networks which has notoriously bad performance. 
+
+## Solution
+
+# Question 3
+What are typical sizes for the training and test sets? 
+
+a) 100% training set, 0% test set.
+b) __60% in the training set, 40% in the testing set.__
+c) 10% test set, 90% training set
+d) 80% training set, 20% test set 
+
+## Solution
+
+# Question 4
+
+What are some common error rates for predicting binary variables (i.e. variables with two possible values like yes/no, disease/normal, clicked/didn't click)?
+
+a) __Sensitivity__
+b) R^2
+c) Correlation
+d) Median absolute deviation
+
+
+## Solution
+
+From 006__ p13:
+
+> Common Error Measures
+> 
+> 1. Mean squared error (or root mean squared error)
+> 	* Continuous data, sensitive to outliers
+> 2. Median absolute deviation
+>       * Continuous data, often more robust
+> 3. Sensitivity (recall)
+> 	* If you want few missed positives
+> 4. Specificity
+>       * If you want few negatives called positives
+> 5. Accuracy
+>       * Weights false positives/negatives equally
+> 6. Concordance
+>       * One example is [kappa](http://en.wikipedia.org/wiki/Cohen%27s_kappa)
+
+
+__Answer:__ Sensitivity
+
+# Question 5
+
+Suppose that we have created a machine learning algorithm that predicts whether a link will be clicked with 99% sensitivity and 99% specificity. The rate the link is clicked is 1/1000 of visits to a website. If we predict the link will be clicked on a specific visit, __what is the probability it will actually be clicked?__
+
+a) 90%
+b) __9%__
+c) 99%
+d) 99.9%
+
+
+## Solution
+
+__Answer:__
+
+
+
+
+
+
+
+
+
