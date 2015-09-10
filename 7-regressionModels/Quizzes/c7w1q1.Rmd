@@ -282,7 +282,7 @@ __Answer 9:__ 0.573
 
 Let the _slope_ having fit Y as the outcome and X as the predictor be denoted as $\beta_1$. Let the slope from fitting X as the outcome and Y as the predictor be denoted as $\gamma_1$. Suppose that you divide $\beta_1$ by $\gamma_1$; in other words consider $\beta_1 / \gamma_1$. What is this ratio always equal to?
 
-a) Var(Y)/Var(X)
+a) __Var(Y)/Var(X)__
 b) 2SD(Y)/SD(X)
 c) 1
 d) Cor(Y,X)
@@ -318,6 +318,7 @@ beta1 <- coef(lm(y~x))[2];
 gamma1 <- coef(lm(x~y))[2];
 
 beta1 / gamma1;
+
 
 # answer a
 var(y) / var(x); # <-- this is it

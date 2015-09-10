@@ -21,10 +21,12 @@ From 002__ page 4
 > 1. question
 > 2. input data
 > 3. features
-> 4. algorithm
+> 4. algorithm  (deciding on an algorithm)
 > 5. parameters
 > 6. evaluation
 
+
+__Answer:__ Asking the right question, Deciding on an Algorithm
 
 # Question 2
 
@@ -77,7 +79,7 @@ From 006__ p13:
 >       * One example is [kappa](http://en.wikipedia.org/wiki/Cohen%27s_kappa)
 
 
-__Answer:__ Sensitivity
+__Answer:__ Sensitivity, Predictive Value of a Positive
 
 # Question 5
 
@@ -91,7 +93,32 @@ d) 99.9%
 
 ## Solution
 
-__Answer:__
+Based on the sensitivity, specificity, and prevalence, what is the probability of a positive outcome __given__ a positive prediction (aka PPV)?
+
+Pick numbers to find the PPV (see ppd_quad.png)
+
+Use
+
+* $tp = 99$
+* $fn = 1$
+* $tn = 98901$
+* $fp = 999$
+
+__OR__
+
+Do algebra with the ratios:
+
+* $Sns = {tp \over {tp + fn}} = .99$ 
+
+* $Spc = {tn \over {tn + fp}} = .99$  
+
+* $Prv = { {tp + fn} \over {(tp +fn) ~ + ~ (tn + fp)} } = .001$  
+
+<br />
+Solve for $tp$ and $fp$, then plug into 
+$$PPV = {tp \over {tp + fp}} = {100 \over {100 + 1000}} \approx .09$$
+
+__Answer:__ PPV = .09
 
 
 

@@ -79,6 +79,18 @@ img {
 </ol>
 <div id="solution" class="section level2">
 <h2>Solution</h2>
+<p>From 002__ page 4</p>
+<blockquote>
+<ol style="list-style-type: decimal">
+<li>question</li>
+<li>input data</li>
+<li>features</li>
+<li>algorithm (deciding on an algorithm)</li>
+<li>parameters</li>
+<li>evaluation</li>
+</ol>
+</blockquote>
+<p><strong>Answer:</strong> Asking the right question, Deciding on an Algorithm</p>
 </div>
 </div>
 <div id="question-2" class="section level1">
@@ -152,7 +164,7 @@ img {
 </ul></li>
 </ol>
 </blockquote>
-<p><strong>Answer:</strong> Sensitivity</p>
+<p><strong>Answer:</strong> Sensitivity, Predictive Value of a Positive</p>
 </div>
 </div>
 <div id="question-5" class="section level1">
@@ -160,13 +172,30 @@ img {
 <p>Suppose that we have created a machine learning algorithm that predicts whether a link will be clicked with 99% sensitivity and 99% specificity. The rate the link is clicked is 1/1000 of visits to a website. If we predict the link will be clicked on a specific visit, <strong>what is the probability it will actually be clicked?</strong></p>
 <ol style="list-style-type: lower-alpha">
 <li>90%</li>
-<li>9%</li>
-<li><strong>99%</strong></li>
+<li><strong>9%</strong></li>
+<li>99%</li>
 <li>99.9%</li>
 </ol>
 <div id="solution-4" class="section level2">
 <h2>Solution</h2>
-<p>If the sensitivity and specificity are the same, then the <em>positive predictive value</em> and <em>negative predictive value</em> will be the same as the sensitivity and specificity.</p>
+<p>Based on the sensitivity, specificity, and prevalence, what is the probability of a positive outcome <strong>given</strong> a positive prediction (aka PPV)?</p>
+<p>Pick numbers to find the PPV (see ppd_quad.png)</p>
+<p>Use</p>
+<ul>
+<li><span class="math">\(tp = 99\)</span></li>
+<li><span class="math">\(fn = 1\)</span></li>
+<li><span class="math">\(tn = 98901\)</span></li>
+<li><span class="math">\(fp = 999\)</span></li>
+</ul>
+<p><strong>OR</strong></p>
+<p>Do algebra with the ratios:</p>
+<ul>
+<li><p><span class="math">\(Sns = {tp \over {tp + fn}} = .99\)</span></p></li>
+<li><p><span class="math">\(Spc = {tn \over {tn + fp}} = .99\)</span></p></li>
+<li><p><span class="math">\(Prv = { {tp + fn} \over {(tp +fn) ~ + ~ (tn + fp)} } = .001\)</span></p></li>
+</ul>
+<p><br /> Solve for <span class="math">\(tp\)</span> and <span class="math">\(fp\)</span>, then plug into <span class="math">\[PPV = {tp \over {tp + fp}} = {100 \over {100 + 1000}} \approx .09\]</span></p>
+<p><strong>Answer:</strong> PPV = .09</p>
 </div>
 </div>
 
