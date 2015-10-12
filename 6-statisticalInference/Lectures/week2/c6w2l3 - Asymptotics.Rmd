@@ -281,3 +281,339 @@ g + facet_grid(. ~ size)
 
 ## 0703 Confidence Intervals
 
+The confidence interval $CI({\bar X}, n)$ is a measure of certainty that any random sample of size $n$, drawn from the population of values for $\bar X$ will contain a value equal to the population mean $\mu$.
+
+The actual interval is always some multiple $K$ of the standard error, where $K$ is the number of standard deviations corresponding to the quantile of whatever confidence level you want. Ex. $95\% \sim 1.96$, $90\% \sim~ 1.65$, $etc.$  
+
+* Remember that the _standard error_ is just the standard deviation of a sample
+	+ $SE = \sigma / \sqrt n$
+
+> The general formula for a confidence interval is $$CI({\bar X}, K, n) = {\mu \pm K\sigma / \sqrt n} ~~ = ~~ \mbox{mean} \pm K * SE$$
+
+### Confidence Intervals for the Normal Distribution
+
+For the _normal distribution_, the confidence interval is calculated by $CI({\bar X}, n) = {\mu} \pm K\sigma / \sqrt n$
+
+---
+
+#### Example 1: The 95% confidence interval
+Remember that a sample mean $\bar X$ is always normally distributed, and has population mean $\mu$ and population SD $\sigma / \sqrt n$. Due to the properties of the normal distribution, there is a 95% chance that any value of $\bar X$ is within 2 standard deviations of the mean.
+
+$$P({\bar X} \in ~ \mu \pm 2\sigma / \sqrt n) = 95\%$$
+
+We can also flip this around and say that there is a 95% chance that $\mu$ is within a $2 ~ SD$ interval of any value of $\bar X$.
+
+$$P(\mu \in ~ {\bar X} \pm 2\sigma / \sqrt n) = 95\%$$
+
+__For the _normal distribution_, the $95\%$ confidence interval is usually calculated by__ $CI({\bar X}, n) = {\mu} \pm 2\sigma / \sqrt n$
+
+---
+
+$({\bar X} \pm 2\sigma / \sqrt n)$ is called the __$95\%$ interval for $\mu$__, meaning that if  we
+
+1. Take many random samples of size $n$ from ${\bar X}$ 
+2. Construct the confidence interval for each random sample
+3. Then __~$95\%$ of those confidence intervals would contain a value equal to $\mu$__
+
+$\mu$ can represent any parameter that we're trying to estimate (as long as $\bar X$ is a collection of values for that same parameter).
+
+Technically, the $95\%$ confidence interval is within $1.96$ standard deviations; we round to $2$ for convenience. Similarly, the $90\%$ confidence interval is within $\pm 1.645 ~ SDs$, ~ to the $5^{th}$ and $95^{th}$ percentiles.
+
+
+#### Example 2: Confidence interval for average height
+
+Using the `father.son` data set in the UsingR package, construct a confidence interval for the average height of sons.
+
+```{r message=FALSE}
+library("UsingR")
+data(father.son)
+
+x <- father.son$sheight
+n <- length(x)
+stdev <- sd(x)
+
+# the confidence interval in feet
+ci <- (mean(x) + c(-1,1) * qnorm(0.975) * stdev/sqrt(n))/12 # convert from inches to feet
+
+```
+
+* The $95\%$ confidence interval for sons' height is $5.710$ to $5.738$ feet.
+* The $90\%$ confidence interval for sons' height is $5.712$ to $5.735$ feet.
+* etc.
+
+--- 
+
+### Confidence Intervals for the Binomial Distribution
+
+In the binomial distribution, each $X_i$ is $1$ or $0$ with probabilities $p$ and $1-p$. The distribution's variance is $\sigma^2 = p(1 - p)$.
+
+The binomial confidence interval takes the form
+$$CI({\bar X}, K, n) = \mbox{mean} \pm K * SE \approx \hat p \pm z_{1 - \alpha/2}  \sqrt{\frac{p(1 - p)}{n}}$$
+
+* still trying to estimate $p$
+* $z_{1 - \alpha/2}$ is the _normal quantile_
+* $\sqrt{\frac{p(1 - p)}{n}}$ is the standard error
+* $\hat p$ is the proportion of successes observed in the sample (estimating the true probability $p$).
+
+---
+
+The quantity we're estimating is $p$, the true probability. This is a problem because $p$ appears in the standard error term of the confidence interval. To solve this we replace $p$ with the _success proportion_ $\hat p$
+
+$$\hat p \pm z_{1 - \alpha/2} \sqrt{\frac{{\hat p}(1 - {\hat p})}{n}}$$
+
+Replacing $p$ by $\hat p$ in the standard error results in a $CI$ called the ___Wald confidence interval___ for $p$.
+
+---
+
+#### Example 3: The 95% Wald confidence interval
+
+For 95% intervals only, the Wald confidence of $p$ can very simply approximated by 
+
+$$CI({\bar X}, K, n) \to W(\hat p, K|_.95, n)  \le \hat p \pm \frac{1}{\sqrt{n}}$$ 
+
+Even more simply, the domain of the Wald interval is just $$\frac{1}{\sqrt{n}}$$
+
+
+#### Example 3a: Election predictions
+
+Your campaign manager tells you that in a random sample of 100 likely voters, 56 intend to vote for you.
+
+From these results
+
+1. Do you expect to win?
+2. How precise is this estimate?
+
+---
+
+__Question 1__
+From the sample, you should receive $56\%$ of the vote. What is the $CI$ of this estimate?  
+
+Approximating with the $95\%$ Wald interval
+
+$$SE(W|_.95) \le \frac{1}{\sqrt n} = 1/\sqrt{100} = 0.1 = 10\%$$
+
+From $CI_{binom} = \hat p \pm SE_W$, you can expect $56\% \pm 10\%$ of the votes, or between $46\%$ and $66\%$
+
+```{r}
+0.56 + c(-1,1)*1/sqrt(100)
+```
+__0.46 to 0.66__
+
+Doing the full calculation $\hat p \pm K * \sqrt{\frac{p(1-p)}{n}}$
+```{r}
+# K is the qnorm function
+0.56 + c(-1,1) * qnorm(0.975) * sqrt(0.56 * 0.44/100)
+```
+
+__0.463 to 0.657__  This checks out
+
+You can also use the R `binom` function
+```{r}
+binom.test(56,100)$conf.int
+```
+__0.457 to 0.659__  This checks out too
+
+
+"Can't rule out results less than 50% with 95% confidence"  
+OR  
+"Can't be 95% confident that you'll receive more than 50% of votes"  
+OR  
+
+Dividing the $20\%$ interval into 5 parts of $4\%$ shows that based on this estimate, you expect only an $80\%$ probability of winning??
+
+> This example illustrates the general point that in binomial experiments, you need at least 100 samples for 1 decimal place in your interval, 10K for 2, and 1M for 3.
+
+---
+
+__Question 2__
+
+With $100$ samples, $1 \over \sqrt{100} = 0.10$; this estimate is precise to 1 decimal place, or 10%.
+
+---
+
+#### Example 4: Wald interval of a simulated coin flip 
+
+Over 1000 simulations, how often does the Wald interval cover the true coin probability?
+
+Calculate the 95% CI for simulated coin flips
+```{r}
+n <- 20;  # flip 20 coins
+nosim <- 1000;  # 1000 times
+pvals <- seq(.1, .9, by = .05);  # do it for 20 different probabilities
+				 # between 0.1 and 0.9
+
+# loop over all the probabilities; for each one,
+# flip 20 coins 1000 times; then,
+# find the lower limit and upper limit for the CI
+coverage <- sapply(pvals, function(p){
+  phats <- rbinom(nosim, prob = p, size = n) / n
+  ll <- phats - qnorm(.975) * sqrt(phats * (1 - phats) / n)  # lower limit
+  ul <- phats + qnorm(.975) * sqrt(phats * (1 - phats) / n)  # upper limit
+  mean(ll < p & ul > p)  # proportion that true P is within CI limits
+})
+```
+
+---
+
+__Plot of the results (not so good)__
+
+```{r, echo=FALSE, fig.align='center', fig.height=6, fig.width=6}
+ggplot(data.frame(pvals, coverage), aes(x = pvals, y = coverage)) + geom_line(size = 2) + geom_hline(yintercept = 0.95) + ylim(.75, 1.0)
+````
+
+When the true probability is 0.5, our calculated 95% CI bounds the value 0.5 about 97% of the time (better than 95%). For any other probability (doped coins), the 95% CI does not include the true probability 95% of the time. 
+
+This is because $n = 1000$ is not large enough for the central limit theory to apply accurately to all the values of $p$. 
+
+If we're stuck with small $n$ we can compensate by compressing our success proportion $\hat p$ towards the value $0.5$. This transforms our Wald interval into an Agresti/Coull interval, and it's done like this:
+
+1. Add 2 successes to your vector of heads/tails observations ($X$)
+2. Add 2 failures to your vector of observations ($X$)
+3. Add 4 to your $n$
+
+Normally, the success proportion $\hat p = \frac{X}{n}$
+After steps 1-3, our success proportion looks like this $\hat p = \frac{X+2}{n+4}$
+
+4. Now calculate $CI = \hat p \pm z_{1 - \alpha/2} \sqrt{\frac{{\hat p}(1 - {\hat p})}{n}}$ normally.
+
+---
+
+Simulation with the Agresti/Coull interval:  $n=20$ but added 2 successes and failures
+```{r}
+n <- 20; pvals <- seq(.1, .9, by = .05); nosim <- 1000
+coverage <- sapply(pvals, function(p){
+  phats <- (rbinom(nosim, prob = p, size = n) + 2) / (n + 4)
+  ll <- phats - qnorm(.975) * sqrt(phats * (1 - phats) / n)
+  ul <- phats + qnorm(.975) * sqrt(phats * (1 - phats) / n)
+  mean(ll < p & ul > p)
+})
+```
+
+__These results look better__
+```{r, fig.align='center', fig.height=6, fig.width=6, echo=FALSE}
+ggplot(data.frame(pvals, coverage), aes(x = pvals, y = coverage)) + geom_line(size = 2) + geom_hline(yintercept = 0.95)+ ylim(.75, 1.0)
+````
+
+---
+
+### The Poisson interval
+
+Confidence intervals for the Poisson distribution follow the general form
+
+> $$CI_{Poisson} = \mu \pm K * SE = Estimate \pm Z-quantile * SE_{est}$$
+
+$Z-quantile$ is the _normal quantile_
+
+#### Example 5: Nuclear pump failure rate
+
+A nuclear pump failed 5 times out of 94.32 days, give a 95% confidence interval for the ___failure rate___ per day.
+
+* Assume that number of failures $X$ is Poisson-distributed
+	+ $X \sim Poisson(\lambda t)$
+* Estimate the _rate_ $\lambda$ of failure ($t$ in days)
+	+ $\hat \lambda = X/t$
+	+ $\hat \lambda$ is the _empirical rate_
+* The variance equals the mean (by Poisson properties)
+	+ $Var(\hat \lambda) = \lambda / t$ 
+	+ (notice $\lambda$ vs $\hat \lambda$) 
+* $\hat \lambda / t$ is our __empirical variance estimate__
+
+---
+
+In R
+```{r}
+x <- 5; t <- 94.32; lambda <- x / t
+
+# via calculation
+round(lambda + c(-1, 1) * qnorm(.975) * sqrt(lambda / t), 3)
+
+# via R function
+poisson.test(x, T = 94.32)$conf
+```
+The `poisson` function gives 'exact' CI, but that interval tends to be conservative, i.e. the interval is wider than it needs to be to achieve 95% coverage.
+
+--- 
+
+#### Example 6: Simulating the Poisson coverage rate 
+
+Let's see how this interval performs for lambda values near what we're estimating
+```{r}
+lambdavals <- seq(0.005, 0.10, by = .01); nosim <- 1000
+t <- 100
+coverage <- sapply(lambdavals, function(lambda){
+  lhats <- rpois(nosim, lambda = lambda * t) / t
+  ll <- lhats - qnorm(.975) * sqrt(lhats / t)
+  ul <- lhats + qnorm(.975) * sqrt(lhats / t)
+  mean(ll < lambda & ul > lambda)
+})
+```
+
+(Gets really bad for small values of lambda)
+```{r, fig.align='center', fig.height=4, echo=FALSE}
+ggplot(data.frame(lambdavals, coverage), aes(x = lambdavals, y = coverage)) + geom_line(size = 2) + geom_hline(yintercept = 0.95)+ylim(0, 1.0) + ggtitle("Percent of time the CI included Lambda")
+```` 
+As $\lambda$ gets larger, coverage gets better.
+
+---
+
+What if we increase t to 1000?
+```{r, fig.align='center', fig.height=6, fig.width=6, echo=FALSE}
+lambdavals <- seq(0.005, 0.10, by = .01); nosim <- 1000
+t <- 1000
+coverage <- sapply(lambdavals, function(lambda){
+  lhats <- rpois(nosim, lambda = lambda * t) / t
+  ll <- lhats - qnorm(.975) * sqrt(lhats / t)
+  ul <- lhats + qnorm(.975) * sqrt(lhats / t)
+  mean(ll < lambda & ul > lambda)
+})
+ggplot(data.frame(lambdavals, coverage), aes(x = lambdavals, y = coverage)) + geom_line(size = 2) + geom_hline(yintercept = 0.95) + ylim(0, 1.0) + ggtitle("Percent of time the CI included Lambda")
+```
+Coverage converges to $95\%$
+
+---
+
+## Summary
+* The LLN states that averages of iid samples converge to the population means that they are estimating
+* The CLT states that averages are approximately normal, with distributions
+* centered at the population mean 
+* with standard deviation equal to the standard error of the mean
+* CLT gives no guarantee that $n$ is large enough
+* Taking the mean and adding and subtracting the relevant normal quantile times the SE yields a confidence interval for the mean 
+* Adding and subtracting 2 SEs works for 95% intervals
+* Confidence intervals get wider as the coverage increases (why?)
+* Confidence intervals get narrower with less variability or larger sample sizes
+* The Poisson and binomial case have exact intervals that don't require the CLT
+* But a quick fix for small sample size binomial calculations is to add 2 successes and failures
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
