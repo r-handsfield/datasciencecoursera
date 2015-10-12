@@ -1,5 +1,5 @@
 ---
-title: "c7w1q1"
+title: "c8w1q1"
 author: "Robert Handsfield"
 date: "05/10/2015"
 output: html_document
@@ -26,7 +26,7 @@ From 002__ page 4
 > 6. evaluation
 
 
-__Answer:__ Asking the right question, Deciding on an Algorithm
+__Answer:__ Asking the right question, Deciding on an Algorithm, Evaluating the Prediction
 
 # Question 2
 
@@ -79,7 +79,7 @@ From 006__ p13:
 >       * One example is [kappa](http://en.wikipedia.org/wiki/Cohen%27s_kappa)
 
 
-__Answer:__ Sensitivity, Predictive Value of a Positive
+__Answer 4:__ Sensitivity, Predictive Value of a Positive, Specificity
 
 # Question 5
 
