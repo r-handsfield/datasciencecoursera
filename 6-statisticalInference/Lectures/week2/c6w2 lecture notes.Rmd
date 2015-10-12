@@ -4,10 +4,63 @@ author: "Robert Handsfield"
 date: "04/19/2015"
 output:
   html_document:
+    highlight: haddock
+    number_sections: yes
     toc: yes
 ---
 
-# 0501 The Variance
+```{r multiplotFunction, echo=FALSE}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+```
+
+# 05 The Variance
+
+## 0501 The Variance
 
 Variance measures a random variable's spread about it's mean. 
 
@@ -218,39 +271,52 @@ the population variance $(\sigma^2)$ as $n$ increases
 6. The standard error represents the variability of sample means, for samples drawn from a population
 
 
-## 0601 Common Distributions - Bernoulli & Binomial
+# 06 Common Distributions
 
-### The Bernoulli Distribution
+## 0601 Bernoulli & Binomial
 
-0. Obtained from a binary system
-1. Bernoulli random variables take only the values $0$ and $1$
-2. Bernoulli random variables have probabilities of only __$p$__ and __$1-p$__
-4. The mean and variance of any Bernoulli random variable are __$p$__ and __$p(1-p)$__
+### The Bernoulli Process
 
-The Bernoulli probability mass function (PMF) is $P(X=x) = {p^x}(1-p)^{1-x}$
+Any experiment with 2 possible outcomes that has total probability of $1$ is a __Bernoulli trial__.
+A sequence of independent Bernoulli trials is a __Bernoulli process__. 
+A Bernoulli process always leads to a __Binomial distribution__.
+
+Bernoulli random variables take only the values $1$ and $0$ with respective probabilities __$p$__ and __$(1-p)$__.
+
+The mean and variance of any Bernoulli random variable are always __$p$__ and __$p(1-p)$__
+
+The Bernoulli __probability mass function__ (PMF) is $$P(X=x) = {p^x}(1-p)^{1-x}$$
+
+
 
 ### The Binomial Distribution
 
-1. A binomial random variable is the sum of several Bernoulli variables
+The binomial distribution is the result of a finite number of Bernoulli trials in which the probability
+of each outcome remains constant. The binomial distribution is composed of _discrete_ values
+
+* A binomial random variable is the __sum__ of several Bernoulli variables
 	+ EX: the total number of heads from coin flips
 
 If $X_n$ are iid $Bernoulli(p)$  (Bernoulli variables), then the binomial random
-variable is defined as 
-$$X = \sum_{i=1}^{n}X_i$$
+variable is defined as $$X = \sum_{i=1}^{n}X_i$$
 
-The binomial probability mass function (PMF) is $P(X=x) = \binom{n}{x}{p^x}(1-p)^{n-x}$
+The binomial __probability mass function__ (PMF) is $$P(X=x) = \binom{n}{x}{p^x}(1-p)^{n-x}$$
 
-(\binom{n}{x} is "n choose x", the number of combinations of $n$ and $x$)
+* $\binom{n}{x}$ is "n choose x", the number of combinations of $n$ and $x$
 
-#### Example of a binomial calculation
+--- 
+
+#### Example 1: A binomial calculation
 
 A friend has 8 children; 7 girls and 1 boy.
 
 If each gender has an independent 50% probability for each birth, what is the 
 probability of getting 7 __or more__ girls out of 8 births?
 
-Two positive conditions: $7$ girls or $8$ girls,  $\therefore P(X) = P(7) + P(8)$
+Two positive conditions: $7$ girls or $8$ girls, therefore the binomial variable $P(X)$
+is the sum of the Bernoulli variables $P(7)$ and $P(8)$  
 
+$$P(X) = P(7) + P(8)$$
 $$P(X=x) = \binom{n}{x}{p^x}(1-p)^{n-x}$$
 $$P(X=7) = \binom{8}{7}{p^7}(1-p)^{8-7} = \binom{8}{7}{.5^7}(1-.5)^{8-7}$$
 $$P(X=8) = \binom{8}{8}{.5^8}(1-.5)^{8-8}$$
@@ -272,15 +338,239 @@ pbinom(q = 6, size = 8, prob = .5, lower.tail = FALSE)  # lower.tail false means
 
 ## 0602 The Normal Distribution
 
+The normal distribution is the result of any random process, and is _continuous_.
+The normal converges to the Gaussian at $\pm \infty$
+
+A normal distribution with mean $\mu$ and variance $\sigma^2$ has a probability density given by the Gaussian function 
+
+  $$X = \sqrt{2\pi \sigma^2}e^{-(x - \mu)^2/2\sigma^2}$$
+
+---
+
+If a random varibale $X$ has this normal density distribution ($E[X] = \mu$ and $Var(X) = \sigma^2$)
+a shorthand notation is
+$$X\sim \mbox{N}(\mu, \sigma^2)$$
+
+
+- When $\mu = 0$ and $\sigma = 1$ the resulting distribution is called the __standard normal distribution__
+- _Standard Normal_ random variables are often labeled $Z$
+
+---
+
+The standard normal distribution with reference lines: 
+```{r, fig.height=5, fig.width=7, fig.align='center', echo = FALSE}
+x <- seq(-3, 3, length = 1000)
+library(ggplot2)
+g <- ggplot(data.frame(x = x, y = dnorm(x)), 
+            aes(x = x, y = y)) + geom_line(size = 1, color = "red")
+g <- g + geom_vline(xintercept = -3 : 3, size = 1) + scale_x_continuous( breaks=seq( from=-3, to=3, by=1) )
+g
+```
+
+---
+
+### Facts about the normal density
+
+If $X$ has a non-standard normal distribution, it can be shifted to a  _standard_ normal distribution
+by subtracting $\mu$ and dividing by $\sigma$
+
+$$\mbox{For} ~~ X \sim \mbox{N}(\mu,\sigma^2): ~~ \frac{X -\mu}{\sigma} \sim N(0, 1)$$ 
+
+Also
+
+$$Z = \frac{X -\mu}{\sigma} \sim N(0, 1)$$ 
+
+Then $Z$  is a random variable with a standard normal distribution, and
+
+$$X = \mu + \sigma Z \sim \mbox{N}(\mu, \sigma^2)$$
+
+So, random variables can be shifted to and from standard normal distributions.
+
+---
+
+### More facts about the normal density distribution
+
+1. Approximately $68\%$, $95\%$ and $99\%$  of the normal density lies within $1$, $2$ and $3$ standard deviations from the mean, respectively
+2. $-1.28$, $-1.645$, $-1.96$ and $-2.33$ are the $10^{th}$, $5^{th}$, $2.5^{th}$ and $1^{st}$ percentiles of the standard normal distribution respectively
+3. By symmetry, $1.28$, $1.645$, $1.96$ and $2.33$ are the $90^{th}$, $95^{th}$, $97.5^{th}$ and $99^{th}$ percentiles of the standard normal distribution respectively
+4. For a _standard normal_ distribution, quantiles and probabilities are the same
+
+---
+
+#### Example 1: Deviation of a percentile
+
+How many standard deviations from the mean is the $95^{th}$ percentile of a $N(\mu, \sigma^2)$ distribution? 
+
+* Quick answer in R `qnorm(.95, mean = mu, sd = sigma)`
+* Or, because you know that $1.645 \sigma$ is the $95^{th}$ percentile, you can simply add that deviation to the mean $\mu$:
+$$\mu + \sigma 1.645$$
+* (In general any non-standard quantile is just $\mu + \sigma z_0$ where $z_0$ is the appropriate _standard normal_ quantile)
+* Finally, calculating in R for a standard normal distribution:
+```{r}
+qnorm(p=.95, mean=0, sd=1, )
+```
+
+
+---
+
+#### Example 2: Probability of a value
+
+What is the probability that a $\mbox{N}(\mu,\sigma^2)$ RV is larger than $x$?
+
+* $x$ is in units of standard deviations
+* In R, use `pnorm(p = x, mean = mu, sd = sd, lower.tail = FALSE)`
+  	+ `lower.tail = TRUE` calculates $P(X ≤ x)$ 
+  	+ `lower.tail = FALSE` calculates $P(X > x)$
+* Or, use `1 - pnorm(p = x, mean = mu, sd = sd, lower.tail = TRUE )`
+* If $x$ is in raw units, you can shift to convenient $\mbox{N}(\mu,\sigma^2)$ units via ${x- \mu} \over {\sigma}$
+
+Calculating in R for a standard normal distribution:
+
+```{r}
+# If mean = 0, Var = 1, and x = 1.96 sd  ~ 97.5 percentile
+pnorm(q=1.96, mean=0, sd=1, lower.tail=FALSE)
+
+# If x = 1.96 sd ~ 97.5 percentile
+1 - pnorm(q=1.96, mean=0, sd=1, lower.tail=TRUE)
+```
+
+
+---
+
+#### Example 3: Probability of ad clicks
+
+Assume that the number of daily ad clicks for a company is (approximately) normally distributed with a mean of 1020 and a standard deviation of 50. What's the probability of getting more than  1,160 clicks in a day?
+
+It's not very likely, 1,160 is `r (1160 - 1020) / 50` standard
+deviations from the mean 
+```{r}
+pnorm(1160, mean = 1020, sd = 50, lower.tail = FALSE)
+pnorm(2.8, lower.tail = FALSE)
+```
+
+
+---
+
+#### Example 4: Ad click quantiles
+
+Assume that the number of daily ad clicks for a company 
+is (approximately) normally distributed with a mean of 1020 and a standard
+deviation of 50. What number of daily ad clicks would represent
+the one where 75% of days have fewer clicks (assuming
+days are independent and identically distributed)?
+
+```{r}
+qnorm(0.75, mean = 1020, sd = 50)
+```
+
 
 
 
 ## 0603 The Poisson Distribution
 
+The Poisson is a special case of the binomial distribution, used to model counts of things or events, often per unit time. The Poisson is the result of an infinite number of Bernoulli trials, each with an infinite number of possible outcomes per trial, AND the probability of each outcome can change between trials.
+
+The Poisson __probability mass function__ for $x=0,1,2,\ldots, \infty$ is 
+$$P(X = x; \lambda) = \frac{\lambda^x e^{-\lambda}}{x!}$$
+
+```{r echo=FALSE, fig.align='center'}
+ggplot() + aes(x=1:50, y=ppois(1:50,25)) + geom_point() + ggtitle(expression(paste("Poisson(x, ", lambda, " = 25)")))
+```
+The Poisson distribution is sigmoidal. Raising $\lambda$ shifts the midpoint to the right; lowering $\lambda$ shifts the midpoint to the left.
 
 
+---
+
+### Summary 
+* Used to model counts
+* $x$ is discrete, with domain from $0$ to $\infty$
+* Both the mean and variance of the Poisson distribution are $\lambda$
+* In the real world, mean and variance of Poisson random variables should be equal
+	+ Use this property to check the validity of real world data
+
+---
+
+### Some uses for the Poisson distribution
+* Modeling count data (especially unbounded counts:  $x \rightarrow \infty$ )
+* Modeling event-time or survival data
+	+ Ex. number of surviving cells at time T (survival)
+	+ Ex. time to re-occurence of a disease after treatment (event-time)
+* Modeling contingency tables
+	+ Ex. counts of people by a differentiating trait (a classification)
+* Approximating binomials when $n$ is large and $p$ is small
+	+ many trials, small probability of success
+	+ Ex. large population, few disease occurences
+
+---
+
+### Rates and Poisson random variables
+* Poisson random variables are also used to model rates
+* $X \sim Poisson(\lambda t)$ where 
+	+ $\lambda = E[X / t]$ is the expected count per unit of time
+	+ $t$ is the total monitoring time
+  
+---
+
+#### Example 1: People arriving at a bus stop
+The number of people that show up at a bus stop is Poisson with a mean of $2.5$ people per hour.
+
+If watching the bus stop for 4 hours, what is the probability that $3$
+or fewer people show up for the whole time?
+
+```{r echo=FALSE, fig.align='center', fig.height=2.5, fig.width=3.5}
+ggplot() + aes(x=1:4, y=ppois(1:4,10)) + geom_point() +
+	   ggtitle(expression(paste("Poisson(X, ", lambda, " = 10)"))) +
+	   ylab("P(X < x)") + xlab("x")
+```
 
 
+```{r}
+ppois(3, lambda = 2.5 * 4)
+```
+
+---
+
+### Poisson approximation to the binomial
+When $n$ is large and $p$ is small the Poisson is an accurate approximation to the binomial distribution
+
+Notation 
+
+* $X \sim \mbox{Binomial}(n, p)$
+* $\lambda = n p ~~$ or $~~ \lambda = \mbox{trials * probability}$
+	  
+---
+
+#### Example, Poisson approximation to the binomial
+
+We flip a coin with success probablity $0.01$ five hundred times. 
+
+What's the probability of 2 or fewer successes?
+
+```{r echo=FALSE, fig.align='center', fig.height=2.5}
+poisson <- ggplot() + aes(x=1:4, y=ppois(q=1:4, lambda=500 * .01)) + geom_point() + 
+	   geom_line(color="red") + ggtitle("Poisson") +
+	   ylab("P(X < x)") + xlab("x")
+
+binomial <- ggplot() + aes(x=1:4, y=pbinom(q=1:4, size=500, prob=.01)) + geom_point() + 
+	    geom_line(color="red") + ggtitle("Binomial") +
+	    ylab("P(X < x)") + xlab("x")
+
+multiplot(binomial, poisson, cols = 2);
+```
+
+```{r}
+pbinom(2, size = 500, prob = .01)
+ppois(2, lambda=500 * .01)
+```
+
+#07 Asymptotes
 
 
+## 0701
+
+
+## 0702
+
+
+## 0703
 

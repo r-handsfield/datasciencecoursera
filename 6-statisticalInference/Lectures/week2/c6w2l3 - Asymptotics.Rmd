@@ -1,0 +1,283 @@
+---
+title: "c6w2l3 - Asymptotics"
+author: "Robert Handsfield"
+date: "10/11/2015"
+output: html_document
+---
+
+
+```{r echo=FALSE}
+library("ggplot2")
+library("graphics")
+library("grDevices")
+
+```
+
+
+```{r multiplotFunction, echo=FALSE}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+```
+
+
+
+
+# 07 Asymptotics (Limits of random variables)
+
+Asymptotics is the behavior of statistics as the sample size goes to infinities, zeroes, or some other limit. In general we only care about what happens as the number of samples approaches to infinity.
+
+Asymptotics for the basis for moving from discrete to continuous systems, i.e. counts to frequencies.
+
+---
+
+The limiting behavior of distributions engenders 2 methods for working with large samples of iid observations.
+
+1. The Law of Large Numbers
+2. The Central Limit Theorem
+
+## 0701 The Law of Large Numbers
+
+This law just says that sample averages converge to the population average as the number of samples increases.
+
+* Remember also that an estimator is ___consistent___ if it converges to what you want to estimate
+
+---
+
+#### As a number of samples grows
+
+* The distribution's average converges to whatever the distribution is estimating
+	+ if the samples are independent and identically distributed (___iid___)
+	+ often the _sample mean_ of a distribution converging to the true _population mean_ of the universe
+* $\therefore$ by the LLN, the _sample mean_ of an iid distribution is consistent for the _population mean_
+	+ any good estimator should be consistent
+* The consistency property is also true for the sample~population variance and the sample~population standard deviation	
+
+---
+
+#### Example 1: Frequency of a coin flip
+
+The population mean $\bar{X}_{n}$ is the sample proportion of heads, the average result of $n$ coin flips.
+As the number of flips $n$ increases, $\bar{X}_{n}$ eventually converges to the true probability of a head, $0.50$.
+
+In this example, _sample mean_ estimates the probability of _Heads_. As samples $n$ increase, it converges to 0.50, meaning that this particular distribution is a ___consistent___ estimator.
+
+```{r fig.align='center', fig.height=3}
+set.seed(1234)
+
+# generate 1000 random, normally distributed numbers
+n <- 10000
+nums <- cumsum(rbinom(n=n, size=1, prob=.5))
+
+# dividing by the vector 1:n gives a vector of 
+# the running means of the normal distribution
+means <- nums/(1:n)
+
+#pnums <- ggplot() + aes(x=1:n, y=nums) + geom_point(size=1) + ggtitle("Binomial Distribution")
+pmeans <- ggplot() + aes(x=1:n, y=means) + geom_point(size=1) + ggtitle("Probability of Heads (Sample Mean)")
+pmeans <- pmeans + geom_hline(yintercept=0.5) + geom_line()
+
+pmeans
+```
+
+Because the probability of heads converges to $0.5$, this coin flip estimator is consistent.
+
+---
+
+#### Example 2: Large Numbers and the Normal Distribution
+
+The Law of Large Numbers also applies to the normal distribution. As samples $n$ increase, the sample mean converges to zero.
+```{r fig.align='center', fig.height=3}
+set.seed(1234)
+# generate 1000 random, normally distributed numbers
+n <- 1000
+nums <- cumsum(rnorm(n))
+
+# dividing by the vector 1:n gives a vector of 
+# the running means of the normal distribution
+means <- nums/(1:n)
+
+pnums <- ggplot() + aes(x=1:n, y=nums) + geom_point(size=1) + ggtitle("Normal Distribution")
+pmeans <- ggplot( ) + aes(x=1:n, y=means) + geom_point(size=1) + ggtitle("Sample Mean")
+
+multiplot(pnums, pmeans, cols = 2)
+
+```
+Because the mean of our normally-distributed sample converges to zero, this estimator of the normal population is consistent.
+
+
+
+## 0702 The Central Limit Theorem
+
+The Central Limit Theorem just says that any distribution of the average values of iid variables (properly normalized) converges to the standard normal as the sample size increases.
+
+In other words, every distribution of random variables approximates a Normal, and converges as the sample size approaches infinity.
+
+In maths, it means if we Z-transform a sample variable by its mean and standard error, it will converge to the Gaussian standard normal as sample size goes to infinity. 
+
+$$\lim\left [ {\frac{\mbox{Estimate} - \mbox{Mean of estimate}}{\mbox{Std. Err. of estimate}}} \right ]_{n \to \infty} \to Gauss(x|\mu=0,\sigma=1)$$
+
+$$
+\lim_{n \to \infty} \left[ {\frac{\bar X_n - \mu}{\sigma / \sqrt{n}}
+= \frac{\sqrt n (\bar X_n - \mu)}{\sigma}} \right ]
+= \frac{e^{{-(x-\mu)^2} \over 2\sigma^2}}{\sigma\sqrt{2\pi}}\bigg|_{\mu=0, ~ \sigma=1}
+= \frac{e^{{-x^2} \over 2}}{\sqrt{2\pi}}
+$$
+
+* The sample standard deviation $SD$ or $S$ can be substituted for the population standard deviation $\sigma$ at any point.
+
+---
+
+Describing this from the _other direction_, we can say that the _sample average_ is normally distributed with mean approximating the population mean $\mu$ and variance approximating the standard error of the population mean ${\sigma^2}/n$, or
+
+> By the CLT: $$\bar X_n \approx N(\mu, ~ {\sigma^2}/{n})$$
+
+---
+
+#### Example 1: CLT and a six-sided die
+
+Simulate a standard normal random variable by rolling $n$ six-sided dice.
+
+For six-sided dice, recall that
+
+* the mean $\mu = E[X_i] = 3.5$
+* the variance $Var(X_i) = 2.92$ 
+* standard error of the mean $SE = \sqrt{2.92 / n} = 1.71 / \sqrt{n}$
+
+Let $X_i$ be the outcome for die $i$:
+
+1. roll $n$ dice, take their mean, subtract off 3.5,and divide by $1.71 / \sqrt{n}$ 
+	+ $(\bar{X_n} - \mu) / SE$
+2. and repeat this over and over
+3. by the CLT, this should look like a standard normal
+
+```{r, echo = FALSE, fig.height = 3, fig.align='center'}
+nosim <- 1000
+cfunc <- function(x, n) sqrt(n) * (mean(x) - 3.5) / 1.71
+dat <- data.frame(
+  x = c(apply(matrix(sample(1 : 6, nosim * 10, replace = TRUE), 
+                     nosim), 1, cfunc, 10),
+        apply(matrix(sample(1 : 6, nosim * 20, replace = TRUE), 
+                     nosim), 1, cfunc, 20),
+        apply(matrix(sample(1 : 6, nosim * 30, replace = TRUE), 
+                     nosim), 1, cfunc, 30)
+        ),
+  size = factor(rep(c(10, 20, 30), rep(nosim, 3))))
+
+g <- ggplot(dat, aes(x = x, fill = size))
+g <- g + geom_histogram(alpha = .20, binwidth=.3, colour = "black", aes(y = ..density..)) 
+g <- g + stat_function(fun = dnorm, size = 1, color="red")
+g + facet_grid(. ~ size)
+```
+The approximation improves as we roll 20, then 30 dice 1000 times.
+
+---
+
+#### Example 2: CLT and a coin flip
+
+Let $X_i$ be the $0$ or $1$ result of the $i^{th}$ flip of a possibly unfair coin
+
+Recall that:
+
+* The sample proportion, say $\hat p$, is the average of the coin flips
+* $p$ is the probability of a success
+	+ in this case that probability $p$ is the __mean of the estimate__
+* $E[X_i] = p$ and $Var(X_i) = p(1-p)$
+* Standard error of the mean is $SE = \sqrt{p(1-p)/n}$
+
+---
+
+The CLT states that the Z-transformed probability variable should approximate the normal distribution.
+$${\frac{\mbox{Estimate} - \mbox{Mean of estimate}}{\mbox{Std. Err. of estimate}}} 
+= {\frac{\bar X_n - \mu}{\sigma / \sqrt{n}}}
+= \frac{\hat p - p}{\sqrt{p(1-p)/n}} \to Gauss(x|\mu=0,\sigma=1)
+$$
+
+* Let's flip a coin $n$ times, take the sample proportion $\hat p$ of heads, subtract off $.5$ and multiply the result by $2 \sqrt{n}$ (divide by $1/(2 \sqrt{n})$)
+
+---
+
+Simulation results for a fair coin
+```{r, echo = FALSE, fig.height = 3, fig.align='center'}
+nosim <- 1000
+cfunc <- function(x, n) 2 * sqrt(n) * (mean(x) - 0.5) 
+dat <- data.frame(
+  x = c(apply(matrix(sample(0:1, nosim * 10, replace = TRUE), 
+                     nosim), 1, cfunc, 10),
+        apply(matrix(sample(0:1, nosim * 20, replace = TRUE), 
+                     nosim), 1, cfunc, 20),
+        apply(matrix(sample(0:1, nosim * 30, replace = TRUE), 
+                     nosim), 1, cfunc, 30)
+        ),
+  size = factor(rep(c(10, 20, 30), rep(nosim, 3))))
+g <- ggplot(dat, aes(x = x, fill = size)) + geom_histogram(binwidth=.3, colour = "black", aes(y = ..density..)) 
+g <- g + stat_function(fun = dnorm, size = 1, color="red")
+g + facet_grid(. ~ size)
+```
+
+---
+
+Simulation results for a biased coin, $p = 0.5$
+```{r, echo = FALSE, fig.width=9, fig.height = 6, fig.align='center'}
+nosim <- 1000
+cfunc <- function(x, n) sqrt(n) * (mean(x) - 0.9) / sqrt(.1 * .9)
+dat <- data.frame(
+  x = c(apply(matrix(sample(0:1, prob = c(.1,.9), nosim * 10, replace = TRUE), 
+                     nosim), 1, cfunc, 10),
+        apply(matrix(sample(0:1, prob = c(.1,.9), nosim * 20, replace = TRUE), 
+                     nosim), 1, cfunc, 20),
+        apply(matrix(sample(0:1, prob = c(.1,.9), nosim * 30, replace = TRUE), 
+                     nosim), 1, cfunc, 30)
+        ),
+  size = factor(rep(c(10, 20, 30), rep(nosim, 3))))
+g <- ggplot(dat, aes(x = x, fill = size)) + geom_histogram(binwidth=.3, colour = "black", aes(y = ..density..)) 
+g <- g + stat_function(fun = dnorm, size = 1, color="red")
+g + facet_grid(. ~ size)
+```
+
+
+## 0703 Confidence Intervals
+
