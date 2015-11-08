@@ -1,0 +1,103 @@
+---
+title: "c9w4 Quiz 3"
+author: "Robert Handsfield"
+date: "11/8/2015"
+output: html_document
+---
+
+
+# Question 1
+
+
+a)   
+b)   
+c)   
+d)   
+
+## Solution:
+
+
+## Answer:
+__Answer:__ 
+
+---
+
+# Question 2
+
+
+a)   
+b)   
+c)   
+d)   
+
+## Solution:
+
+
+## Answer:
+__Answer:__ 
+
+---
+
+# Question 3
+
+
+a)   
+b)   
+c)   
+d)   
+
+## Solution:
+
+
+## Answer:
+__Answer:__ 
+
+---
+
+# Question 4
+
+
+a)   
+b)   
+c)   
+d)   
+
+## Solution:
+
+
+## Answer:
+__Answer:__ 
+
+---
+
+# Question 5
+
+
+a)   
+b)   
+c)   
+d)   
+
+## Solution:
+
+
+## Answer:
+__Answer:__ 
+
+---
+
+# Question 6
+
+
+a)   
+b)   
+c)   
+d)   
+
+## Solution:
+
+
+## Answer:
+__Answer:__ 
+
+---
