@@ -2,7 +2,11 @@
 title: "c6w2l3 - Asymptotics"
 author: "Robert Handsfield"
 date: "10/11/2015"
-output: html_document
+output:
+  html_document:
+    highlight: haddock
+    number_sections: yes
+    toc: yes
 ---
 
 
@@ -283,7 +287,7 @@ g + facet_grid(. ~ size)
 
 The confidence interval $CI({\bar X}, n)$ is a measure of certainty that any random sample of size $n$, drawn from the population of values for $\bar X$ will contain a value equal to the population mean $\mu$.
 
-The actual interval is always some multiple $K$ of the standard error, where $K$ is the number of standard deviations corresponding to the quantile of whatever confidence level you want. Ex. $95\% \sim 1.96$, $90\% \sim~ 1.65$, $etc.$  
+The actual interval is always some multiple $K$ of the standard error, where $K$ is the number of standard deviations corresponding to the quantile of whatever confidence level you want. Ex. $95\% \sim 1.96$, $90\% \sim~ 1.65$, $etc.$ $K$ is often labeled $Z$. When using Standard Normal tables, use the $Z$ value for $K$.  
 
 * Remember that the _standard error_ is just the standard deviation of a sample
 	+ $SE = \sigma / \sqrt n$
@@ -317,6 +321,7 @@ $({\bar X} \pm 2\sigma / \sqrt n)$ is called the __$95\%$ interval for $\mu$__, 
 
 $\mu$ can represent any parameter that we're trying to estimate (as long as $\bar X$ is a collection of values for that same parameter).
 
+
 Technically, the $95\%$ confidence interval is within $1.96$ standard deviations; we round to $2$ for convenience. Similarly, the $90\%$ confidence interval is within $\pm 1.645 ~ SDs$, ~ to the $5^{th}$ and $95^{th}$ percentiles.
 
 
@@ -332,7 +337,8 @@ x <- father.son$sheight
 n <- length(x)
 stdev <- sd(x)
 
-# the confidence interval in feet
+
+# the 95% confidence interval in feet; `qnorm` is the K term
 ci <- (mean(x) + c(-1,1) * qnorm(0.975) * stdev/sqrt(n))/12 # convert from inches to feet
 
 ```
@@ -427,7 +433,7 @@ Dividing the $20\%$ interval into 5 parts of $4\%$ shows that based on this esti
 
 __Question 2__
 
-With $100$ samples, $1 \over \sqrt{100} = 0.10$; this estimate is precise to 1 decimal place, or 10%.
+With $100$ samples, ${1 \over \sqrt{100}} = 0.10$; this estimate is precise to 1 decimal place, or 10%.
 
 ---
 
@@ -584,10 +590,6 @@ Coverage converges to $95\%$
 * Confidence intervals get narrower with less variability or larger sample sizes
 * The Poisson and binomial case have exact intervals that don't require the CLT
 * But a quick fix for small sample size binomial calculations is to add 2 successes and failures
-
-
-
-
 
 
 

@@ -1,0 +1,253 @@
+---
+title: "c6w2q1"
+author: "Robert Handsfield"
+date: "10/18/2015"
+output: html_document
+---
+
+
+# c6w2q1
+
+## Question 1
+What is the variance of the distribution of the average an IID draw of n observations from a population with mean μ and variance σ2.
+
+a) $2 \sigma / \sqrt{n}$
+b) $\sigma^2$  
+c) __$\sigma^2 \over n$__
+d) $\sigma / n$
+
+### Solution
+
+The easy relationship to remember is the standard deviation.
+
+The sample standard deviation $$SD_{\bar X} = \sigma / \sqrt{n}$$ 
+
+The variance is just the square of the standard deviation, so
+
+$$Var_{\bar X} = SD_{\bar X}^2 = (\sigma / \sqrt{n}) = \sigma^2 / n$$
+
+#### Answer: $\sigma^2 \over n$
+
+---
+
+## Question 2
+
+Suppose that diastolic blood pressures (DBPs) for men aged 35-44 are normally distributed with a mean of 80 (mm Hg) and a standard deviation of 10. About what is the __probability__ that a random 35-44 year old has a __DBP less than 70__?
+
+__a) 16%__  
+b) 8%  
+c) 22%  
+d) 32%  
+
+### Solution
+
+* $\mu = 80$
+* $\sigma = 10$
+* $X = 70$
+
+Because the normal distribution has been thoroughly calculated, Z-transform $X$ to $Z \~ N(0,1)$ to get the quantile. 
+
+$$P(X < 70) = P(Z < \frac{X - \mu}{\sigma}$$
+$$P(X < 70) = P(Z < \frac{70 - 80}{10}$$
+$$P(Z < -1) = 0.159$$
+
+Or, in R
+```{r}
+# pnorm does value --> quantile
+# qnorm does quantile --> SD value
+pnorm(70, mean = 80, sd = 10, lower.tail = TRUE)
+```
+
+#### Answer: 0.159
+
+---
+
+
+## Question 3
+
+Brain volume for adult women is normally distributed with a mean of about 1,100 cc for women with a standard deviation of 75 cc. What brain volume represents the 95th percentile?
+
+a) approximately 1247  
+__b) approximately 1223__  
+c) approximately 977  
+d) approximately 1175  
+
+### Solution
+
+* $\mu = 1100$
+* $\sigma = 75$
+
+The $95^{th} percentile of the Normal Distribution lies at $z = \pm 1.645$ ($z$ is termed $K$ in the later section on confidence intervals)
+
+(confirm with)
+```{r}
+qnorm(0.95)
+```
+
+Inverse Z-transform this multiplier by 
+$$z = \frac{x - \mu}{\sigma} \to x = \mu + z\sigma$$ 
+$$x = 1100 + 1.645 * 75$$
+
+```{r}
+1100 + 1.645 * 75
+```
+
+
+#### Answer: 1223
+
+---
+
+## Question 4
+
+Refer to the previous question. Brain volume for adult women is about 1,100 cc for women with a standard deviation of 75 cc. Consider the sample mean of 100 random adult women from this population. What is the 95th percentile of the distribution of that sample mean?
+
+a) approximately 1088 cc  
+__b) approximately 1112 cc__  
+c) approximately 1110 cc  
+d) approximately 1115 cc  
+
+### Solution
+
+By the __Central Limit Theorem__: 
+
+> If one takes random samples of size $n$ from a population of mean $\mu$ and standard deviation $\sigma$, then, as $n$ gets large, the _sample mean_ $\bar X$ approaches the Normal Distribution with mean $\mu$ and __standard deviation $\sigma / \sqrt{n}$__.
+
+therefore
+
+* $\mu = 1100$
+* $n = 100$
+* $\sigma = 75/ \sqrt{100} = 7.5$
+
+Perform the inverse Z-transform again (Q3)
+$$z = \frac{x - \mu}{\sigma} ~ \therefore ~ x = \mu + z\sigma$$ 
+$$x = 1100 + 1.645 * 7.5$$
+
+```{r}
+1100 + 1.645 * 7.5
+```
+
+#### Answer: 1112.338
+
+---
+
+
+## Question 5
+
+You flip a fair coin 5 times, about what's the probability of getting 4 or 5 heads?
+
+__a) 19%__  
+b) 12%  
+c) 6%  
+d) 3%  
+
+Solution:
+
+* $n = 5$ 
+* $X = {4,5}$
+
+From
+
+$$P(X=x) = \binom{n}{x}{p^x}(1-p)^{n-x}$$
+$$P(X = {4,5}) = P(4) + P(5)$$
+
+```{r}
+# use pbinom *** q > 3 = {4,5}
+pbinom(q = 3, size = 4, prob = .5, lower.tail = FALSE)
+```
+
+### Answer: $0.1875$
+
+---
+
+## Question 6
+
+The respiratory disturbance index (RDI), a measure of sleep disturbance, for a specific population has a mean of 15 (sleep events per hour) and a standard deviation of 10. They are not normally distributed. Give your best estimate of the probability that a sample mean RDI of 100 people is between 14 and 16 events per hour?
+
+a) 68%
+b) 95%
+c) 47.5%
+d) 34%
+
+### Solution
+
+Regardless of the original population's distribution, random samples _always_ approximate the Normal. So, use the standard confidence interval equations for the Normal distribution.
+
+* $\mu = 15$
+* $\sigma = 10$
+* $n = 100$
+* $X = {14, 16}$
+
+---
+
+The standard deviation of the sample is
+
+* $SD_{X} = \frac {\sigma}{\sqrt{n}} = 1$
+
+---
+
+From the definition of confidence interval
+$$CI({X}, n) = {\mu} \pm K\sigma / \sqrt n$$
+
+We can find the $K$ multiplier that yields a given confidence interval
+$$K = \frac{[CI(X, n) - \mu] \sqrt{n}}{\sigma}$$
+
+(Because this is a _sample_ from a population, we should technically be writing $SD_{X}$ instead of $\sigma$. But, screw it.)
+
+---
+
+$$K = \frac{(\{16, 14\} - 15)*10}{10} = \pm 1$$
+
+The given confidence interval for this sample $\{16, 14\}$ lies within 1 standard deviation $SD_{X}$ of the sample's mean. From the table of Standard Normal values, $Z_N(0,1) = 1 \sim X_N(0,1) = 0.841 ~$ and $~ Z_N(0,1) = -1 \sim X_N(0,1) = 0.159$ 
+
+---
+
+In this particular case, the $X_N(0,1)$ is the percentage of $X$ values _below_ $F(Z_N(0,1) \vert_z)$, so we just take the difference 
+
+$$\sum{X_N(0,1) \vert_{F(Z)}} = F(1) - F(-1) = 0.841 - 0.159 = 0.682$$
+
+
+#### Answer: $0.682$
+
+---
+
+## Question 7
+
+Consider a standard uniform density. The mean for this density is .5 and the variance is ${1 / 12} = (0.0833)$. You sample 1,000 observations from this distribution and take the sample mean, what value would you expect it to be near?
+
+a) 0.10
+b) 0.25
+c) 0.75  
+__d) 0.5__
+
+### Solution
+
+The uniform distribution is a box/ Heaviside function. It's sample mean should converge to the population mean as $n$ increases??
+
+#### Answer:
+__0.5__
+
+--- 
+
+## Question 8
+
+The number of people showing up at a bus stop is assumed to be Poisson with a mean of 5 people per hour. You watch the bus stop for 3 hours. About what's the probability of viewing 10 or fewer people?
+
+a) 0.03  
+b) 0.06  
+c) 0.08  
+__d) 0.12__  
+
+### Solution
+
+When modeling rates, $\lambda = rate \times time$ $\therefore \lambda = 5 * 3$
+
+(model the function here)
+
+```{r}
+ppois(10, lambda = 5*3)
+```
+
+#### Answer: 
+
+$0.118 \to$ __$0.12$__
+
