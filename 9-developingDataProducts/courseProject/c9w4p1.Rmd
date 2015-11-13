@@ -1,0 +1,342 @@
+---
+title: "c9w4p1"
+author: "Robert Handsfield"
+date: "11/10/2015"
+output: html_document
+---
+
+# S1
+Make an interactive widget and publish via rStudio
+
+> @TODO make lissajous generator; use tabs to include... something
+
+## S 1.1
+
+A shiny app requires two files: `ui.r` and `server.r`.
+
+Run a shiny app with `shiny::runApp(path, ...)`. The `ui.r` and `server.r` files must be in the same directory.
+
+Cancel a shiny app with __Esc__ or __Ctrl+C__.
+
+* ui.r
+	+ specifies layout and widget bindings
+* server.r 
+	+ does the calculations
+
+> OR
+
+---
+
+A shiny app can have one file called `app.r`; this file has the UI and Server stored into variables, that are ultimately called by the `shinyApp()` function at the end of the file. 
+
+Call via `runApp()`??
+
+The `app.r` basic structure looks like this:
+```{r eval=FALSE}
+library("shiny")
+
+server <- function(input, output) {
+	
+		# must save result to struct 'output'
+  		output$answer <- renderPlot(plot( input * 2 ));
+	  }
+
+ui <- fluidPage(
+		sidebarPanel(...),
+		
+		# must call correct field of struct 'output'
+    		mainPanel(plotOutput(vector))
+	)
+
+# set the 'ui' and 'server' args of shinyApp()
+shinyApp(ui = ui, server = server)
+
+```
+
+
+	
+## Basic ui.R
+
+The basic _ui.r_ structure calls `shinyUI()` with 'panel' defining functions as args. Ex. `headerPanel()`, `mainPanel()` etc.
+
+```{r eval=FALSE}
+# an example shiny app -- 2015/11/10
+# from c9w1: Shiny 1 Introduction to Shiny(8:36)
+
+shinyUI(
+	pageWithSidebar(
+		headerPanel("Data Science FTW!"),
+		sidebarPanel( h3('Sidebar text') ), # as a level 3 html heading
+		mainPanel( h3('Main Panel text') ) # as a level 3 html heading
+		)
+	)
+```
+
+### Basic server.r
+
+The basic _server.r_ structure calls the `shinyServer()` function, which in turn takes any number of defined functions as arguments. These argument functions themselves take `input` and `output` as their own arguments.
+```{r eval=FALSE}
+library(shiny)
+
+shinyServer(
+	function(input, output) {
+		# function body here
+	}
+)
+```
+
+## next level ui.r
+
+### ui.r html markup
+
+`ui.r` has functions to render html markup tags.
+
+```{r}
+library("shiny")
+shinyUI(
+	pageWithSidebar(
+		headerPanel("Illustrating markup"),
+		sidebarPanel(
+			h1('Sidebar panel'),
+			h1('H1 text'),
+			h2('H2 Text'),
+			h3('H3 Text'),
+			h4('H4 Text')
+		),
+		mainPanel(
+			h3('Main Panel text'),
+			code('some code'),
+			p('some ordinary text')
+		)
+	)
+);
+
+```
+
+### ui.r input bindings
+
+Use one of the `Input()` functions to bind a variable. `...Input()` functions take __html ID, label, value,__ and __value constraints__ as arguments.
+
+```{r}
+
+shinyUI(pageWithSidebar(
+	headerPanel("Illustrating inputs"),
+	sidebarPanel(
+		
+	numericInput('id1', 
+		     'Numeric input, labeled id1', 
+		     0, min = 0, max = 10, step = 1),
+	
+	checkboxGroupInput("id2", 
+			   "Checkbox", 
+			   c("Value 1" = "1","Value 2" = "2","Value 3" = "3")),
+	
+	dateInput("date", "Date:")
+	),
+	
+	mainPanel(
+		h3('Illustrating outputs'),
+		h4('You entered'),
+		verbatimTextOutput("oid1"), # TextOutput args are defined in server.R
+		h4('You entered'),
+		verbatimTextOutput("oid2"),
+		h4('You entered'),
+		verbatimTextOutput("odate")
+	)
+	)
+)
+```
+
+### The corresponding server.r file
+
+Note that inputs and outputs referenced by ui.r are named here. Each is a member of the `input` or `output` object.
+```{r eval=FALSE}
+shinyServer(
+	function(input, output) {
+		output$oid1 <- renderPrint({input$id1})
+		output$oid2 <- renderPrint({input$id2})
+		output$odate <- renderPrint({input$date})
+	}
+)
+```
+
+#### Example: A prediction app
+
+Predicts diabetes risk based on blood glucose measurement.
+
+ui.r
+```{r eval=FALSE}
+shinyUI(
+pageWithSidebar(
+# Application title
+headerPanel("Diabetes prediction"),
+sidebarPanel(
+numericInput('glucose', 'Glucose mg/dl', 90, min = 50, max = 200, step = 5),
+submitButton('Submit')
+),
+mainPanel(
+h3('Results of prediction'),
+h4('You entered'),
+verbatimTextOutput("inputValue"),
+h4('Which resulted in a prediction of '),
+verbatimTextOutput("prediction")
+)
+)
+)
+```
+
+server.r
+```{r eval=FALSE}
+diabetesRisk <- function(glucose) glucose / 200
+shinyServer(
+function(input, output) {
+output$inputValue <- renderPrint({input$glucose})
+output$prediction <- renderPrint({diabetesRisk(input$glucose)})
+}
+)
+```
+
+
+
+# S2 Using Images in Shiny Apps
+
+```{r eval=FALSE}
+library("shiny")
+
+# ui.r ########################
+shinyUI(pageWithSidebar(
+	headerPanel("Example plot"),
+	sidebarPanel(
+		sliderInput('mu', 'Guess at the mean',value = 70, min = 62, max = 74, step = 0.05,)
+	),
+	mainPanel(plotOutput('newHist'))
+	)
+)
+
+
+# server.r ####################
+
+library(UsingR)
+data(galton)
+
+shinyServer(
+	function(input, output) {
+		output$newHist <- renderPlot({
+			hist(galton$child, xlab='child height', col='lightblue', main='Histogram')
+			mu <- input$mu
+			lines(c(mu, mu), c(0, 200),col="red",lwd=5)
+			mse <- mean((galton$child - mu)^2)
+			text(63, 150, paste("mu = ", mu))
+			text(63, 140, paste("MSE = ", round(mse, 2)))
+		})
+	}
+)
+```
+
+# Advanced style control
+
+Instead of doing all the styling in ui.r, you can replace it with an `index.html` (in a new www dir??), which allows all the styling that html/js/css can do. This requires doing all the UI bindings in html or js, probably.
+
+> @TODO find the reference for this
+
+# Distributing a shiny app
+
+An easy way to share with experienced R users is to send/post the dir with all your stuff in it. Then somebody can point R to that dir and call `runApp('./')`.
+
+You can also run your own Shiny server. see [http://www.rstudio.com/shiny/server/](http://www.rstudio.com/shiny/server/) for instructions.
+
+Easier ways to run from a Shiny server
+
+ * [https://www.shinyapps.io/](https://www.shinyapps.io/)
+ * [https://sense.io/](https://sense.io/)??
+
+
+# Advanced Shiny Server files
+
+## Reactive pages
+
+Reactive expressions inside `server.r` execute automatically every time their inputs change.
+
+Basic structure of Shiny server is below. Note when various code blocks are run.
+```{r eval=FALSE}
+
+# code before shinyServer(...) runs exactly once, when the server 
+# first serves the app/ page
+
+shinyServer(
+	function(input, output) { # this is a static function
+		
+		# code in the static generic function runs every time
+		# the app/ page is refreshed
+		
+		reactive_function_1({ 
+			# code inside a reactive (ex renderPlot() ) function runs 
+			# every time a widget (button, slider, etc.) invokes the function
+		})
+		
+		reactive_function_2({ })
+	}
+)
+```
+
+### Example 1 Reactive Page
+
+This app increments a number (execute via `runApp(path)`)
+
+> @TODO try runnig with `runApp(path, display.mode='showcase'` to see under-the-hood execution
+
+```{r eval=FALSE}
+
+# ui.R ########################
+
+shinyUI(pageWithSidebar(
+	headerPanel("Hello Shiny!"),
+	sidebarPanel(
+		textInput(inputId="text1", label = "Input Text1"),
+		textInput(inputId="text2", label = "Input Text2")
+	),
+	
+	mainPanel(
+		p('Output text1'),
+		textOutput('text1'),
+		p('Output text2'),
+		textOutput('text2'),
+		p('Output text3'),
+		textOutput('text3'),
+		p('Outside text'),
+		textOutput('text4'),
+		p('Inside text, but non-reactive'),
+		textOutput('text5')
+	)
+))
+
+# server.R ####################
+
+# Set x <- 0 before running
+# x <- 0
+
+library(shiny)
+
+# this code runs the first time the app is served
+x <<- x + 1 # '<<-' keeps the value in the global scope??
+y <<- 0
+
+shinyServer(
+	function(input, output) {
+		y <<- y + 1 # this increments y on every page refresh
+		
+		# these run every time a text input is changed
+		output$text1 <- renderText({input$text1}) 
+		output$text2 <- renderText({input$text2})
+		output$text3 <- renderText({as.numeric(input$text1)+1})
+		output$text4 <- renderText(y)
+		output$text5 <- renderText(x)
+	}
+)
+
+```
+
+
+
+
+
