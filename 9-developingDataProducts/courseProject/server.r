@@ -5,14 +5,14 @@ library(shiny)
 
 shinyServer(
 	function(input, output) {
-		
-		reactive({
-			output$a <- input$slider1
-		})
-		
-		reactive({
-			output$b <- input$slider2
-		})		
+# 		
+# 		reactive({
+# 			output$a <- input$slider1
+# 		})
+# 		
+# 		reactive({
+# 			output$b <- input$slider2
+# 		})		
 		
 		
 		output$text1 <- renderText({paste("You have selected this")})
@@ -20,7 +20,7 @@ shinyServer(
 		
 		output$plot <- renderPlot({
 			#lissajous stuff goes herex
-			plot(x=(seq(0,input$slider1, length.out=5)), y=(seq(0,input$slider2, length.out=5))^2, xlab='X', col='red', main='Lissajous')
+			plot(x=(seq(0,input$slider1, length.out=5)), y=(seq(0,input$slider2, length.out=5))^2, xlab='X', col='red', type='l', main='Lissajous')
 		})
 # 		
 # # 		output$blank <- renderPrint({"Lorem ipso ballsac"})

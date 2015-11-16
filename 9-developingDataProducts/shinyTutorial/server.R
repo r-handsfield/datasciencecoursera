@@ -14,20 +14,26 @@
 # install.packages( c('mapplots','mapStats','maptools') )
 # library(c('mapplots','mapStats','maptools'))
 
-# install.packages( c('maps','mapproj','shiny') )
-# pkgs <- c('maps','mapproj','shiny')
-# l <- library()$results[,'Package']
-# for(pk in pkgs) { if (!pk %in% l) { library(pk[1]) }}
-
 library("maps"); library("mapproj"); library("shiny");
-
 source("./helpers.R")
+
 counties <- readRDS("./data/counties.rds")
-percent_map(counties$white, "darkgreen", "% white")
 
 
+shinyServer(function(input, output){
 
+	output$map <- renderPlot({
 
-
-
-
+		data <- switch(input$var, 
+			       "Percent White" = counties$white,
+			       "Percent Black" = counties$black,
+			       "Percent Hispanic" = counties$hispanic,
+			       "Percent Asian" = counties$asian
+			       )
+		
+		# run the map generator from the 'helpers.r' file
+		percent_map(var=data, color='blue', legend.title=input$var, min=input$range[1], max=input$range[2])
+	})
+	
+	output$text1 <- renderText({input$range})
+})

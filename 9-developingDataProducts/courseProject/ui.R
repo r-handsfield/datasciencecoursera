@@ -13,20 +13,19 @@ shinyUI(fluidPage(
 			
 			br(),
 			
-			sliderInput(inputId="slider2", label="slider 2", min=0, max=1, value=.5, step=.01),
+			sliderInput(inputId="slider2", label="slider 2", min=0, max=1, value=.5, step=.01)#,
 			
-			br(),
-			
-			actionButton("action", label = "Action")
+# 			br(),
+# 			
+# 			actionButton("action", label = "Action")
 		),
 	
 		# Main Panel with Display Tabs (still within `sidebarLayout()` )
-		mainPanel(tabsetPanel(type="tabs",
-				      tabPanel(title = "Text", textOutput("text1"), textOutput("text2")),
-				      tabPanel(title = "Plot", plotOutput("plot")),
-				      tabPanel(title = "Blank", verbatimTextOutput("blank")),
-				      tabPanel(title = "Table", tableOutput("table"))
-		))	
+		mainPanel(
+			textOutput("text1"), 
+			textOutput("text2"),
+		      	plotOutput("plot")
+		) 
 	)
 ));
 
