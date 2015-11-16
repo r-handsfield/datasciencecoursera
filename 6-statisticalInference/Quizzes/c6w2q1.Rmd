@@ -13,7 +13,7 @@ What is the variance of the distribution of the average an IID draw of n observa
 
 a) $2 \sigma / \sqrt{n}$
 b) $\sigma^2$  
-c) __$\sigma^2 \over n$__
+__c) $\sigma^2 \over n$__
 d) $\sigma / n$
 
 ### Solution
@@ -45,7 +45,7 @@ d) 32%
 * $\sigma = 10$
 * $X = 70$
 
-Because the normal distribution has been thoroughly calculated, Z-transform $X$ to $Z \~ N(0,1)$ to get the quantile. 
+Because the normal distribution has been thoroughly calculated, Z-transform $X$ to $Z ~ N(0,1)$ to get the quantile. 
 
 $$P(X < 70) = P(Z < \frac{X - \mu}{\sigma}$$
 $$P(X < 70) = P(Z < \frac{70 - 80}{10}$$
@@ -155,7 +155,7 @@ $$P(X = {4,5}) = P(4) + P(5)$$
 pbinom(q = 3, size = 4, prob = .5, lower.tail = FALSE)
 ```
 
-### Answer: $0.1875$
+__Answer: $0.1875$__
 
 ---
 
@@ -221,7 +221,23 @@ __d) 0.5__
 
 ### Solution
 
-The uniform distribution is a box/ Heaviside function. It's sample mean should converge to the population mean as $n$ increases??
+The uniform distribution is a boxcar function given by $f(x) = \frac{1}{b-a}$. $A$ is the _location parameter_, giving the displacement of the lower bound from 0. $(B-A)$ is the _scale parameter_, giving the doman of the box. The area under the curve is always $1$, meaning that when the domain increases, the function value decreases proportionally. Consequently, the variance is a function of the domain
+
+__The Uniform Distribution__
+
+* Function $f(x) = \frac{1}{b-a}$
+* Mean $\mu = \tfrac{1}{2}(a+b)$
+* Median $m = \tfrac{1}{2}(a+b)$
+* Variance $\sigma^{2} = \tfrac{1}{12}(b-a)^2$
+
+The _standard uniform distribution_ occurs when $a=0$ and $b=1$. In this case the function and domain are $1$, the median and mode are $1/2$, and the variance is $1/12$.
+
+```{r echo=FALSE, fig.align='center', fig.height=4, fig.width=4}
+x <- c(-.2,-.1,0,0,1,1,1.1,1.2); y <- c(0,0,0,1,1,0,0,0);
+
+plot(x,y, type='l', xlab="a=0, b=1", ylab="f(x)=1", col="blue", main="The Standard Uniform Distribution")
+```
+
 
 #### Answer:
 __0.5__
