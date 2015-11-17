@@ -1,3 +1,10 @@
+#####################################################
+# Shiny Tutorial 6: stockVis app
+#
+# http://shiny.rstudio.com/tutorial/lesson6/
+#####################################################
+
+
 library(shiny)
 
 shinyUI(fluidPage(
