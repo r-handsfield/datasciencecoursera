@@ -3,6 +3,8 @@
 
 library(shiny)
 
+t <- seq(0, 2*pi, .01)
+
 shinyServer(
 	function(input, output) {
 # 		
@@ -20,15 +22,12 @@ shinyServer(
 		
 		output$plot <- renderPlot({
 			#lissajous stuff goes herex
-			plot(x=(seq(0,input$slider1, length.out=5)), y=(seq(0,input$slider2, length.out=5))^2, xlab='X', col='red', type='l', main='Lissajous')
+			plot(x=sin(t*input$slider1), y=sin(t*input$slider2), xlab='X', col='red', type='l', main='Lissajous')
 		})
-# 		
-# # 		output$blank <- renderPrint({"Lorem ipso ballsac"})
+
 		output$blank <- renderPrint({c("Lorem ipso ballsac", a, input$slider1, input$slider2)})
-# 		
-# # 		output$table <- renderTable({x=df})
+
 # 		output$table <- renderTable({(1:6)})
-# 		
 	}
 )
 

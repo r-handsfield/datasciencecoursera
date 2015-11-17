@@ -9,11 +9,11 @@ shinyUI(fluidPage(
 	# Left Sidebar with controls
 	sidebarLayout(
 		sidebarPanel(
-			sliderInput(inputId="slider1", label="slider 1", min=0, max=1, value=.5, step=.01),	
+			sliderInput(inputId="slider1", label="slider 1", min=0, max=12, value=5, step=1),	
 			
 			br(),
 			
-			sliderInput(inputId="slider2", label="slider 2", min=0, max=1, value=.5, step=.01)#,
+			sliderInput(inputId="slider2", label="slider 2", min=0, max=12, value=4, step=1)#,
 			
 # 			br(),
 # 			
