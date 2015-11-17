@@ -30,40 +30,10 @@ shinyServer(function(input, output){
 			       "Percent Hispanic" = counties$hispanic,
 			       "Percent Asian" = counties$asian
 			       )
-
-		color <- switch(input$var,
-				"Percent White" = "darkgreen",
-				"Percent Black" = "black",
-				"Percent Hispanic = "darkorange",
-				"Percent Asian" = "darviolet"
-				)
-
+		
 		# run the map generator from the 'helpers.r' file
-		# percent_map(var=data, color='blue', legend.title=input$var, min=input$range[1], max=input$range[2])
-		percent_map(var=data, color=color, legend.title=input$var, max=input$range[2], min=input$range[1])
-
+		percent_map(var=data, color='blue', legend.title=input$var, min=input$range[1], max=input$range[2])
 	})
 	
 	output$text1 <- renderText({input$range})
 })
-
-
-# Super Advanced way to pass function args
-#
-# shinyServer(function(input, output) {
-# 	output$map <- renderPlot({
-#		args <- switch(
-# 				input$var,
-#				"Percent White" = list(counties$white, "darkgreen"),
-# 				"Percent Black" = list(counties$black, "black"),
-#				"Percent Hispanic" = list(counties$hispanic, "darkorange"),
-#				"Percent Asian" = list(counties$asian, "darkviolet)
-#			)
-#
-#		args$legend.title <- input$var
-#		args$min <- input$range[1]
-#		args$max <- input$range[2]
-#
-#		do.call(percent_map, args)
-# 	}) 
-#  })
