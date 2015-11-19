@@ -7,6 +7,10 @@
 
 # server.R
 
+# if (! 'quantmod' %in% installed.packages()[,'Package']){
+# 	install.packages("quantmod")	
+# }
+
 library(quantmod)
 source("helpers.R")
 
