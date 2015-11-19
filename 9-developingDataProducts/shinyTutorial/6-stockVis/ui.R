@@ -5,7 +5,7 @@
 #####################################################
 
 
-library(shiny)
+library('shiny')
 
 shinyUI(fluidPage(
   titlePanel("stockVis"),

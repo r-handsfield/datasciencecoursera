@@ -1,3 +1,6 @@
+# set download options to countrract the `download.file` error in quantmod::getSymbols()
+options(download.file.method="libcurl")
+
 if (!exists(".inflation")) {
   .inflation <- getSymbols('CPIAUCNS', src = 'FRED', 
      auto.assign = FALSE)
