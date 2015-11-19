@@ -20,3 +20,32 @@ Shiny includes 11 examples. Run with `runExample(num_name)`.
 * `09_upload`
 * `10_download`
 * `11_timer`
+
+
+## Reactive Fucntions
+Use reactive functions like variables, but call the function name in-place.
+```{r eval=FALSE}
+
+value <- reactive({
+	input <- input * 2
+})
+
+# use like this
+new_input_value <- value()
+```
+
+Use `return()` similarly to a `break` to return conditional values
+
+```{r eval=FALSE}
+
+value <- reactive({
+	if(input&val == TRUE){
+		phrase <- "It's true"
+		return(phrase)
+	}
+	phrase <- "It's false"
+	
+	
+})
+```
+
