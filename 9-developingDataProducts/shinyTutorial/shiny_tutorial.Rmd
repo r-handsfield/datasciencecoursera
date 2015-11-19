@@ -5,7 +5,7 @@ date: "11/12/2015"
 output: html_document
 ---
 
-
+[http://shiny.rstudio.com/tutorial/](http://shiny.rstudio.com/tutorial/)
 
 Shiny includes 11 examples. Run with `runExample(num_name)`.
 
