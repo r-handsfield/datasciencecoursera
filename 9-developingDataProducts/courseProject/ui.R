@@ -23,7 +23,7 @@ shinyUI(fluidPage(
 			br(),
 			br(),
 			
-			p("A and B represent the frequency of each oscillator."),
+			p("A and B represent the frequencies of two oscillators."),
 			p("To form closed curves, try values like {1,2}, {2,3}, and {4,5}."),
 			p("Form open curves with values like {1,3}, {2,6}, and {3,7}."),
 			p("Closed Lissajous curves describe the interference between notes in a musical scale.")
@@ -33,14 +33,14 @@ shinyUI(fluidPage(
 	
 		# Main Panel with Display Tabs (still within `sidebarLayout()` )
 		mainPanel(
-			HTML("<p>A <a href=https://en.wikipedia.org/wiki/Lissajous_curve>Lissajous curve</a> describes the relationship between two oscillators vibrating simultaneously. Equations for a Lissajous curve can take the simplified form:</p>"),
+			HTML("<h5>A <a href=https://en.wikipedia.org/wiki/Lissajous_curve>Lissajous curve</a> describes the relationship between two oscillators vibrating simultaneously. Equations for a Lissajous curve can take the simplified form:</h5>"),
 			
-			HTML("<pre><h3>X = sin(A*t)          Y = sin(B*t)</h3></pre>"),
+			HTML("<pre><h5>X = sin(A*t)          Y = sin(B*t)</h5></pre>"),
 			
 			br(),
 			
-			textOutput("text1"), 
-		      	plotOutput("plot")
+			textOutput("text1"),
+		    plotOutput("plot")
 		) 
 	)
 ));

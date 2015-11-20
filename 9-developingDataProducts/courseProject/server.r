@@ -23,8 +23,8 @@ shinyServer(
 			plot(
 				x=sin(t*A()), 
 				y=sin(t*B()), 
-				xlab=paste('sin(', A(), ' * t )'),
-				ylab=paste('sin(', B(), ' * t )'),
+				xlab=paste('X = sin(', A(), ' * t )'),
+				ylab=paste('Y = sin(', B(), ' * t )'),
 				col='red', type='l', lwd=3, 
 				main='Lissajous Curve  (Y vs X)'
 			)
