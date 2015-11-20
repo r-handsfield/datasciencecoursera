@@ -44,8 +44,6 @@ value <- reactive({
 		return(phrase)
 	}
 	phrase <- "It's false"
-	
-	
 })
 ```
 
