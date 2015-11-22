@@ -117,7 +117,7 @@ shinyUI(
 
 Use one of the `Input()` functions to bind a variable. `...Input()` functions take __html ID, label, value,__ and __value constraints__ as arguments.
 
-```{r}
+```{r eval=FALSE}
 
 shinyUI(pageWithSidebar(
 	headerPanel("Illustrating inputs"),

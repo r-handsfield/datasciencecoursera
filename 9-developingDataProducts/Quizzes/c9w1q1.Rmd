@@ -9,7 +9,7 @@ output: html_document
 # Question 1
 Consider the following code for the cars data set
 
-```{r}
+```{r eval=FALSE}
 library(manipulate)
 myPlot <- function(s) {
     plot(cars$dist - mean(cars$dist), cars$speed - mean(cars$speed))
@@ -59,7 +59,7 @@ __Answer:__ A ui.R and server.R file or a A server.R file and a directory called
 # Question 4
 What is incorrect about the followig syntax in ui.R?
 
-```{r}
+```{r eval=FALSE}
 library(shiny)
 shinyUI(pageWithSidebar(
   headerPanel("Data science FTW!"),
@@ -86,7 +86,7 @@ __Answer:__ Missing a comma in the sidebar panel
 # Question 5
 Consider the following code in ui.R
 
-```{r}
+```{r eval=FALSE}
 shinyUI(pageWithSidebar(
   headerPanel("Example plot"),
   sidebarPanel(
@@ -100,7 +100,7 @@ shinyUI(pageWithSidebar(
 
 And the following server.R code.
 
-```{r}
+```{r eval=FALSE}
 library(UsingR)
 data(galton)
 
@@ -123,7 +123,7 @@ Why isn't it doing what we want?
 a) The phrase "Guess at the mu value" should say "mean" instead of "mu"  
 b) __The server.R output name isn't the same as the plotOutput command used in ui.R__  
 c) The limits of the slider are set incorrectly and giving an error  
-d) It should be `r mu <- input$mean` in server.R  
+d) It should be `mu <- input$mean` in server.R  
 
 ## Solution
 __Answer:__ The server.R output name isn't the same as the plotOutput command used in ui.R
