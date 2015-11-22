@@ -1,0 +1,172 @@
+---
+title: "c9w2 Lectures"
+author: "Robert Handsfield"
+date: "11/21/2015"
+output: html_document
+---
+<style>
+	div { background-color: #b4b9ff;}
+</style>
+
+> NOTE!! Slidify files are .Rmd files. ___Knitting___ a slidify `index.Rmd` ___may___ cause all other .Rmd docs to render as a slideshow rather than web page. Resetting this behavior may require full package removals + rStudio reboot.
+
+
+# Slidify
+
+The Slidify R packages combines R, knitr, markdown, javascript, and html5 into a single interface for making presentations.
+
+To use Slidify, install the following dependencies:
+
+* `devtools`
+* `slidifyLibraries`
+* `slidify`
+
+>  <font color='red'> _Slidifiy must be used from inside rStudio!!!_ </font>
+
+```{r message=FALSE, results='hide'}
+
+if (!'devtools' %in% installed.packages()[,'Package']) {install.packages('devtools')}
+
+library(devtools)
+
+# ramnathv::github_install is a vectorised package installer
+
+if (!'slidifyLibraries' %in% installed.packages()[,'Package']) {
+	install_github('ramnathv/slidifyLibraries')
+}
+
+if (!'slidify' %in% installed.packages()[,'Package']) {
+	install_github('ramnathv/slidify')
+}
+ 
+library(slidify)
+```
+
+> Create a project from the _File_ menu, or with `author("project_name")`.  
+
+> Run a slidify from rStudio with `slidify('index.Rmd')`. 
+
+`author("project_name")` creates:
+
+* d New_Dir/
+* d New_Dir/assets/
+* d New_Dir/assets/{css, img, js, layouts}
+* f New_Dir/index.Rmd
+
+Make new slides by adding markdown `---` (page break) elements.
+
+Add CSS selectors to a slide by labeling the page break with the elements:
+
+`--- .css_class_name #css_id_name`
+
+## The YAML Header
+
+YAML stands for _Yet Another Markdown Language_. YAML code specifies document attributes by using the format
+
+> attribute : value
+
+Index.Rmd has this YAML header, Rmd that has the `knit : slidify::knit2slides` attribute will render as Slidify.
+```{r eval=FALSE}
+---
+title       :   ## title of presentation
+subtitle    :   ## subtitle of presentation
+author      :   ## author name
+job         :   ## author's vocation
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}  ## code highlighter
+hitheme     : tomorrow      # {tomorrow, zenburn}                 ## theme for code highlighter
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+```
+
+Regarding code highlighter themes, the only few that seem to work are:
+
+* tomorrow
+	+ light, polychrome, border
+* zenburn
+	+ dark, polychrome, border
+* prettify
+	+ big, blank lines, line nums
+
+The following frameworks (slide themes) should work, but only `io2012`, `html5slides`, and `shower` seem to.
+
+* io2012
+* shower
+* html5slides
+* deck.js
+* dzslides
+* landslide
+* Slidy
+
+Other available slidify fields are 
+```{r eval=FALSE}
+logo        : path_to_image_file
+url         : path_to_working_dir
+assets      : ../assets # (default value)
+
+```
+
+Also check [http://slidify.org/samples/deck.js/#slide-1]("http://slidify.org/samples/deck.js/#slide-1")
+
+## Publishing Slide Decks
+
+### Publishing to GitHub
+
+Use `publish_github(repo, username = getOption("github.user"))`
+
+A local Git installation and SSH access to GitHub are required for this.  
+The default arg for `username` should work if you have Git/GitHub set up in RStudio.
+
+### Publishing to RPubs
+
+Use `publish_rpubs(title, html_file = "index.html")`
+
+This should be set up and ready to go.
+
+
+### Publishing to Dropbox
+
+Use `publish_dropbox(dirname)`
+
+This may require username and oath keys??
+
+
+## Interactive Slides
+
+### Quiz Template
+
+Use the following R markdown, which renders the question, 4 answer choices (_2_ marks the correct choice), and buttons for _Submit_, _Show Hint_, _Show Answer_, and _Clear_:
+
+--- 
+
+## Question 1
+
+What is 1+1?
+
+1. 1
+2. _2_
+3. 3
+4. 4
+
+.hint _Hint text here_
+
+.explanation _Explanatory text here_
+
+---
+
+### Embedding R
+
+Use Rmd just like knitr
+
+
+# R Studio Presenter
+
+@TODO
+
+
+
+
+
+
