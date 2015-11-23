@@ -1,6 +1,6 @@
 ---
 title       : Lissajous Curves
-subtitle    : 
+subtitle    : Slidify Documentation for Lissajous App
 author      : R. Handsfield
 job         : 
 framework   : html5slides        # {io2012, html5slides, shower, dzslides, ...}
@@ -17,7 +17,7 @@ knit        : slidify::knit2slides
 
 </p>The basic sine function $Y = sin(t)$ looks like this:</p>
 ```{r echo=FALSE, fig.height=4, fig.width=6, fig.align='center'}
-t <- seq(1,10*pi,.01)
+t <- seq(0,10*pi,.01)
 
 plot(x=sin(t), xlab="Radians", ylab='Y = sin(t)', col='red', type='l', lwd=3, main='The Sine Function', xaxt='n')
 grid(col='gray', lty=1)
@@ -113,7 +113,7 @@ grid(col='gray', lty=1)
 
 ## Slide 4
 
-The Lissajous curve for a differnt pair of sine functions $Y=sin(4*t)$ and $X=sin(2*t)$
+The Lissajous curve for a different pair of sine functions $Y=sin(4*t)$ and $X=sin(2*t)$
 ```{r echo=FALSE, fig.height=3, fig.width=5, results='hide'}
 plot(x=sin(t*4), xlab="Radians", ylab='sin(4*t)', col='red', type='l', lwd=3, main='Y = sin(4*t)', xaxt='n')
 grid(col='gray', lty=1)
@@ -139,6 +139,6 @@ A <a href=https://en.wikipedia.org/wiki/Lissajous_curve>Lissajous curve</a> desc
 
 ## Slide 5
 
-<p>Use the Lissajous app at __ to compare different pairs of sine functions. Move the sliders to change each function's frequency, then view the resulting Lissajous curve</p>
+<p>Use the Lissajous app at <a href="https://r-handsfield.shinyapps.io/lissajous_app">https://r-handsfield.shinyapps.io/lissajous_app</a> to compare different pairs of sine functions. Move the sliders to change each function's frequency, then view the resulting Lissajous curve.</p>
 
-<img src="assets/fig/lissajous_shiny_app.png" title="lissajous app screenshot" alt="lissajous app screenshot" style="display: block; margin: auto;" /></p>
+<img src="assets/fig/lissajous_shiny_app_screenshot.png" title="lissajous app screenshot" alt="lissajous app screenshot" style="display: block; margin: auto;" /></p>

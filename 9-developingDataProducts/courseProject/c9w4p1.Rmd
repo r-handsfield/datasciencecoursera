@@ -8,7 +8,18 @@ output: html_document
 # S1
 Make an interactive widget and publish via rStudio
 
-> @TODO make lissajous generator; use tabs to include... something
+Lissajous App on shiny.io:
+https://r-handsfield.shinyapps.io/lissajous_app
+
+Source code on Github:
+https://github.com/r-handsfield/datasciencecoursera/tree/master/9-developingDataProducts/courseProje...
+
+Documentation on RPubs:
+http://rpubs.com/r-handsfield/130541
+
+Documentation source on Github:
+https://github.com/r-handsfield/datasciencecoursera/tree/master/9-developingDataProducts/courseProject/slidify_documentation
+
 
 ## S 1.1
 

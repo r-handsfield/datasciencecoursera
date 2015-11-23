@@ -1,6 +1,6 @@
 ---
 title       : Lissajous Curves
-subtitle    : 
+subtitle    : Slidify Documentation for Lissajous App
 author      : R. Handsfield
 job         : 
 framework   : html5slides        # {io2012, html5slides, shower, dzslides, ...}
@@ -13,7 +13,7 @@ knit        : slidify::knit2slides
 
 ## Slide 1
 
-<p>A Lissajous curve is a way to compare trigonometric sine functions. The curve is used in signal processing, audio engineering, and many other disciplines.</p>
+<p>A <a href=https://en.wikipedia.org/wiki/Lissajous_curve>Lissajous curve</a> is a tool for compairing  trigonometric sine functions. The curve is used in signal processing, audio engineering, and many other disciplines.</p>
 
 </p>The basic sine function $Y = sin(t)$ looks like this:</p>
 <img src="assets/fig/unnamed-chunk-1-1.png" title="plot of chunk unnamed-chunk-1" alt="plot of chunk unnamed-chunk-1" style="display: block; margin: auto;" />
@@ -44,7 +44,7 @@ looks like this:
 
 ## Slide 4
 
-The Lissajous curve for a differnt pair of sine functions $Y=sin(4*t)$ and $X=sin(2*t)$
+The Lissajous curve for a different pair of sine functions $Y=sin(4*t)$ and $X=sin(2*t)$
 ![plot of chunk unnamed-chunk-5](assets/fig/unnamed-chunk-5-1.png) ![plot of chunk unnamed-chunk-5](assets/fig/unnamed-chunk-5-2.png) 
 
 looks like this:
@@ -60,15 +60,6 @@ A <a href=https://en.wikipedia.org/wiki/Lissajous_curve>Lissajous curve</a> desc
 
 ## Slide 5
 
-plot(
-				x=sin(t*A()), 
-				y=sin(t*B()), 
-				xlab=paste('X = sin(', A(), ' * t )'),
-				ylab=paste('Y = sin(', B(), ' * t )'),
-				col='red', type='l', lwd=3, 
-				main='Lissajous Curve  (Y vs X)'
-			)
+<p>Use the Lissajous app at <a href="https://r-handsfield.shinyapps.io/lissajous_app">https://r-handsfield.shinyapps.io/lissajous_app</a> to compare different pairs of sine functions. Move the sliders to change each function's frequency, then view the resulting Lissajous curve.</p>
 
-
-
-
+<img src="assets/fig/lissajous_shiny_app_screenshot.png" title="lissajous app screenshot" alt="lissajous app screenshot" style="display: block; margin: auto;" /></p>
