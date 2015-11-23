@@ -1,0 +1,144 @@
+---
+title       : Lissajous Curves
+subtitle    : 
+author      : R. Handsfield
+job         : 
+framework   : html5slides        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [mathjax]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Slide 1
+
+<p>A <a href=https://en.wikipedia.org/wiki/Lissajous_curve>Lissajous curve</a> is a tool for compairing  trigonometric sine functions. The curve is used in signal processing, audio engineering, and many other disciplines.</p>
+
+</p>The basic sine function $Y = sin(t)$ looks like this:</p>
+```{r echo=FALSE, fig.height=4, fig.width=6, fig.align='center'}
+t <- seq(1,10*pi,.01)
+
+plot(x=sin(t), xlab="Radians", ylab='Y = sin(t)', col='red', type='l', lwd=3, main='The Sine Function', xaxt='n')
+grid(col='gray', lty=1)
+```
+
+--- 
+
+## Slide 2
+
+```{r multiplotFunction, echo=FALSE}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+```
+
+<p>If we multiply the variable $t$ by some number, we can either stretch out or compress the graph.</p>
+```{r echo=FALSE, fig.height=3, fig.width=5, results='hide'}
+plot(x=sin(t*3), xlab="Radians", ylab='Y = sin(3*t)', col='red', type='l', lwd=3, main='Y = sin(3*t)', xaxt='n')
+grid(col='gray', lty=1)
+
+plot(x=sin(t*.5), xlab="Radians", ylab='Y = sin(0.5*t)', col='blue', type='l', lwd=3, main='Y = sin(0.5*t)', xaxt='n')
+grid(col='gray', lty=1)
+
+```
+<p>We say that these two graphs have different <i>periods</i> or <i>frequencies</i>. Plotting one of these sines on the X-axis, and the other on the Y-axis, creates the Lissajous curve and makes it easy to compare pairs of sine functions with different frequency relationships.</p>
+
+---
+
+## Slide 3
+
+The Lissajous curve for the previous two sine functions $Y=sin(3*t)$ and $X=sin(0.5*t)$
+```{r echo=FALSE, fig.height=3, fig.width=5, results='hide'}
+plot(x=sin(t*3), xlab="Radians", ylab='sin(3*t)', col='red', type='l', lwd=3, main='Y = sin(3*t)', xaxt='n')
+grid(col='gray', lty=1)
+
+plot(x=sin(t*.5), xlab="Radians", ylab='sin(0.5*t)', col='blue', type='l', lwd=3, main='X = sin(0.5*t)', xaxt='n')
+grid(col='gray', lty=1)
+```
+
+looks like this:
+
+```{r echo=FALSE, fig.height=3, fig.width=5, fig.align='center', results='hide'}
+plot(x=sin(t*.5), y=sin(t*3), xlab='X = sin(0.5*t)', ylab='Y = sin(3*t)', col='purple', type='l', lwd=3, main='L{X = sin(0.5*t), Y = sin(3*t)}', xaxt='n', yaxt='n')
+
+grid(col='gray', lty=1)
+```
+
+
+---
+
+## Slide 4
+
+The Lissajous curve for a differnt pair of sine functions $Y=sin(4*t)$ and $X=sin(2*t)$
+```{r echo=FALSE, fig.height=3, fig.width=5, results='hide'}
+plot(x=sin(t*4), xlab="Radians", ylab='sin(4*t)', col='red', type='l', lwd=3, main='Y = sin(4*t)', xaxt='n')
+grid(col='gray', lty=1)
+
+plot(x=sin(t*2), xlab="Radians", ylab='sin(2*t)', col='blue', type='l', lwd=3, main='X = sin(2*t)', xaxt='n')
+grid(col='gray', lty=1)
+```
+
+looks like this:
+
+```{r echo=FALSE, fig.height=3, fig.width=5, fig.align='center', results='hide'}
+plot(x=sin(t*2), y=sin(t*4), xlab='X = sin(2*t)', ylab='Y = sin(4*t)', col='purple', type='l', lwd=3, main='L{X = sin(2*t), Y = sin(4*t)}', xaxt='n', yaxt='n')
+
+grid(col='gray', lty=1)
+```
+
+
+A <a href=https://en.wikipedia.org/wiki/Lissajous_curve>Lissajous curve</a> describes the relationship between two oscillators vibrating simultaneously. Equations for a Lissajous curve can take the simplified form:
+
+<pre><h5>X = sin(A*t)          Y = sin(B*t)</h5></pre>
+
+---
+
+## Slide 5
+
+<p>Use the Lissajous app at __ to compare different pairs of sine functions. Move the sliders to change each function's frequency, then view the resulting Lissajous curve</p>
+
+<img src="assets/fig/lissajous_shiny_app.png" title="lissajous app screenshot" alt="lissajous app screenshot" style="display: block; margin: auto;" /></p>
