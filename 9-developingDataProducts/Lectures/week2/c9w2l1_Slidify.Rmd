@@ -114,7 +114,7 @@ Also check [http://slidify.org/samples/deck.js/#slide-1]("http://slidify.org/sam
 
 ### Publishing to GitHub
 
-Use `publish_github(repo, username = getOption("github.user"))`
+Use `slidify::publish_github(repo, username = getOption("github.user"))`
 
 A local Git installation and SSH access to GitHub are required for this.  
 The default arg for `username` should work if you have Git/GitHub set up in RStudio.
