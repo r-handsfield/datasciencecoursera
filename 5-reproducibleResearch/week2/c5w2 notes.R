@@ -22,7 +22,8 @@
 
 # 	Links:
 	{
-# 		[text](target url)
+#		In-line linking		
+# 		[text]("target url")
 #
 # 		Organized Linking:
 # 		These are [some][1] [links][2].
@@ -30,11 +31,28 @@
 # 			[2]: target url  "links"
 	}
 
-# 	Newlines:
+# 	Newlines & Breaks:
 	{
 # 		Newlines require a double whitespace at end of line.
 # 		Line 1"  "  #quotes added for demonstration
 # 		Line 2
+#
+#		Use HTML for multiple line breaks.
+#		<br /> <br /> <br />
+#
+#		For page breaks, use 3 dashes with blank line before and after.
+#		(\n)
+#		---
+#		(\n)	
+	}
+
+#	Images:
+	{
+#		Via markdown
+#		![title](path_to_image_file)
+#
+#		Via html
+#		<img src="path_to_file" title="text" alt="text" />
 	}
 
 #	R Code:
@@ -54,12 +72,49 @@
 		`code here`
 	}
 
+#	Hide & Scroll Blocks
+	{
+#		Embed a jquery script tag in the document, then use .hide(), .show(), and .scroll()
+#
+#		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" >
+#		</script>  #closing script tag must be on new line
+	}
+
+
+#	CSS
+	{
+#		Place an internal style sheet.
+		
+#		<style>
+#			element.class#id {
+#				attribute: value
+#			}
+#
+#			element:not(.class#id) {  # negative selector
+#				attribute: value
+#			}		
+#		</style>		
+
+
+#		Link an external style sheet
+#		@TODO		
+	
+		
+#		Inline Style
+#		<tag style="attribute:value; attribute:value"> stuff </tag>
+	}
+
+#	Font Color
+	{
+#		Use the font tag and color attribute
+#		<font color="red"> text </font>
+	}
 
 # knitr-----------------------------------------------
 
 # R md is converted to standard md by knitr (or sweave??)
 # R has a 'markdown' package for md -> html
-# The 'slidify' packages converts R md to slides (pdf or ppt??)
+# The 'slidify' packages converts R md to slides (html5, pdf or ppt??)
 
 # set cache=TRUE to cache individual chunks - may give errors if preceding code changes
 
@@ -75,7 +130,7 @@
 {
 	At the beginning of your Rmd, create a block like this:
 		```{r setoptions, echo=FALSE}
-		opts_chunk$set(echo = FALSE, results = "hide", ~option = value )
+		opts_chunk$set(echo = FALSE, results = "hide", ~option = value, etc )
 		```
 }
 
