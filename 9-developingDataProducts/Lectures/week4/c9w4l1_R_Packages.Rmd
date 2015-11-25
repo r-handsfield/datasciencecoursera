@@ -1,0 +1,213 @@
+---
+title: "c9w4l1_R_Packages"
+author: "R. Handsfield"
+date: "November 25, 2015"
+output: html_document
+---
+
+# Overview
+
+## Installing Packages
+
+* from CRAN/Bioconductor
+	+ install.packages("package_name")
+* from GitHub 
+	+ devtools::install_github(repo = "username/repo")
+
+
+## Package Requirements
+
+1. A directory with the name of the R package
+	+ 1a. Subdirectories `man` and `R`
+2. A DESCRIPTION file, which has info about the package  
+3. R code in the `R/` sub-directory
+4. DOCUMENTATION in the `man/` sub-directory
+5. A NAMESPACE file (technically optional, but always do it)
+6. Full requirements in Writing R Extensions??
+7. Build and Check
+
+### 2. The DESCRIPTION File
+
+Required: 
+
+* Package: Name of package (e.g.`library(name)`)
+* Title: Full name of package
+* Description: Longer description of package in one sentence(usually) 
+* Version: Version number (usually M.m-p format)
+* Author, Authors@R: Name of the original author(s)
+* Maintainer: Name + email of person who fixes problems
+* License: License for the source code, ex GPL,CC, etc.
+
+---
+
+Optional:
+
+* Depends: Rpackages that your package depends on
+* Suggests: Optional Rpackages that users may want to have installed
+* Date: Release date in YYYY-MM-DD format
+* URL: Package home page
+* Other fields can be added
+
+---
+
+<br />
+
+#### Example Description File: `gpclib`
+```
+
+Package: gpclib
+Title: General Polygon Clipping Library for R Description: General polygon clipping routines for R based on Alan Murta's C library
+Version: 1.5-5
+Author: Roger D. Peng rpeng@jhsph.edu with contributions from Duncan Murdoch and Barry Rowlingson; GPC library by Alan Murta
+Maintainer: Roger D. Peng rpeng@jhsph.edu
+License: file LICENSE
+Depends: R (>= 2.14.0), methods
+Imports: graphics
+Date: 2013-04-01
+URL: http://www.cs.man.ac.uk/~toby/gpc/, http://github.com/rdpeng/gpclib
+```
+￼￼￼￼
+### 3. R Code
+
+1. Copy R code into the `R/` sub-directory
+2. There can be any number of files in this directory
+3. Usually separate out files into logical groups
+4. Code for all functions should be included here and not anywhere else in the package
+
+### 4. The Documentation File
+
+* Also called "Help" files
+* Documentation files (`.Rd`) placed in `man/` sub-directory 
+* Written in a specific markup language
+* Required forevery exported function (another reason to limit exported functions)
+* You can document other things like concepts, package overview, etc.
+
+#### Help File example: `line()` Method
+
+```
+\name{line}
+\alias{line} 
+\alias{residuals.tukeyline} 
+\title{Robust Line Fitting} 
+
+\description{
+	Fit a line robustly as recommended in \emph{Exploratory Data Analysis}. 
+}
+
+\usage{ line(x, y) } 
+
+\arguments{
+	\item{x, y}{the arguments can be any way of specifying x-y pairs. See \code{\link{xy.coords}}.}
+}
+
+\details{
+	Cases with missing values are omitted.
+	Long vectors are not supported. 
+}
+
+\value{
+	An object of class \code{"tukeyline"}.
+	Methods are available for the generic functions \code{coef},
+	\code{residuals}, \code{fitted}, and \code{print}. 
+}
+
+\references{
+	Tukey, J. W. (1977). 
+	\emph{Exploratory Data Analysis}, 
+	Reading Massachusetts: Addison-Wesley.
+}
+
+```
+
+
+### 5. The Namespace File
+
+* Used to indicate which functions are exported
+* Exported functions can be called by the user and are considered the public API
+* Non-exported functions cannot be called directly by the user (but the code can be viewed)
+* Hides implementation details from users and makes a cleaner package interface
+* You can also indicate what functions you import from other packages
+* This allows for your package to use other packages without making other packages visible to the user
+* Importing a function loads the package but does not attach it to the search list
+
+* Key directives
+	+ export("<function>")
+	+ import("<package>")
+	+ importFrom("<package>","<function>")
+* Also important
+	+ exportClasses("<class>")
+	+ exportMethods("<generic>")
+
+#### Example Namespace File: `mvtsplot`
+
+```{r eval=FALSE}
+export("mvtsplot") 
+
+importFrom(graphics, "Axis") 
+
+import(splines)
+```
+
+
+#### Example Namespace File: `gpclib`
+
+```{r eval=FALSE}
+export("read.polyfile", "write.polyfile") 
+
+importFrom(graphics, plot) 
+
+exportClasses("gpc.poly", "gpc.poly.nohole")
+
+exportMethods("show", "get.bbox", "plot", "intersect”, "union”, "setdiff", "[", "append.poly", "scale.poly", "area.poly", "get.pts", "coerce", "tristrip", "triangulate")
+```
+
+### 7. Build and Check
+
+Create `package.tar.gz` with
+
+```{r eval=FALSE}
+system("R CMD build newpackage"); 
+system("R CMD check newpackage");
+```
+
+
+
+
+
+
+# Appendix
+
+## install_github()
+
+This function is vectorised on repo so you can install multiple packages in a single command.
+
+__Usage__
+
+`install_github(repo, username = NULL, ref = "master", subdir = NULL, auth_token = github_pat(), host = "api.github.com", ...)`
+
+__Arguments__
+
+`repo`
+Repository address in the format username/repo[/subdir][@ref|#pull]. Alternatively, you can specify subdir and/or ref using the respective parameters (see below); if both is specified, the values in repo take precedence.
+
+`username`	
+User name. Deprecated: please include username in the repo
+
+`ref`	
+Desired git reference. Could be a commit, tag, or branch name, or a call to github_pull. Defaults to "master".
+
+`subdir`
+subdirectory within repo that contains the R package.
+
+`auth_token`	
+To install from a private repo, generate a personal access token (PAT) in https://github.com/settings/applications and supply to this argument. This is safer than using a password because you can easily delete a PAT without affecting any others. Defaults to the GITHUB_PAT environment variable.
+
+`host`
+Github API host to use. Override with your github enterprise hostname, for example, "github.hostname.com/api/v3".
+
+`...`	
+Other arguments passed on to install.
+
+__Details__
+
+Attempting to install from a source repository that uses submodules raises a warning. Because the zipped sources provided by GitHub do not include submodules, this may lead to unexpected behaviour or compilation failure in source packages. In this case, cloning the repository manually using `install_git` with `args="--recursive"` may yield better results.
