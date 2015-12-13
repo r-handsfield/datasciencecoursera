@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Question 1</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h1>Question 1</h1>
+
+<p>Which of the following items is required for an R package to pass R CMD check without any warnings or errors?</p>
+
+<p>a) vignette
+b) a demo directory
+c) An explicit software license
+d) unit tests</p>
+
+<h2>Solution</h2>
+
+<h2>Answer</h2>
+
+<hr/>
+
+<h1>Question 2</h1>
+
+<p>Which of the following is a generic function in a fresh installation of R, with only the default packages loaded?</p>
+
+<p>a) lm<br/>
+b) dgamma<br/>
+c) <strong>colSums</strong><br/>
+d) predict  </p>
+
+<h2>Solution</h2>
+
+<p>Use /Library/Frameworks/R.framework/Resources/library/base/help/base-package, then search function names. Or, use /Library/Frameworks/R.framework/Resources/library/base/help/colSums (and others) to find package for each function.</p>
+
+<h2>Answer</h2>
+
+<p><strong>Answer:</strong> colSums</p>
+
+<hr/>
+
+<h1>Question 3</h1>
+
+<p>What function is used to obtain the function body for an S4 method function?</p>
+
+<p>a)getS3method()
+b)getClass()
+c)getMethod()
+d)showMethods()</p>
+
+<h2>Solution</h2>
+
+<h2>Answer</h2>
+
+<hr/>
+
+<h1>Question 4</h1>
+
+<p>Which one of the following functions must be defined in order to deploy an R function on yhat?</p>
+
+<p>a)model.load
+b)model.transform
+c)model.predict
+d)model.require</p>
+
+<h2>Solution</h2>
+
+<h2>Answer</h2>
+
+<hr/>
+
+<h1>Question 5</h1>
+
+<p>Please download the R package DDPQuiz3 from the course web site. Examine the createmean function implemented in the R/ sub-directory. What is the appropriate text to place above the createmean function for Roxygen2 to create a complete help file?</p>
+
+<p>a)
+#&#39; This function calculates the mean<br/>
+#&#39;<br/>
+#&#39; @param x is a numeric vector<br/>
+#&#39; @return the mean of x<br/>
+#&#39; @export<br/>
+#&#39; @examples<br/>
+#&#39; x &lt;- 1:10<br/>
+#&#39; createmean(x)  </p>
+
+<p>b)<br/>
+#&#39; This function calculates the mean<br/>
+#&#39;<br/>
+#&#39; @param x is a numeric vector<br/>
+#&#39; @export<br/>
+#&#39; @examples<br/>
+#&#39; x &lt;- 1:10<br/>
+#&#39; createmean(x)  </p>
+
+<p>c)<br/>
+#&#39; This function calculates the mean<br/>
+#&#39;<br/>
+#&#39; @param x is a numeric vector<br/>
+#&#39; @return the mean of x<br/>
+#&#39; @export<br/>
+#&#39; @examples<br/>
+#&#39; x &lt;- 1:10<br/>
+#&#39; createmean(y)  </p>
+
+<p>d)<br/>
+#&#39; This function calculates the mean<br/>
+#&#39;<br/>
+#&#39; @param x is a numeric vector<br/>
+#&#39; @return the mean of x<br/>
+#&#39; @export<br/>
+#&#39; @examples<br/>
+#&#39; x &lt;- 1:10<br/>
+#&#39; createmean(x)</p>
+
+<h2>Solution</h2>
+
+<h2>Answer</h2>
+
+</body>
+
+</html>
