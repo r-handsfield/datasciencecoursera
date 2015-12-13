@@ -116,7 +116,7 @@ d) __Summarize the problem first.__
 
 ## Solution:
 
-
+Should Make the figure axes readable, and Summarize the problem first.
 ## Answer:
 __Answer:__ 
 
