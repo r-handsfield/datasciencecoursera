@@ -1,0 +1,64 @@
+c1w1q
+
+# Quiz 1
+
+1. Data science is __the use of data to answer concrete questions__.
+
+
+# Quiz 2
+
+1. abc e
+2. ab
+3. a
+4. a
+5. a
+
+# Quiz 3
+
+1. a c
+2. c
+3. b
+4. ab
+
+# Quiz 4
+
+1. a
+2. b
+3. a c
+
+# Quiz 5
+
+1. ab
+2. c
+3. ab
+4. a
+
+# Quiz 6
+
+1. abc
+2. ab d
+3. ab
+4. a c
+5. c
+
+# Quiz 7 Defining Success in Data Science
+
+1. bc
+2. b
+3. b
+4. a
+
+# Quiz 8 The Data Scientist's Toolbox
+
+1. b
+2. d
+3. d
+4. b
+
+# Quiz 9 Separating Hype from Value
+
+1. a
+2. c
+3. b
+4. b
+
