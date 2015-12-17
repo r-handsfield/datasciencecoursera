@@ -10,10 +10,10 @@ output: html_document
 ## Installing Packages
 
 * from CRAN/Bioconductor
-	+ install.packages("package_name")
+	+ `install.packages("package_name")`
 * from GitHub 
-	+ devtools::install_github(repo = "username/repo")
-
+	+ `devtools::install_github(repo = "username/repo")`
+touch
 
 ## Package Requirements
 
