@@ -1,8 +1,10 @@
 ---
-title: "c9w4l1_R_Packages"
+title: "c9w4l1_Packages"
 author: "R. Handsfield"
 date: "November 25, 2015"
-output: html_document
+output: 
+  html_document: 
+    toc: yes
 ---
 
 # Overview
@@ -172,6 +174,28 @@ system("R CMD check newpackage");
 
 
 
+# Actually Doing It
+
+1. `devtools::create("myPackageName")`
+	+ Creates package directory & skeleton
+2. Fill out `DESCRIPTION` file
+	+ `Package: lis`
+	+ `Title: What the Package Does (one line, title case)`
+	+ `Version: 0.0.0.9000`
+	+ `Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))`
+	+ `Description: `
+		+ What the package does (one paragraph).
+	+ `Depends: R (>= 3.2.3)`
+	+ `License: CCO`  or  `MIT`  or `GPL-2`
+		+ What license is it under?
+	+ `LazyData: true`
+	+ `Imports: dplyr (>= 0.4.0), ggvis (>= 0.2)`
+		+ Pkgs your package MUST have. R will install them when it installs your package.
+	+ `Suggests: knitr (>= 0.1.0)`
+		+ Pkgs that are not essential, but helpful.
+3.
+4.
+5.
 
 
 
