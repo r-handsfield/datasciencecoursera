@@ -1,0 +1,79 @@
+* using log directory ‘/home/rh/Dev/r/datasciencecoursera/9-developingDataProducts/Lectures/week3/topten.Rcheck’
+* using R version 3.2.3 (2015-12-10)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* using option ‘--as-cran’
+* checking for file ‘topten/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘topten’ version ‘1.0’
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘topten’ can be installed ... WARNING
+Found the following significant warnings:
+  Warning: /tmp/RtmpdpN6da/Rbuild41554dd90c0b/topten/man/topten-package.Rd:26: All text must be in a section
+  Warning: /tmp/RtmpdpN6da/Rbuild41554dd90c0b/topten/man/topten-package.Rd:27: All text must be in a section
+See ‘/home/rh/Dev/r/datasciencecoursera/9-developingDataProducts/Lectures/week3/topten.Rcheck/00install.out’ for details.
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Malformed Description field: should contain one or more complete sentences.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... WARNING
+prepare_Rd: topten-package.Rd:26: All text must be in a section
+prepare_Rd: topten-package.Rd:27: All text must be in a section
+* checking Rd metadata ... WARNING
+Rd files with duplicated alias 'topten':
+  ‘topten-package.Rd’ ‘topten.Rd’
+* checking Rd line widths ... OK
+* checking Rd cross-references ... WARNING
+Unknown package ‘<pkg>’ in Rd xrefs
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... WARNING
+Warning: parse error in file 'topten-Ex.R':
+20:11: unexpected symbol
+19: 
+20: ~~ simple examples
+              ^
+* checking examples ... ERROR
+Running examples in ‘topten-Ex.R’ failed
+The error most likely occurred in:
+
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: topten-package
+> ### Title: Builds a prediction model from top 10 features
+> ### Aliases: topten-package topten
+> ### Keywords: package
+> 
+> ### ** Examples
+> 
+> ~~ simple examples of the most important functions ~~
+Error: unexpected symbol in "~~ simple examples"
+Execution halted
+* checking PDF version of manual ... OK
+* DONE
+Status: 1 ERROR, 5 WARNINGs, 1 NOTE
