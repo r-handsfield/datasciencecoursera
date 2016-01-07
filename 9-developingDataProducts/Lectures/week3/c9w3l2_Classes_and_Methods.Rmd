@@ -2,21 +2,131 @@
 title: "c9w3l2_Classes_and_Methods"
 author: "Robert Handsfield"
 date: "01/06/2016"
-output: html_document
+output: 
+  html_document: 
+    toc: yes
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# First
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+R is interactive AND fully supports object oriented programming. Instead of OOP, it is called the _Classes and Methods System_. OOP in R is fairly different than in other languages, so PAY ATTENTION!!!
+
+Because R inherits from the S Language, R has both S3 and S4 classes and methods
+
+* S3 classes/methods
+	+ informal, klugey
+	+ most base R functions are S3 style
+	+ sometimes called _old-style_ methods by old-timers
+* S4 classes/methods
+	+ formal and rigorous
+	+ sometimes called _new-style_ by kool kids
+	+ implementation code in the R `methods` package
+	
+Along with classes, objects, and methods, R has _generic functions_, which are important for some reason. Generic functions figure what data type they are receiving, then call appropriate methods on that data; they DON'T DO ANYTHING ELSE.
+
+To be a smart R programmer, read the documentation from 
+
+* `?Classes`
+* `?Methods`
+* `?setClass`
+* `?setMethod`
+* `?setGeneric`
+
+
+## Second
+
+Classes
+
+* Classes defined with `methods::setClass()`
+* Instantiated by `methods::new()`
+
+Methods
+
+* Class methods defined with `methods::setMethod`
+
+Generic Function
+* defined with `methods::setGeneric()`
+
+
+## Third
+
+The class of all objects can be determined with the `class()` function. The most basic classes, like string, int, etc, are called _atomic_ classes. More complicated data objects (duh) can have their class types returned in the same manner.
 
 ```{r}
-summary(cars)
+# atomic classes
+class(16);
+class("a");
+class(5.3);
+
+# data classes
+x <- rnorm(100);
+y <- rnorm(100);
+fit <- lm(y ~ x); ## Linear regression model
+class(fit);
 ```
 
-You can also embed plots, for example:
-
-```{r, echo=FALSE}
-plot(cars)
+## Fourth
+Basic information about methods can be printed by typing the method name.
+```{r}
+mean
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+Methods can be investigated more deeply with `utils::methods()`. Calling `methods` on the generic function `base::mean()` shows that `mean()` can call five different averaging methods, one each for: dates, numbers, time differences, POSIXct, POSIXlt. It all depends on the class of the input data, and `base::mean()` figures this out for us.
+```{r}
+# an S3 generic function
+methods("mean");
+```
+
+Loading new packages can add methods called by `mean()`.
+
+
+## Fifth
+
+The S4 generic function `methods::show()` (S4 equivalent of print) can also call many different object methods.
+
+```{r}
+methods("show")
+
+# or 
+# showMethods("show")
+```
+
+## Sixth 
+
+The mechanism for methods/ generic functions is
+
+0. The first argument of a generic function is an object of a particular class (there may be other
+arguments)
+1. The generic function checks the class of the object.
+2. A search is done to see if there is an appropriate method for that class.
+3. If there exists a method for that class, then that method is called on the object and we’re done.
+4. If a method for that class does not exist, a search is done to see if there is a default method for
+the generic. If a default exists, then the default method is called.
+5. If a default method doesn’t exist, then an error is thrown.
+	
+## Examining Method Code
+
+Most method code is hidden, but you can view it like this
+
+* S3: `getS3method(<name of generic>, <class>)`
+	+ `utils::getS3ethod()`
+* S4: `getMethod(<name of generic>, <signature>)`
+	+ `methods::getMethod()`
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
