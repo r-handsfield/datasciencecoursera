@@ -1,5 +1,5 @@
 ---
-title: "c9w4l1_Packages"
+title: "c9w3l1_Packages"
 author: "R. Handsfield"
 date: "November 25, 2015"
 output: 
@@ -52,11 +52,11 @@ Optional:
 
 ---
 
-<br />
+
 
 #### Example Description File: `gpclib`
-```
 
+```
 Package: gpclib
 Title: General Polygon Clipping Library for R Description: General polygon clipping routines for R based on Alan Murta's C library
 Version: 1.5-5
@@ -68,13 +68,15 @@ Imports: graphics
 Date: 2013-04-01
 URL: http://www.cs.man.ac.uk/~toby/gpc/, http://github.com/rdpeng/gpclib
 ```
-￼￼￼￼
+<br />
+
 ### 3. R Code
 
 1. Copy R code into the `R/` sub-directory
 2. There can be any number of files in this directory
 3. Usually separate out files into logical groups
-4. Code for all functions should be included here and not anywhere else in the package
+4. Code for all functions should be included here and __NOT__ anywhere else in the package
+
 
 ### 4. The Documentation File
 
@@ -126,7 +128,9 @@ URL: http://www.cs.man.ac.uk/~toby/gpc/, http://github.com/rdpeng/gpclib
 
 * Used to indicate which functions are exported
 * Exported functions can be called by the user and are considered the public API
+	+ ~ public class method
 * Non-exported functions cannot be called directly by the user (but the code can be viewed)
+	+ private class method
 * Hides implementation details from users and makes a cleaner package interface
 * You can also indicate what functions you import from other packages
 * This allows for your package to use other packages without making other packages visible to the user
@@ -171,13 +175,15 @@ Create `package.tar.gz` with
 system("R CMD build newpackage"); 
 system("R CMD check newpackage");
 ```
-
+ which builds, tests, validates, and compresses.
 
 
 # Actually Doing It
 
-1. `devtools::create("myPackageName")`
+1. `devtools::create("myPackageName")` (misses `man/` subdir)
 	+ Creates package directory & skeleton
+	+ `utils::package.skeleton()` can also do this 
+		+ (mor subdirs, misses some .ignore files)
 2. Fill out `DESCRIPTION` file
 	+ `Package: lis`
 	+ `Title: What the Package Does (one line, title case)`
@@ -193,10 +199,33 @@ system("R CMD check newpackage");
 		+ Pkgs your package MUST have. R will install them when it installs your package.
 	+ `Suggests: knitr (>= 0.1.0)`
 		+ Pkgs that are not essential, but helpful.
-3.
-4.
-5.
+3. Copy all R code into the `R/` subdirectory
+4. Fill out `NAMESPACE` file
+	+ exports
+	+ imports
+5. Build and Check
 
+## Doing it with R-Studio GUI
+
+1. New Project > New Directory > R Package
+2. Fill in GUI fields: Package Name, Parent Directory
+3. Fill out `myPackageName/DESCRIPTION`
+	+ Title, Author, Maintainer, Description, License
+	+ Maintainer REQUIRES: `name <email@server.domain>` format
+4. Write Documentation
+	+ The R package [`roxygen2`](http://roxygen.org/roxygen2-manual.pdf) lets you put documentation in the codebase
+	+ See the dirctives: #' @param, @return, @author, @details, @seealso, @export, @importFrom
+5. R Studio > 'Build' Tab > More > Configure Build Tools
+	+ Check the following (includes roxygen: Configure)
+		+ _Generate documentation with roxygen_
+		+ _Rd files_, _NAMESPACE file_
+		+ _R CMD check_, _Source and binary package builds_, _Build & Reload_
+		
+6. R Studio > 'Build' Tab > Build & Reload
+	+ Builds the package
+7. R Studio > 'Build Tab > Check
+	+ Checks the package
+	+ Pass means it would be allowed by CRAN
 
 
 # Appendix
