@@ -12,7 +12,7 @@ Lissajous App on shiny.io:
 https://r-handsfield.shinyapps.io/lissajous_app
 
 Source code on Github:
-https://github.com/r-handsfield/datasciencecoursera/tree/master/9-developingDataProducts/courseProje...
+https://githubcom/r-handsfield/datasciencecoursera/tree/master/9-developingDataProducts/courseProject/lissajous_app
 
 Documentation on RPubs:
 http://rpubs.com/r-handsfield/130541
