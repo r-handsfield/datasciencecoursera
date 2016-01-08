@@ -26,7 +26,7 @@ touch
 4. DOCUMENTATION in the `man/` sub-directory
 5. A NAMESPACE file (technically optional, but always do it)
 6. Full requirements in Writing R Extensions??
-7. Build and Check
+7. Build and [Check](http://r-pkgs.had.co.nz/check.html)
 
 ### 2. The DESCRIPTION File
 
