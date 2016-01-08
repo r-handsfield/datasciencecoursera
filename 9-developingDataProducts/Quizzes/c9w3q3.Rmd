@@ -12,14 +12,16 @@ Which of the following items is required for an R package to pass R CMD check wi
 
 a) vignette
 b) a demo directory
-c) An explicit software license
+c) __An explicit software license__
 d) unit tests
+e) __DESCRIPTION file__
 
 
 ## Solution
 
 
 ## Answer
+__Answer: DESCRIPTION file including a software license__
 
 
 ---
@@ -30,14 +32,22 @@ Which of the following is a generic function in a fresh installation of R, with 
 
 a) lm  
 b) dgamma  
-c) __colSums__  
-d) predict  
+c) colSums
+d) __predict__
+e) __mean__
+f) __show__
 
 ## Solution
-Use `r ?base`, then search function names. Or, use `r ?colSums` (and others) to find package for each function.
+Investigate each function with `?`.  `?mean` and `?predict` include the phrase
+"_generic function_" in their respective Descriptions.
+
+```{r}
+?mean
+```
+
 
 ## Answer
-__Answer:__ colSums
+__Answer: mean__
 
 ---
 
@@ -45,17 +55,18 @@ __Answer:__ colSums
 
 What function is used to obtain the function body for an S4 method function?
 
-a)getS3method()
-b)getClass()
-c)getMethod()
-d)showMethods()
+a) getS3method()
+b) getClass()
+c) __getMethod()__
+d) showMethods()
 
 
 ## Solution
-
+`methods::getMethod()` displays source code for S4 methods.  
+`utils::getS3method()` displays source code for S3 methods.  
 
 ## Answer
-
+__Answer: getMethod()__
 
 ---
 
@@ -63,10 +74,10 @@ d)showMethods()
 
 Which one of the following functions must be defined in order to deploy an R function on yhat?
 
-a)model.load
-b)model.transform
-c)model.predict
-d)model.require
+a) model.load
+b) model.transform
+c) model.predict
+d) model.require
 
 
 ## Solution
@@ -82,6 +93,7 @@ d)model.require
 Please download the R package DDPQuiz3 from the course web site. Examine the createmean function implemented in the R/ sub-directory. What is the appropriate text to place above the createmean function for Roxygen2 to create a complete help file?
 
 a)
+```{r}
 #' This function calculates the mean  
 #'   
 #' @param x is a numeric vector  
@@ -90,17 +102,23 @@ a)
 #' @examples   
 #' x <- 1:10  
 #' createmean(x)  
-  
+
+```
+
+
 b)  
+```{r}
 #' This function calculates the mean  
 #'   
 #' @param x is a numeric vector  
 #' @export  
 #' @examples   
 #' x <- 1:10  
-#' createmean(x)  
+#' createmean(x)
+```  
   
 c)  
+```{r}
 #' This function calculates the mean  
 #'   
 #' @param x is a numeric vector  
@@ -109,8 +127,11 @@ c)
 #' @examples   
 #' x <- 1:10  
 #' createmean(y)  
-  
+```
+
+
 d)  
+```{r}
 #' This function calculates the mean  
 #'  
 #' @param x is a numeric vector  
@@ -119,11 +140,23 @@ d)
 #' @examples   
 #' x <- 1:10  
 #' createmean(x)
+```
 
 
 ## Solution
+For `roxygen2` to create a help file, the following directives are required:
 
+1. `@param` for every input parameter
+2. `@return` for the return object/ value
+3. `@export` if the function will be exposed to the public API (~public method)
+	* this is usually the case, so include the export directive
+
+Optional, but nice
+
+4. `@examples` with __correct syntax__
+
+In the given answer choices, B and D are identical, except that in examples, B stores a sequence in variable _x_, but then calls the function on input _y_.
 
 ## Answer
-
+__Answer: D__
 

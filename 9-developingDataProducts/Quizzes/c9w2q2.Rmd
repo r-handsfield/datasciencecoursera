@@ -116,7 +116,10 @@ d) __Summarize the problem first.__
 
 ## Solution:
 
-Should Make the figure axes readable, and Summarize the problem first.
+1. Summarize the problem
+2. Explain why each step is necessary
+3. Make all figures readable, with full labels.
+
 ## Answer:
 __Answer:__ 
 
