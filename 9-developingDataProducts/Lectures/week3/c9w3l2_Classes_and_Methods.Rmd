@@ -15,10 +15,12 @@ Because R inherits from the S Language, R has both S3 and S4 classes and methods
 
 * S3 classes/methods
 	+ informal, klugey
+	+ can be called directly - but don't ever do it
 	+ most base R functions are S3 style
 	+ sometimes called _old-style_ methods by old-timers
 * S4 classes/methods
 	+ formal and rigorous
+	+ cannot be called directly
 	+ sometimes called _new-style_ by kool kids
 	+ implementation code in the R `methods` package
 	
@@ -92,7 +94,7 @@ methods("show")
 # showMethods("show")
 ```
 
-## Sixth 
+## How Generic Functions Work
 
 The mechanism for methods/ generic functions is
 
@@ -115,9 +117,106 @@ Most method code is hidden, but you can view it like this
 	+ `methods::getMethod()`
 
 
+## Creating S4 Classes
 
+S4 classes are defined with `methods::setClass()`. At minimum, the class needs a name. 
+
+`setClass` example
+```{r eval=FALSE}
+setClass(Class, representation, prototype, contains=character(), validity, 
+	 access, where, version, sealed, package, S3methods = FALSE, slots)
+```
+
+The arguments are, in order of priority
+
+1. Class = name of the class
+2. slots = class variables in format `list(variable="type", etc)`
+3. contains = superclasses in format `list("superclass")` 
+	+ superclasses must be in same type-order as slot elements
+
+
+Class variables are called _slots_ and are statically typed. Slots are defined via the `slots` argument of `setClass()` like this
+```{r eval=FALSE}
+# create list of slot='type' with list() or vector()
+classVars = list(x="numeric", y="integer", m="lm", b="logical")
+
+# create a list of parent classes (optional)
+superClass = list("numeric", "integer", "lm")
+
+setClass(Class = "myClass", slots = classVars, contains = superClass ...)
+```
+
+
+
+* Define new class with `methods::setClass()`
+* Define slots (class variables) with the `slots` argument of `setClass()`
+	+ or use `methods::representation()` (almost deprecated)
+	+ slots are accessible with the `@` operator
+* Define methods with `methods::setMethod()`
+* View class structure with `methods::showClass()`
 	
-	
+### Example - A Polygon Class
+
+```{r eval=FALSE}
+library(methods)
+
+setClass("polygon", slots = c(x="numeric", y = "numeric") )
+```
+
+## Creating S4 Methods
+
+S4 methods are created with he `setMethod()` function 
+```{r eval=FALSE}
+setMethod(f, signature=character(), definition, where = topenv(parent.frame()), 
+          valueClass = NULL, sealed = FALSE)
+```
+
+1. `f` = A generic function or the character-string name of the function
+2. `signature` = a list of objects the function can accept
+3. `definition` = the function definition, standard syntax
+
+`setMethod()` requires both a signature __AND__ an associated generic function (primitive base function like `mean` or `print`). The signature is a character vector indicating the types of objects that are accepted by the method. For example, `mean()` accepts numerics, integers, dates, date ranges, etc.
+
+Working from the polygon class in the previous example, add a plotting method that takes a polygon object as input.
+
+```{r}
+library(methods)
+
+setClass("polygon", slots = c(x="numeric", y = "numeric"))
+
+setMethod("plot", "polygon",
+	  function(x, y, ...) {
+	  	plot(x@x, x@y, type="n", ...);
+	  	xp <- c(x@x, x@x[1]);
+	  	yp <- c(x@y, x@y[1]);
+	  	lines(xp, yp);
+	  }
+	  )
+```
+
+We've created an additional method called "plot". Now, R adds our method to the base package generic function for `plot`. We can see the addition with 
+```{r}
+library(methods)
+showMethods("plot")
+```
+
+The signature for our class `polygon` is listed. The other signature is for the default plot method.
+
+Let's try it out
+```{r}
+# new class instance
+p <- new("polygon", x = c(1,2,3,4), y = c(1,2,3,1))
+
+plot(p)
+```
+
+
+
+
+
+
+
+
 	
 	
 	
