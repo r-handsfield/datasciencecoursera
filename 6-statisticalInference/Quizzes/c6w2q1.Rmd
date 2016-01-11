@@ -163,7 +163,7 @@ __Answer: $0.1875$__
 
 The respiratory disturbance index (RDI), a measure of sleep disturbance, for a specific population has a mean of 15 (sleep events per hour) and a standard deviation of 10. They are not normally distributed. Give your best estimate of the probability that a sample mean RDI of 100 people is between 14 and 16 events per hour?
 
-a) 68%
+a) __68%__
 b) 95%
 c) 47.5%
 d) 34%

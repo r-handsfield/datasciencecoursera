@@ -10,6 +10,8 @@ Consider influenza epidemics for two parent heterosexual families. Suppose that 
 
 (Hints look at lecture 2 around 5:30 and homework question on page 3/10). 
 
+### Solution
+
 $$ P(M \cup F) = 0.17$$
 $$ P(F) = 0.12$$
 $$ P(M \cap F) = 0.06$$
@@ -38,6 +40,7 @@ A random variable, $X$ is uniform, a box from 0 to 1 of height 1. (So that its d
 
 <br />
 
+### Solution
 If (0 < x < 1) and y(x) = 1, at what value of x is 75% of the box area to the left?
 
 Formally, find the random input for the CDF equaling 0.75: $F(x) = 0.75, x = ?$
@@ -63,6 +66,7 @@ You are playing a game with a friend where you flip a coin and if it comes up he
 
 (Hints, look at Lecture 4 from 0 to 6:50 and Homework 1 page 5/10. Also, for further reading on fair games and gambling, start with the [Dutch Book problem](http://en.wikipedia.org/wiki/Dutch_book) ). 
 
+### Solution
 See c6w1q1.svg
 
 __Answer:__ ${p \over {1-p}} = {Y \over X}$  
@@ -81,6 +85,7 @@ A density that looks like a normal density (but may or may not be exactly normal
 
 <br />
 
+### Solution
 This seems like the median is at zero, but it's only true if the CDF never touches the horizontal axis.
 So the "may or may not be exactly normal" line is important, and probably means the answer is
 ~ can't conclude anything
@@ -110,6 +115,7 @@ What is the mean?
 
 (Hint, watch Lecture 4 on expectations of PMFs and look at Homework 1 problem on page 10/10 for a similar problem calculating the variance.)
 
+### Solution
 $$E[X] = \sum_x xp(x)$$
 
 ```{r}
@@ -127,7 +133,7 @@ A web site (www.medicine.ox.ac.uk/bandolier/band64/b64-7.html) for home pregnanc
 
 (Hints, watch Lecture 3 at around 7 minutes for a similar example. Also, there's a lot of Bayes' rule problems and descriptions out there, for example here's one for HIV testing. Note, discussions of Bayes' rule can get pretty heady. So if it's new to you, stick to basic treatments of the problem. Also see Homework 2 question on page 5/12.) 
 
-
+### Solution
  * Sensitivity = .75
  * Specificity = .52 
  * P(D) = .3
