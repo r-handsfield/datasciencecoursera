@@ -1,0 +1,54 @@
+---
+title: "c6w3l1"
+author: "R. Handsfield"
+date: "January 11, 2016"
+output:
+  html_document:
+    number_sections: yes
+    toc: yes
+#  pdf_document:
+#    number_sections: yes
+#    toc: yes
+---
+
+# 08 Confidence Intervals
+
+In previous lectures, we calculated confidence intervals for large samples. These confidence intervals were based on the Central Limit Theorem, which becomes more accurate as the sample size grows to infinity. The CLT method is not accurate for small samples. Instead, we use a __T-Confidence Interval__. The _T-Interval_ is designed to give accurate estimates for small populations. The _T-Interval_ is also used when the population standard deviation $\sigma$ is unknown.
+
+> __Rule of Thumb__
+
+> * Use a _T-Interval_ for populations less than 30, or when $\sigma$ is unknown
+> * Use a CLT Interval for populations greater than 30
+
+## 0801 T-Confidence Intervals
+
+The _T-Interval_, or _Gosset's Interval_, is used to determine the confidence of estimates of small populations, or when the population standard deviation $\sigma$ is unknown.
+
+Recall that the general form of a confidence interval is $$\mbox{estimate} \pm K * SE$$ where $\mbox{estimate}$ is a number, $K$ is the number of standard deviations corresponding to a standard normal quantile (95% confidence, 90% confidence, etc.), and $SE$ is the standard error of the estimate.
+
+The CLT Confidence Interval takes the canonical form 
+$$CI({\bar X}, K, n) = Est \pm ZQ \times SE_{Est} = {\mu \pm K \frac{\sigma}{\sqrt n} }$$
+
+in which the multiplier $K$ is equal to the _Z-Quantile_ $ZQ$, which is a number of standard deviations of the ___Standard Normal Distribution___. The _T-Confidence Interval_ uses a $K$ multiplier equal to the _T-Quantile_ $TQ$, which is also a number of standard deviations, but taken from the ___T-Distribution___.
+
+The T-Distribution looks similar to the normal distribution, but is shorter and wider with fatter tails, meaning the data is more spread out and the variance is higher. This in turn makes the T-Intervals generally wider than their CLT-Interval cousins. As the sample size goes to infinity, the T-Distribution converges to the Standard Distribution, so it's always safe to use the T-Distribution.
+
+The T-Confidence Interval takes the canonical form 
+$$CI({\bar X}, K, n) = Est \pm TQ \times SE_{Est} = \bar X \pm t_{n-1} \frac{S}{\sqrt n}$$
+
+* $\bar X$ is the estimate
+* $t_{n-1}$ is the relevant quantile from the T-Distribution
+* $S$ is the standard deviation of the sample
+* $n$ is the number of samples
+
+
+
+
+
+
+
+
+
+
+
+
