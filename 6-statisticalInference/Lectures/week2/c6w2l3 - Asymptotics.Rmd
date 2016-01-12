@@ -287,9 +287,9 @@ g + facet_grid(. ~ size)
 
 The confidence interval $CI({\bar X}, n)$ is a measure of certainty that any random sample of size $n$, drawn from the population of values for $\bar X$ will contain a value equal to the population mean $\mu$.
 
-The actual interval is always some multiple $K$ of the standard error, where $K$ is the number of standard deviations corresponding to the quantile of whatever confidence level you want. Ex. $95\% \sim 1.96$, $90\% \sim~ 1.65$, $etc.$ $K$ is often labeled $Z$. When using Standard Normal tables, use the $Z$ value for $K$.  
+The actual interval is always some multiple $K$ of the standard error, where $K$ is the number of standard deviations corresponding to the (standard normal) quantile of whatever confidence level you want. Ex. $95\% \sim 1.96$, $90\% \sim 1.65$, $etc.$ $K$ is often labeled $Z$. When using Standard Normal tables, use the $Z$ value for $K$.  
 
-* Remember that the _standard error_ is just the standard deviation of a sample
+* Remember that the _standard error_ is just the standard deviation of a sample, which is equal to the population standard deviation divided by the square root of the sample size. 
 	+ $SE = \sigma / \sqrt n$
 
 > The general formula for a confidence interval is $$CI({\bar X}, K, n) = {\mu \pm K\sigma / \sqrt n} ~~ = ~~ \mbox{mean} \pm K * SE$$
@@ -327,9 +327,9 @@ Technically, the $95\%$ confidence interval is within $1.96$ standard deviations
 
 #### Example 2: Confidence interval for average height
 
-Using the `father.son` data set in the UsingR package, construct a confidence interval for the average height of sons.
+Using the `father.son` data set in the UsingR package, construct a 95% confidence interval for the average height of sons.
 
-```{r message=FALSE}
+```{r message=FALSE, warning=FALSE}
 library("UsingR")
 data(father.son)
 
@@ -341,7 +341,10 @@ stdev <- sd(x)
 # the 95% confidence interval in feet; `qnorm` is the K term
 ci <- (mean(x) + c(-1,1) * qnorm(0.975) * stdev/sqrt(n))/12 # convert from inches to feet
 
+ci
 ```
+In the preceding example, `c(-1,1)` accomplishes the 'plus or minus' $\pm$ operation.  
+The multiplier `qnorm(0.975)` returns $1.96$, the number of standard deviations corresponding to the $0.975$ quantile
 
 * The $95\%$ confidence interval for sons' height is $5.710$ to $5.738$ feet.
 * The $90\%$ confidence interval for sons' height is $5.712$ to $5.735$ feet.
