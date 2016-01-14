@@ -1,0 +1,109 @@
+---
+title: "c6w3q1"
+author: "R. Handsfield"
+date: "January 14, 2016"
+output: html_document
+---
+
+# 1.
+In a population of interest, a sample of 9 men yielded a sample average brain volume of 1,100cc and a standard deviation of 30cc. What is a 95% Student's T confidence interval for the mean brain volume in this new population?
+
+a) [1031, 1169]
+b) [1092, 1108]
+c) __[1077,1123]__
+d) [1080, 1120] 
+
+## Solution
+```{r}
+avg <- 1100;
+stdev <- 30;
+n <- 9;
+
+avg + c(-1,1) * qt(.975,df=(n-1)) * stdev/sqrt(n);
+```
+
+
+__Answer: __
+
+# 2.
+A diet pill is given to 9 subjects over six weeks. The average difference in weight (follow up - baseline) is -2 pounds. What would the standard deviation of the difference in weight have to be for the upper endpoint of the 95% T confidence interval to touch 0?
+
+a) 0.30
+b) 1.50
+c) __2.60__
+d) 2.10
+
+## Solution
+```{r}
+2/(qt(.975,8)/sqrt(9))
+```
+
+
+__Answer: __
+
+# 3.
+In an effort to improve running performance, 5 runners were either given a protein supplement or placebo. Then, after a suitable washout period, they were given the opposite treatment. Their mile times were recorded under both the treatment and placebo, yielding 10 measurements with 2 per subject. The researchers intend to use a T test and interval to investigate the treatment. Should they use a paired or independent group T test and interval?
+
+a) __A paired interval__
+b) It's necessary to use both
+c) You could use either
+d) Independent groups, since all subjects were seen under both systems
+
+
+## Solution
+
+__Answer: __
+
+# 4. WRONG
+In a study of emergency room waiting times, investigators consider a new and the standard triage systems. To test the systems, administrators selected 20 nights and randomly assigned the new triage system to be used on 10 nights and the standard system on the remaining 10 nights. They calculated the nightly median waiting time (MWT) to see a physician. The average MWT for the new system was 3 hours with a variance of 0.60 while the average MWT for the old system was 5 hours with a variance of 0.68. Consider the 95% confidence interval estimate for the differences of the mean MWT associated with the new system. Assume a constant variance. What is the interval? Subtract in this order (New System - Old System).
+
+a) [-2.75, -1.25]
+b) [1.29, 2.70]
+c) [1.25, 2.75]
+d) [-2,70, -1.29]
+
+## Solution
+```{r}
+n1 <- 10; m1 <- 3; sd1 <- sqrt(0.6);
+n2 <- 10; m2 <- 5; sd2 <- sqrt(0.68);
+
+(m1-m2) + c(-1,1) * q2(.975,___) * ___ * ___;
+```
+
+
+__Answer: __
+
+# 5.
+Suppose that you create a 95% T confidence interval. You then create a 90% interval using the same data. What can be said about the 90% interval with respect to the 95% interval?
+
+a) __The interval will be narrower.__
+b) It is impossible to tell.
+c) The interval will be the same width, but shifted.
+d) The interval will be wider
+
+## Solution
+```{r}
+qt(.975,8) * 30/sqrt(9);
+qt(.950,8) * 30/sqrt(9);
+```
+
+
+__Answer: __
+
+# 6
+
+## Solution
+
+__Answer: __
+
+# 7
+
+## Solution
+
+__Answer: __
+
+# 8
+
+## Solution
+
+__Answer: __
