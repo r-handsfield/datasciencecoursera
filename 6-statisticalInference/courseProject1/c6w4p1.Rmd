@@ -10,6 +10,15 @@ output: pdf_document
 
 In this project you will investigate the [exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution) in R and compare it with the Central Limit Theorem. The exponential distribution can be simulated in R with `rexp(n, lambda)` where `lambda` is the _rate parameter_. The mean and standard deviation of the exponential distribution are both $1 / \lambda$. Set `lambda = 0.2` for all of the simulations. You will investigate the distribution of averages of 40 exponentials. Note that you will need to do a thousand simulations.
 
+* $f(x;\lambda) = \left\{\begin{matrix} 
+ \lambda e^{- \lambda x} & x \geq 0 \\ 
+ 0 & x < 0 
+\end{matrix}\right.$
+* $\mu = 1 / \lambda$ 
+* $\sigma = 1 / \lambda$
+* $\lambda = 0.2$
+
+
 Illustrate via simulation and associated explanatory text the properties of the distribution of the mean of 40 exponentials. You should
 
   1.  Show the sample mean and compare it to the theoretical mean of the distribution.
@@ -36,6 +45,18 @@ This distribution looks far more Gaussian than the original uniform distribution
 This exercise is asking you to use your knowledge of the theory given in class to relate the two distributions.
 
 Confused? Try re-watching video lecture 07 for a starter on how to complete this project.
+
+```{r}
+hist(rexp(1000))
+```
+
+```{r}
+mns = NULL
+for (i in 1 : 1000) mns = c(mns, mean(rexp(40)))
+hist(mns)
+```
+
+
 
 ## Sample Project Report Structure
 

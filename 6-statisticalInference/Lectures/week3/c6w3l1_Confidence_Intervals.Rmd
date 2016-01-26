@@ -64,14 +64,20 @@ The t-interval also doesn't work well for discrete data, particularly binary. In
 
 ### 0802 T-Confidence Interval Example
 
+The T-Interval is particularly good at finding confidence intervals for groups of data. This example looks at 10 peoples' sleep duration before and after taking a soporific drug. Because there are two measurements of the the same population, the measurement groups are __NOT__ independant. The groups are ___paired___, so we should use the __paired t-test__.
 
-Plot the sleep data
-```{r, echo = FALSE, fig.width=6, fig.height=6, fig.align='center'}
-library(ggplot2)
-
+```{r}
 data(sleep)
 head(sleep)
+```
 
+The groups are _before_ and _after_ (duh), demarked by `sleep$group`. Differentiate them in `ggplot` by setting `aes(x = group)`. You also need to indicate that each group has several measurements with `aes( group = factor(ID) )`.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+```
+
+```{r, fig.width=6, fig.height=6, fig.align='center'}
 g <- ggplot(sleep, aes(x = group, y = extra, group = factor(ID)))
 g <- g + geom_line(size = 1, aes(colour = ID)) + geom_point(size =10, pch = 21, fill = "salmon", alpha = .5)
 g
@@ -83,27 +89,206 @@ g1 <- sleep$extra[1 : 10]; g2 <- sleep$extra[11 : 20]
 difference <- g2 - g1
 mn <- mean(difference); s <- sd(difference); n <- 10
 ```
-```{r, echo=TRUE,eval=FALSE}
-mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n)
-t.test(difference)
-t.test(g2, g1, paired = TRUE)
-t.test(extra ~ I(relevel(group, 2)), paired = TRUE, data = sleep)
+```{r}
+difference
 ```
+```{r echo=FALSE}
+paste("Mean =", mn, "  SD =", s)
+```
+Recall that we're considering the sleep changes for 6 people. In our data, this means that the data itself is _paired_ across groups. If we do a _paired t-test_, we acknowledge this, and we are calculating the variations across measurements for individual subjects (subject variations are low because measurements for a single person are all strongly correlated). If we did an unpaired t-test, we would be calculating the variation for all of group 1 with the variation for all of group 2.
 
+The following code shows 4 different ways to obtaining the t-confidence interval. The first is the manual calculation, the other 3 are calls to `t.test()` with different arguments. (Note that in method 2, `t.test(x=difference, ..., paired=FALSE)`. this is ok because `difference` is a vector of the 10 measurement difference between groups; the group pairing is implicitly preserved in `difference`.)
 
-Format the results
+`t.test(x, y = NULL, alternative = c("two.sided", "less", "greater"), mu = 0, paired = FALSE, var.equal = FALSE, conf.level = 0.95, ...)`
 ```{r, echo = TRUE}
-rbind(
+a <- rbind(
 mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n),
 as.vector(t.test(difference)$conf.int),
 as.vector(t.test(g2, g1, paired = TRUE)$conf.int),
 as.vector(t.test(extra ~ I(relevel(group, 2)), paired = TRUE, data = sleep)$conf.int)
 )
+
+a[,1] <- signif(a[,1], 4)
+a[,2] <- signif(a[,2], 3)
+a
+```
+The interpretation here is that we have 95% confidence that the true population mean is between $0.7$ and $2.46$. But, that can't be right because this sample wasn't drawn from a larger population! The correct interpretation involves the mean increase in sleep time that we calculated earlier. Recall that $\mbox{mean} = 1.58$. Since the mean is within the 95% t-confidence interval, the correct interpretation is:
+
+> If we ran this exact experiment many times, and calculated each 95% CI, 95% of those intervals would contain the true sample mean that we're trying to estimate.
+
+##  0803 T-Intervals for Independent Groups 
+
+In the previous example, we found confidence intervals for non-independant, paired groups. Now we look at _finding t-confidence intervals for truly independant groups_. (This is also known as __A/B Testing__.)
+
+Recognize independant groups by
+
+1. Random samples drawn from a population
+2. Differnet sample sizes
+
+
+Remember that the general form for a CI is
+$$CI = \mbox{estimate} \pm \mbox{interval} ~ \rightarrow ~ \mbox{mean} \pm \mbox{Quantile} * \mbox{standard error}$$
+
+The t-confidence interval expresses this form as 
+$$CI_t(\bar X, t, n) = \bar X \pm TQ * \frac{S}{\sqrt n} = \bar X \pm t_{n-1} \frac{S}{\sqrt n}$$
+
+The standard $CI_t$ for paired groups is simple because it can treat the _difference_ between the paired groups as 1 measurement, and mimic the $CI_{CLT}$.
+
+The $CI_t$ for independant groups is immediately more complicated because it deals with two estimates from two samples (with equal variances). Heres how to do it:
+
+1. Replace the sample mean $\bar X$ with the difference between group averages $\bar Y - \bar X$
+2. Use the T-Quantile $t_{n_x + n_y - 2, ~ 1 - \alpha/2}$
+	+ $n_x$ and $n_y$ are the numbers of observations in each group
+3. Replace $SE_{Est}$ with the _Standard Error of the difference_ $SE_{Dif}$
+	+ $SE_{Dif} = S_p *\left(\frac{1}{n_x} + \frac{1}{n_y}\right)^{1/2}$
+	+ $S^2_p = \frac{(n_x - 1) S_x^2 + (n_y - 1) S_y^2}{n_x + n_y -2}$ the _pooled variance_
+		+ subtract $2$ from $(n_x + n_y)$ because there are two groups
+		+ the pooled variance estimate weights the group variances based on their sample sizes, automatically accounting for different sample sizes, but __NOT__ unequal variances
+
+---
+
+In confusing lecturer form:
+
+- Therefore a $(1 - \alpha)\times 100\%$ confidence interval for $\mu_y - \mu_x$ is 
+$$
+    \bar Y - \bar X \pm t_{n_x + n_y - 2, ~ 1 - \alpha/2} * S_p *\left(\frac{1}{n_x} + \frac{1}{n_y}\right)^{1/2}
+$$
+- The pooled variance estimator is $$S_p^2 = \{(n_x - 1) S_x^2 + (n_y - 1) S_y^2\}/(n_x + n_y - 2)$$ 
+- Remember this interval is assuming a constant variance across the two groups  
+- If there is some doubt, assume a different variance per group, which we will discuss later
+
+---
+
+## Example
+### Based on Rosner, Fundamentals of Biostatistics
+(Really a very good reference book)
+
+- Comparing SBP for 8 oral contraceptive users versus 21 controls
+- $\bar X_{OC} = 132.86$ mmHg with $s_{OC} = 15.34$ mmHg
+- $\bar X_{C} = 127.44$ mmHg with $s_{C} = 18.23$ mmHg
+- Pooled variance estimate
+```{r}
+sp <- sqrt((7 * 15.34^2 + 20 * 18.23^2) / (8 + 21 - 2))
+132.86 - 127.44 + c(-1, 1) * qt(.975, 27) * sp * (1 / 8 + 1 / 21)^.5
+```
+
+
+---
+## Mistakenly treating the sleep data as grouped
+```{r eval=FALSE}
+n1 <- length(g1); n2 <- length(g2)
+sp <- sqrt( ((n1 - 1) * sd(x1)^2 + (n2-1) * sd(x2)^2) / (n1 + n2-2))
+md <- mean(g2) - mean(g1)
+semd <- sp * sqrt(1 / n1 + 1/n2)
+rbind(
+md + c(-1, 1) * qt(.975, n1 + n2 - 2) * semd,  
+t.test(g2, g1, paired = FALSE, var.equal = TRUE)$conf,
+t.test(g2, g1, paired = TRUE)$conf
+)
+```
+
+---
+## Grouped versus independent
+```{r, echo = FALSE, fig.width=6, fig.height=6, fig.align='center'}
+library(ggplot2)
+g <- ggplot(sleep, aes(x = group, y = extra, group = factor(ID)))
+g <- g + geom_line(size = 1, aes(colour = ID)) + geom_point(size =10, pch = 21, fill = "salmon", alpha = .5)
+g
+```
+
+---
+
+## `ChickWeight` data in R
+```{r}
+library(datasets); data(ChickWeight); library(reshape2)
+##define weight gain or loss
+wideCW <- dcast(ChickWeight, Diet + Chick ~ Time, value.var = "weight")
+names(wideCW)[-(1 : 2)] <- paste("time", names(wideCW)[-(1 : 2)], sep = "")
+library(dplyr)
+wideCW <- mutate(wideCW,
+  gain = time21 - time0
+)
+
+```
+
+---
+## Plotting the raw data
+
+```{r, echo =FALSE, fig.align='center', fig.width=12, fig.height=6}
+g <- ggplot(ChickWeight, aes(x = Time, y = weight, 
+                             colour = Diet, group = Chick))
+g <- g + geom_line()
+g <- g + stat_summary(aes(group = 1), geom = "line", fun.y = mean, size = 1, col = "black")
+g <- g + facet_grid(. ~ Diet)
+g
 ```
 
 
 
-##  0803 T-Intervals for Independent Groups
+---
+## Weight gain by diet
+```{r, echo=FALSE, fig.align='center', fig.width=6, fig.height=6, warning=FALSE}
+g <- ggplot(wideCW, aes(x = factor(Diet), y = gain, fill = factor(Diet)))
+g <- g + geom_violin(col = "black", size = 2)
+g
+
+```
+
+---
+## Let's do a t interval
+```{r}
+wideCW14 <- subset(wideCW, Diet %in% c(1, 4))
+rbind(
+t.test(gain ~ Diet, paired = FALSE, var.equal = TRUE, data = wideCW14)$conf,
+t.test(gain ~ Diet, paired = FALSE, var.equal = FALSE, data = wideCW14)$conf
+)
+```
+
+
+---
+
+## Unequal variances
+
+- Under unequal variances
+$$
+\bar Y - \bar X \pm t_{df} \times \left(\frac{s_x^2}{n_x} + \frac{s_y^2}{n_y}\right)^{1/2}
+$$
+where $t_{df}$ is calculated with degrees of freedom
+$$
+df=    \frac{\left(S_x^2 / n_x + S_y^2/n_y\right)^2}
+    {\left(\frac{S_x^2}{n_x}\right)^2 / (n_x - 1) +
+      \left(\frac{S_y^2}{n_y}\right)^2 / (n_y - 1)}
+$$
+will be approximately a 95% interval
+- This works really well
+  - So when in doubt, just assume unequal variances
+
+---
+
+## Example
+
+- Comparing SBP for 8 oral contraceptive users versus 21 controls
+- $\bar X_{OC} = 132.86$ mmHg with $s_{OC} = 15.34$ mmHg
+- $\bar X_{C} = 127.44$ mmHg with $s_{C} = 18.23$ mmHg
+- $df=15.04$, $t_{15.04, .975} = 2.13$
+- Interval
+$$
+132.86 - 127.44 \pm 2.13 \left(\frac{15.34^2}{8} + \frac{18.23^2}{21} \right)^{1/2}
+= [-8.91, 19.75]
+$$
+- In R, `t.test(..., var.equal = FALSE)`
+
+---
+## Comparing other kinds of data
+* For binomial data, there's lots of ways to compare two groups
+  * Relative risk, risk difference, odds ratio.
+  * Chi-squared tests, normal approximations, exact tests.
+* For count data, there's also Chi-squared tests and exact tests.
+* We'll leave the discussions for comparing groups of data for binary
+  and count data until covering glms in the regression class.
+* In addition, Mathematical Biostatistics Boot Camp 2 covers many special
+  cases relevant to biostatistics.
+
 
 
 ## 0804 Unequal Variances
