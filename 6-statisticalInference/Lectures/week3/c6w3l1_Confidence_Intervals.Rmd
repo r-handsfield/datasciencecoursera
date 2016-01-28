@@ -37,7 +37,7 @@ $$CI({\bar X}, K, n) = Est \pm ZQ \times SE_{Est} = {\mu \pm K \frac{\sigma}{\sq
 
 Instead of the Z-Quantile, the _T-Confidence Interval_ uses a $K$ multiplier equal to the _T-Quantile_ $TQ$, which is also a number of standard deviations, but taken from the ___T-Distribution___.
 
-The T-Distribution looks similar to the normal distribution, but is shorter and wider with fatter tails, meaning the data is more spread out and the variance is higher. This in turn makes the T-Intervals generally wider than their CLT-Interval cousins. As the sample size goes to infinity, the T-Distribution converges to the Standard Distribution, so it's always safe to use the T-Distribution.
+The T-Distribution looks similar to the normal distribution, but is shorter and wider with fatter tails, meaning the data is more spread out and the variance is higher. This in turn makes the T-Intervals generally wider than their CLT-Interval cousins. As the sample size goes to infinity, the T-Distribution converges to the Standard Distribution, so it's always safe to use the T-Distribution. We'll first look at the T-Confidence Interval for non-independant groups.
 
 The T-Confidence Interval takes the canonical form 
 $$CI_t({\bar X}, t, n) = Est \pm TQ \times SE_{Est} = \bar X \pm t_{n-1} \frac{S}{\sqrt n}$$
@@ -130,9 +130,9 @@ Remember that the general form for a CI is
 $$CI = \mbox{estimate} \pm \mbox{interval} ~ \rightarrow ~ \mbox{mean} \pm \mbox{Quantile} * \mbox{standard error}$$
 
 The t-confidence interval expresses this form as 
-$$CI_t(\bar X, t, n) = \bar X \pm TQ * \frac{S}{\sqrt n} = \bar X \pm t_{n-1} \frac{S}{\sqrt n}$$
+$$\mbox{Paired} ~~ CI_t(\bar X, t, n) = \bar X \pm TQ * \frac{S}{\sqrt n} = \bar X \pm t_{n-1} \frac{S}{\sqrt n}$$
 
-The standard $CI_t$ for paired groups is simple because it can treat the _difference_ between the paired groups as 1 measurement, and mimic the $CI_{CLT}$.
+The standard $CI_t$ for groups of pairs is simple because it can treat the _differences_ between the pairs as 1 measurement, and mimic the $CI_{CLT}$.
 
 The $CI_t$ for independant groups is immediately more complicated because it deals with two estimates from two samples (with equal variances). Heres how to do it:
 
@@ -144,7 +144,12 @@ The $CI_t$ for independant groups is immediately more complicated because it dea
 	+ $S^2_p = \frac{(n_x - 1) S_x^2 + (n_y - 1) S_y^2}{n_x + n_y -2}$ the _pooled variance_
 		+ subtract $2$ from $(n_x + n_y)$ because there are two groups
 		+ the pooled variance estimate weights the group variances based on their sample sizes, automatically accounting for different sample sizes, but __NOT__ unequal variances
-
+		
+The Result is 
+$$
+\mbox{Independent} ~~ CI_t(\bar X, \bar Y, t, n_x, n_y) = 
+(\bar Y - \bar X) \pm t_{n_x + n_y - 2, ~ 1 - \alpha/2} * S_p *\left(\frac{1}{n_x} + \frac{1}{n_y}\right)^{1/2}
+$$
 ---
 
 In confusing lecturer form:
@@ -159,113 +164,147 @@ $$
 
 ---
 
-## Example
-### Based on Rosner, Fundamentals of Biostatistics
-(Really a very good reference book)
+### Example - CI for small, independant groups
+
+An experiment measures the systolic blood pressure for 8 _oral contraceptive_ users vs 21 _control_ subjects
 
 - Comparing SBP for 8 oral contraceptive users versus 21 controls
 - $\bar X_{OC} = 132.86$ mmHg with $s_{OC} = 15.34$ mmHg
 - $\bar X_{C} = 127.44$ mmHg with $s_{C} = 18.23$ mmHg
-- Pooled variance estimate
+- Pooled variance estimate $S_p^2 = \{(n_x - 1) S_x^2 + (n_y - 1) S_y^2\}/(n_x + n_y - 2)$
+
+Calculate the $CI_t$ manually. (Note `t.test()` takes vectors of measurements, so we can't use it if the group averages are already calculated)
 ```{r}
-sp <- sqrt((7 * 15.34^2 + 20 * 18.23^2) / (8 + 21 - 2))
-132.86 - 127.44 + c(-1, 1) * qt(.975, 27) * sp * (1 / 8 + 1 / 21)^.5
+
+Xoc <- 132.86; Soc <- 15.34; Noc <- 8;
+Xc  <- 127.44; Sc  <- 18.23; Nc  <- 21;
+
+# degrees of freedom
+dof = Noc + Nc -2
+
+# Pooled standard deiation
+Sp <- sqrt( ( (Noc-1) * Soc^2 + (Nc-1) * Sc^2) / dof )
+
+# t-confidence interval for difference between independant groups
+tCI <- (Xoc - Xc) + c(-1, 1) * qt(.975, dof ) * Sp * (1/Noc + 1/Nc)^.5
+round(tCI,3)
 ```
+This confidence interval represents the range that the blood pressure difference is probably within. But, this interval includes 0! This means there could be no difference in the blood pressure between groups. This is important, so pay attention dammit!
 
+### T-Confidence Sleep Interval Example Revisited
 
----
-## Mistakenly treating the sleep data as grouped
-```{r eval=FALSE}
-n1 <- length(g1); n2 <- length(g2)
-sp <- sqrt( ((n1 - 1) * sd(x1)^2 + (n2-1) * sd(x2)^2) / (n1 + n2-2))
-md <- mean(g2) - mean(g1)
-semd <- sp * sqrt(1 / n1 + 1/n2)
-rbind(
-md + c(-1, 1) * qt(.975, n1 + n2 - 2) * semd,  
-t.test(g2, g1, paired = FALSE, var.equal = TRUE)$conf,
-t.test(g2, g1, paired = TRUE)$conf
-)
-```
+Previously, we calculated the 95% t-confidence interval for difference in sleep hours in people before and after taking a soporific. We treated the data (correctly) as 10 independant pairs of measurements.
 
----
-## Grouped versus independent
-```{r, echo = FALSE, fig.width=6, fig.height=6, fig.align='center'}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ggplot2)
-g <- ggplot(sleep, aes(x = group, y = extra, group = factor(ID)))
-g <- g + geom_line(size = 1, aes(colour = ID)) + geom_point(size =10, pch = 21, fill = "salmon", alpha = .5)
-g
+data(sleep)
+head(sleep)
 ```
 
----
-
-## `ChickWeight` data in R
 ```{r}
-library(datasets); data(ChickWeight); library(reshape2)
-##define weight gain or loss
-wideCW <- dcast(ChickWeight, Diet + Chick ~ Time, value.var = "weight")
-names(wideCW)[-(1 : 2)] <- paste("time", names(wideCW)[-(1 : 2)], sep = "")
-library(dplyr)
-wideCW <- mutate(wideCW,
-  gain = time21 - time0
+g1 <- sleep$extra[1 : 10]; g2 <- sleep$extra[11 : 20]
+T <- t.test(g2, g1, paired = TRUE)  ## paired = TRUE
+round(T$conf.int[1:2],4)
+```
+
+What happens if we mistakenly treat the data as independent groups? That is, 2 independant groups of 10 measurements? Well, in this case, mathematically, each group of 10 gets averaged to 1 number, and the difference between those averages becomes our Estimator.
+```{r}
+a <- rbind(
+t.test(g2, g1, paired = FALSE, var.equal = TRUE)$conf,  # data as 2 groups of 10
+t.test(g2, g1, paired = TRUE)$conf  # data as 10 pairs of 2
 )
 
+signif(a,4)
 ```
+So, yeah, those look different. Treating the data (wrongly) as 2 groups of 10 measurements (`paired = FALSE`) gives us larger intervals because variance in each group is higher than variance in any pair.
 
 ---
-## Plotting the raw data
 
-```{r, echo =FALSE, fig.align='center', fig.width=12, fig.height=6}
-g <- ggplot(ChickWeight, aes(x = Time, y = weight, 
-                             colour = Diet, group = Chick))
-g <- g + geom_line()
-g <- g + stat_summary(aes(group = 1), geom = "line", fun.y = mean, size = 1, col = "black")
-g <- g + facet_grid(. ~ Diet)
+### Example `ChickWeight` data in R
+
+Four groups of chicks receive different diets, and each chick has their bodyweight measured at semi-regular intervals. Each group has 10-20 chicks.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(datasets); library(reshape2); library(dplyr);
+
+data(ChickWeight);
+head(ChickWeight);
+```
+
+Plotting chick-weight over time looks like this 
+```{r, fig.align='center', fig.width=12, fig.height=6}
+g <- ggplot(ChickWeight, aes(x = Time, y = weight, colour = Diet, group = Chick));
+g <- g + geom_line();
+g <- g + stat_summary(aes(group = 1), geom = "line", fun.y = mean, size = 1, col = "black");
+g <- g + facet_grid(. ~ Diet);
+g <- g + ggtitle("Chick Weight Gain for 4 Diets") + theme(plot.title=element_text(size=24));
 g
 ```
-
-
+<p style="text-align: center;"> The black line is the average weight for each group. </p>
 
 ---
-## Weight gain by diet
+
+We can estimate visually that _Diet 1_ showed the lowest gains. Plotting the total _gain_ in weight ($\Delta w$) by diet with a violin plot looks like this 
+
 ```{r, echo=FALSE, fig.align='center', fig.width=6, fig.height=6, warning=FALSE}
+##define weight gain or loss
+wideCW <- dcast(ChickWeight, Diet + Chick ~ Time, value.var = "weight");
+names(wideCW)[-(1 : 2)] <- paste("time", names(wideCW)[-(1 : 2)], sep = "");
+
+wideCW <- mutate(wideCW,  gain = time21 - time0);
+
 g <- ggplot(wideCW, aes(x = factor(Diet), y = gain, fill = factor(Diet)))
-g <- g + geom_violin(col = "black", size = 2)
+g <- g + geom_violin(col = "black", size = 1)
 g
-
 ```
+The "height" of each violin reflects the variance of each diet group. In this plot, it's easier to see that most chicks on Diet 1 gained between 100 and 175 units. Most of group 3 gained between 225 and 275.
 
----
-## Let's do a t interval
+What is the t-confidence interval for the difference between groups 1 and 4?
+
+The following code asks 
+
+> "If we subtract $(\mbox{Gain}_1 - \mbox{Gain}_4)$, how certain are we that the difference is the actual weight gain difference that would be measured in a larger population of chicks?"
 ```{r}
-wideCW14 <- subset(wideCW, Diet %in% c(1, 4))
-rbind(
-t.test(gain ~ Diet, paired = FALSE, var.equal = TRUE, data = wideCW14)$conf,
-t.test(gain ~ Diet, paired = FALSE, var.equal = FALSE, data = wideCW14)$conf
+wideCW14 <- subset(wideCW, Diet %in% c(1, 4)) # subset diets 1 and 4: in order gain1 - gain4
+a <- rbind(
+	t.test(gain ~ Diet, paired = FALSE, var.equal = TRUE, data = wideCW14)$conf,
+	t.test(gain ~ Diet, paired = FALSE, var.equal = FALSE, data = wideCW14)$conf
 )
-```
 
+signif(a,4);
+```
+> We are 95% confident that chicks on Diet 1 will gain an average of (18 to 104) fewer units than chicks on Diet 4, assuming unequal variances in the sample groups.
+
+Note that assuming whether the group variances are equal makes a difference, a roughly $8.5 \%$ narrower interval. From visual inspection, `var.equal = FALSE` is probably the safer assumption, and the larger values in row 2 are the better interval.
 
 ---
 
-## Unequal variances
+## 0804 Unequal variances
 
-- Under unequal variances
+Recall that, for groups with similar/equal variances, the _Standard Error of the Difference_ is
+$$SE_{Dif} = S_p *\left(\frac{1}{n_x} + \frac{1}{n_y}\right)^{1/2}$$
+
+Under unequal variances the Standard Error of the Difference is
+$$SE_{Dif} = \left(\frac{s_x^2}{n_x} + \frac{s_y^2}{n_y}\right)^{1/2}$$
+
+and the t-confidence interval is
+
 $$
-\bar Y - \bar X \pm t_{df} \times \left(\frac{s_x^2}{n_x} + \frac{s_y^2}{n_y}\right)^{1/2}
+\mbox{Independent} ~~ CI_t(\bar X, \bar Y, t, n_x, n_y) = 
+(\bar Y - \bar X) \pm * t_{df} * \left(\frac{s_x^2}{n_x} + \frac{s_y^2}{n_y}\right)^{1/2}
 $$
+
 where $t_{df}$ is calculated with degrees of freedom
 $$
-df=    \frac{\left(S_x^2 / n_x + S_y^2/n_y\right)^2}
+df= \frac{\left(S_x^2 / n_x + S_y^2/n_y\right)^2}
     {\left(\frac{S_x^2}{n_x}\right)^2 / (n_x - 1) +
       \left(\frac{S_y^2}{n_y}\right)^2 / (n_y - 1)}
 $$
-will be approximately a 95% interval
-- This works really well
-  - So when in doubt, just assume unequal variances
+
+> When in doubt, assume unequal variances
 
 ---
 
-## Example
+### Example
 
 - Comparing SBP for 8 oral contraceptive users versus 21 controls
 - $\bar X_{OC} = 132.86$ mmHg with $s_{OC} = 15.34$ mmHg
@@ -279,7 +318,8 @@ $$
 - In R, `t.test(..., var.equal = FALSE)`
 
 ---
-## Comparing other kinds of data
+
+### Comparing other kinds of data
 * For binomial data, there's lots of ways to compare two groups
   * Relative risk, risk difference, odds ratio.
   * Chi-squared tests, normal approximations, exact tests.
@@ -288,18 +328,5 @@ $$
   and count data until covering glms in the regression class.
 * In addition, Mathematical Biostatistics Boot Camp 2 covers many special
   cases relevant to biostatistics.
-
-
-
-## 0804 Unequal Variances
-
-
-
-
-
-
-
-
-
 
 
