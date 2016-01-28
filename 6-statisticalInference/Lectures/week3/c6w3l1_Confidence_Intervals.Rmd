@@ -1,5 +1,5 @@
 ---
-title: "c6w3l1"
+title: "c6w3l1 Confidence Intervals"
 author: "R. Handsfield"
 date: "January 11, 2016"
 output:

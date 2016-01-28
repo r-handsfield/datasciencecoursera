@@ -1,25 +1,19 @@
 ---
-title: "c6w3l3"
+title: "c6w3l3 P-Values"
 author: "R. Handsfield"
 date: "January 11, 2016"
 output: html_document
 #output: pdf_document
 ---
 
-# P Values
+# 10 P-Values
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+The P-value is the probability of getting data more extreme (more outliers) than the observed data in favor of the alternative. The probability calculation assumes the _null_ is true. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+If we get a large T-Statistic, then the P-Value answers the question "If the null is actually true, then how likely is it to get a larger T-Statistic than the one we have?" A small P-value means that our current T-Stat is one of the most possibly extreme, we're unlikely to see a larger one, and the _null_ is probably false.
 
-```{r}
-summary(cars)
-```
+P-values are a convenient way to communicate the results of a hypothsis test. When communicating a P-value, the reader can perform the test at whatever Type 1 error rate they want. 
 
-You can also embed plots, for example:
+1. Compare the P-Value to the desred Type 1 error rate 
+2. If the P-value is smaller, reject the null hypothesis.
 
-```{r, echo=FALSE}
-plot(cars)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
