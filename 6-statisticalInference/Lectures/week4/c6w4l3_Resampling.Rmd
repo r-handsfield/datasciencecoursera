@@ -1,0 +1,25 @@
+---
+title: "c6w4l3 Resampling"
+author: "R. Handsfield"
+date: "January 31, 2016"
+output: html_document
+---
+
+
+# Resampling
+Resampling based procedures are ways to perform population based statistical inferences, while living within our data. Data Scientists tend to really like resampling based inferences, since they are very data centric procedures, they scale well to large studies and they often make very few assumptions.
+
+
+
+## 1301 Bootstrapping
+
+
+
+## 1302 Bootstrapping Example
+
+
+
+## 1303 Notes on the Bootstrap
+
+
+## 1304 Permutation Tests
