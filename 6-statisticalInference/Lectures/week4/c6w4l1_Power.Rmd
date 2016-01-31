@@ -11,6 +11,24 @@ We've talked about a Type I error, rejecting the null hypothesis when it's true.
 
 One avenue for the control of power is at the design phase. There, assuming our finances let us, we can pick a large enough sample size so that we'd be likely to reject if the alternative is true. Thus the most frequent use of power is to help us design studies.
 
+---
+
+In hypothesis testing, we typically have
+
+* $H_0 : ~~ \mu = \mu_0$
+* $H_a : ~~ \mu \neq \mu_0$
+
+We want to _(a)_ reject, or _(b)_ fail to reject $H_0$.
+
+Sometimes, despite our best efforts, we get it wrong. The rates $\alpha$ and $\beta$ quantify how often we screw up a hypothesis test.
+
+col1 | col2 |
+-----------|-------------------------------------------------------------|
+$\alpha$   |$p(\mbox{reject } H_0 ~|~ H_0) = p(Type ~ I ~ error)$
+$\beta$    |$p(\mbox{fail to reject } H_0 ~|~ H_a) = p(Type ~ II ~ error)$
+$1-\alpha$ |$p(\mbox{fail to reject } H_0 ~|~ H_0) = p(True ~ positive)$
+$1-\beta$  |$p(\mbox{reject } H_0 ~|~ H_a) = p(True ~ negative)$
+
 
 ## 1101 Power
 
