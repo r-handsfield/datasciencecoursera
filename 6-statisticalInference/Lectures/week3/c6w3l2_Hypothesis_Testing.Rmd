@@ -11,6 +11,335 @@ output: html_document
 Deciding between two hypotheses is a core activity in scientific discovery. Statistical hypothesis testing is the formal inferential framework around choosing between hypotheses.
 
 
+## 0901 Hypothesis Testing
+
+_Hypothesis Testing_ is a procedure for making decisions based on your data. It is very similar to the Scientific Method.
+
+1. Specify a _null hypothesis_ $H_0$
+	+ represents the _current state_ or _assumed state_, or _desired state_ of things
+2. Assume the null hypothesis is true
+3. Search for statistical evidence to disprove the null
+4. If evidence disproves the null, use it to form an alternative hypothesis
+
+From this process, four outcomes are available. If we do our math right, we'll determine that $H_0$ is true or false, we'll be right, and we'll correctly accept or reject the null hypothesis. If we do our math wrong, we'll decide that $H_0$ or $H_a$ is true, but be wrong. These scenarios are called _Type I_ and _Type II_ errors.
+
+### Type I & Type II Errors
+
+Actual Truth | Your Calculation | Outcome
+------|-------|--------------------------
+$H_0$ | $H_0$ | correctly accept the null
+$H_0$ | $H_a$ | Type I error
+$H_a$ | $H_a$ | correctly reject the null
+$H_a$ | $H_0$ | Type II Error
+
+* Type I  error: You choose the alternative when the null hypothesis is actually true
+* Type II error: You choose the null when the alternative hypothesis is actually true
+
+Type I and II errors are inversely proportional. If we use a single $H_0$ to H-Test many samples, Type I & II errors will appear in a fixed ratio. (So will correct $H_0$ decisions). 
+
+If we change to a stricter $H_0$ (harder to disprove), we'll get more Type II and less Type I, in a new fixed ratio.
+
+If we change to a more lenient $H_0$ (easier to disprove), we'll get more Type I and less Type II, still in some fixed ratio.
+
+Typically, Type II errors are preferable to Type I; "Extraordinary claims require extraordinary evidence" and all. Accepting the alternative hypothesis explicitly means you are going to change something. It's better not to change things unless you're sure the decision is correct.
+
+__The probability of a Type I error is called the _Type I Error Rate_ $\alpha$.__
+
+> Typically, the $H_0$ rejection region $C$ is chosen so that the _Type I Error Rate_ is 5%: $H_0 |_C \{C: \alpha = .05 \}$
+
+Which boils down to 
+
+> Reject $H_0$ whenever $\bar X > \mu + 1.645 SE$
+
+We want a small $\alpha$ because if Type I errors are rare, any time our test leads us to reject $H_0$, the probability that we made a mistake is low. More likely, our model is wrong.
+
+#### Type I & Type II Error Analogy
+
+In a court of law, the null hypothesis is _The defendant is innocent_. Proving the defendant guilty means rejecting the null hypothesis $H_0$, then accepting the alternative $H_a$.
+
+If the burden of proof is impossibly high (strict $H_0$), NOBODY will be convicted. The innocent will be free ($H_0, ~ H_0 =$ correct accept), and the guilty will be released ($H_a, ~ H_0 =$ Type II).
+
+If the burden of proof is low (lenient $H_0$), EVERYBODY will be convicted. All the guilty will be convicted ($H_a, ~ H_a =$ correct reject), and all the innocent will be imprisoned ($H_0, ~ H_a =$ correct reject).
+
+### Summary
+
+In general, we test for
+
+* $H_0:\mu = \mu_0$ versus 
+  * $H_1: \mu < \mu_0$
+  * $H_2: \mu \neq \mu_0$
+  * $H_3: \mu > \mu_0$ 
+  
+Our _test statistic_ is $TS = \frac{\bar{X} - \mu_0}{SE_{\bar X}}$
+
+* $SE_{bar X} = S_{bar X} / \sqrt{n_X}$
+
+Reject the null hypothesis when does not equal the relevant (Z) quantile.
+
+  * $TS \leq Z_{\alpha} = -Z_{1 - \alpha}$
+  * $|TS| \geq Z_{1 - \alpha / 2}$
+  * $TS \geq Z_{1 - \alpha}$
+
+
+---
+
+## 0902 Choosing Rejection Regions
+
+The region of test statistic values for which we reject $H_0$ is called the _regjection region_
+
+### Example
+
+People with breathing disorders often have respiratory disturbances while they sleep. A respiratory disturbance index _RDI_ of more than 30 events per hour is considered evidence of severe _Sleep Disordedred Breating_, (SDB).
+
+In a sample of 100 overweight subjects, the mean RDI is 32 events/hour with a standard deviation of 10 events / hour. We want to test whether an average person in the overweight population will have SDB. In other words, __is the mean RDI  for the overweight population greater than 30?__
+
+* $\bar X = 32$, $S_{\bar X} = 10$, $n_X = 100$
+* $H_0 : \mu = 30$
+	+ Null Hypothesis: an average fatty doesn't have clinical SBD, but is almost there
+* $H_a : \mu > 30$
+	+ Alternative Hypothesis: the average fatty has clinical SBD
+
+_Ordinarily I would write $\mu = ?$, but we __AREN'T__ asking for the value of the mean. We only want to know if it's above a certain value. In this formulation of the question, a third hypothesis ($H : \mu < 30$) is irrelevant, so we ignore it and save some work._
+
+1. Calculate everything you can about this system
+
+$$SE = \frac{S}{\sqrt n} = \frac{10}{\sqrt 100} ~~~~ \therefore ~~~~ SE=1$$
+
+2. Assume that the sample of overwieght subjects is randomly drawn, and the means of many such samples follow a normal distribution.
+
+$$\left\{~~H_0: \mu=30 \to ~~~~ \bar X \sim N(\mu,Var) ~~ = ~~ \bar X \sim N(\mu,SE^2) ~~ = ~~ \bar X \sim N(30,1)~~\right\}$$
+
+3. Choose a criterion so there is a $5\%$ probability that the sample mean is greater than that criterion constant $C$.
+
+$$~~\left\{ C : P(\bar X > C; H_0) = .05 \right\}~~$$
+
+Remember that for the Standard Normal distribution, the $95^{th}$ quantile is 1.645 SD from the mean. We don't have a standard deviation in our tiny sample, so use the standard error. Choose a criterion that is $1.645$ standard errors from the mean.
+$$C = \mu + ZQ_{.95} * SE ~~~~ = ~~~~ 30 + 1.645 * 1 ~~~~ = 31.645$$
+
+So far, from our sample, we've used only $n_X$ and $S_{\bar X}$. We arbitrarily decided that our null hypothesis is $\mu = 30$, then we used immutable properties of the standard normal to choose a pass/fail criterion $C$ for our hypothesis. That criterion is $C = 31.645$.
+
+[We are assuming that the true population mean is 30, thus any sample mean is estimating 30. The population is normal, so only 5% of overweight people will have more than 31.645 RDI????]
+
+We now have a rule that says 
+
+> Reject $H_0$ when $\bar X \geq 31.645$
+
+Which means "If the mean of a sample is less than $31.645$, then that sample was drawn from a population with $\mu = 30$". From this meaning you can use normal distribution quantiles to extrapolate that $2.3\% ~ (2\sigma)$ of this population has SDB (RDI > 32).
+
+If all population samples were ideal, any $\bar X > 30$ would mean population $\mu > 30$. But population samples aren't ideal, and sample means have a distribution. Calculating $C = 31.645$ is how we handle that fuzziness. It gives our rejection rule the implicit property that sometimes, when a population has $\mu=30$ $\left(H_0=true \right)$, we reject $H_0$ anyway and declare incorrectly that $\mu > 30$ (Type I error). We designed the property so this mistake happens $5\%$ of the time, but it _only_ applies for samples with $n_X = 100$ and $S_\bar X = 10$.
+
+We can generalize the result of this example to 
+
+> Reject $H_0$ whenever $~~~\frac{\bar X - \mu}{SE_\bar X} > Z_{1-\alpha}$
+
+$\left(~ \mbox{alternate form} ~~ \frac{{\sqrt n} (\bar X - \mu)}{S_\bar X} >  Z_{1-\alpha} ~ \right)$
+
+And typically we set $\alpha=.05$, so we use $Z_{.95} ~~ = ~~ 1.645$
+
+
+### Example Revisited
+
+Imagine that in the previous example, the sample size is $16$ instead of $100$. How does this change things?
+
+* $\bar X = 32$, $S_{\bar X} = 10$, $n_X = 16$
+* $H_0 : \mu = 30$
+* $H_a : \mu > 30$
+
+<br />
+
+Our generalized rule is
+
+$$\mbox{Reject} ~~ H_0 ~~ \mbox{when} ~~ \frac{\bar X - \mu}{SE_\bar X} > Z_{1-\alpha}$$
+
+but $n_X$ is less than 30, so we must replace the Z-Quantile with a T-Quantile
+
+$$\frac{\bar X - \mu}{SE_\bar X} > t_{df,~1-\alpha}$$
+
+For $n_X - 1 = 15$ degrees of freedom, the 0.95 T-quantile is $1.753$
+
+```{r}
+qt(.95,15)
+```
+
+Our hypothesis test for this sample fails
+$$\frac{32 - 30}{10 / \sqrt{16}} = 0.8 \ngtr 1.753$$
+
+We do not reject $H_0$. We accept that this sample was drawn from a population with $\mu=30$
+
+### Two-Sided Tests
+
+You can also set up a rejection region for $\mu > \mu_0$ and $\mu < \mu_0$. Even though we have 3 conditions, larger, smaller, equal; we still have only two hypotheses
+
+* $H_0: \mu = \mu_0$ 	 <span style="margin-left: 5em;" /> the null hypothesis
+* $H_a: \mu \neq \mu_0$  <span style="margin-left: 5em;" /> the alternative hypothesis
+
+Our generalized two-sided rule becomes
+
+> Reject $H_0$ when $~~ Z_{\frac{\alpha}{2}} > \frac{\bar X - \mu}{SE_\bar X} > Z_{1- \frac{\alpha}{2}}$
+
+For a 5% Type I error rate $\alpha = .05$
+
+> Reject $H_0$ when $~~Z_.025 > \frac{\bar X - \mu}{SE_\bar X} > Z_.975$
+
+In R, quantiles can be easily found with
+```{r eval=TRUE}
+# normal distribution Z-Quantiles
+qnorm(.025); qnorm(.975);
+
+# T distribution T-Quantiles
+qt(.025, 10); qt(.975, 10); # 10 degrees of freedom (n = 11)
+```
+
+
+## 0903 T-Tests
+
+
+### T-Test in R
+
+Running T-Tests in R is stupid easy, use `stats::t.test()`. 
+
+#### `stats::t.test()` declaration
+
+```{r eval=FALSE}
+t.test(x, y = NULL, alternative = c("two.sided", "less", "greater"), 
+       mu = 0, paired = FALSE, var.equal = FALSE, conf.level = 0.95, ...)
+```
+
+### Example One-Sided Test
+The following example uses a T-Test to compare the mean heights of fathers and their sons. The null hypothesis $H_0$ is $father_height ~-~ son_height = 0$.
+
+The rejection rule is __Reject $H_0$ if $TS > t_{.95}$__
+
+```{r message=FALSE, warning=FALSE}
+library(UsingR)
+data(father.son)
+
+father_height <- father.son$fheight
+son_height <- father.son$sheight
+t.test(son_height - father_height)
+```
+
+* `t` = the T-Statistic 
+* `df` = degrees of freedom ($n-1$)
+* `p-value` = 
+
+
+This t-statistic indicates that we should reject $H_0$. The default quantile in `t.test()` is $0.95$ (`conf.level=0.95`) which we know is equal to $1.645 \sigma$, and $11.79 > 1.645$.
+
+### Example Two-Sided Test
+
+Recall the previous example in which the _test statistic_ $TS = \frac{\bar X - 30}{SE_{\bar X}}$
+
+* $n = 16$
+* $S_\bar X = 10$
+* $SE_\bar X = S_\bar X / \sqrt n = 2.5$
+* $\bar X = 32$
+* $\mu = 30$
+
+$$TS = \frac{32 - 30}{2.5} = 0.8$$
+
+We want to test the _alternative hypothesis_ $H_a : \mu \neq 30$. $H_0$ is $\mu = 30$, and our rejection rule is
+
+__Reject $H_0$ if the test statistic $TS$ is too large or too small__
+
+To accept or reject $H_0$, we need to know if TS is larger than the $0.975$, or smaller than the $0.025$ T-Quantile (corresponding to a two-tail $\left{ \alpha = .05: ~ t_{1- \alpha \over 2} = t_{.975}; t_{\alpha \over 2} = t_{.025} \right}$ ).
+
+Because the t-distribution is symmetrical, the two quantiles have the same magnitude, so we can just take the absolute values and save some work.
+
+> Reject $H_a$ if $\left | TS \right | > \left | t_{.025, 15} \right |$
+
+In R, it's stupid simple
+```{r}
+0.8 > qt(.975, 15)
+```
+
+The $0.975$ t-quantile for $15$ degrees of freedom is $2.13$. The test statistic is smaller than this, and we fail to reject the null hypothesis, meaning that the alternative hypothesis is bunkum, and concluding that this sample was drawn from a population in which $\mu = 30$.
+
+
+## 0904 Two-Group Testing
+
+Groups of chicks are given 4 separate diets, then weighed at semi-regular intervals
+
+The null hypothesis $H_0$ is $\mu_{group 1} = \mu_{group 4}$. The rejection rules are the same: "Reject $H_0$ if $|TS| > |tQ|$"
+
+Loading formatting the data
+```{r}
+library(datasets);    library(reshape2);   library(dplyr);
+
+data(ChickWeight);
+
+##define weight gain or loss
+wideCW <- dcast(ChickWeight, Diet + Chick ~ Time, value.var = "weight")
+names(wideCW)[-(1 : 2)] <- paste("time", names(wideCW)[-(1 : 2)], sep = "")
+wideCW <- mutate(wideCW, gain = time21 - time0)
+```
+
+The groups are not paired because their diets are indepent. Group1, Chick1 has nothing to do with Group4, Chick1.
+
+In this code, first of all, the data is in wide form, so the 2-vector `t.test()` argument can't be used. The `gain ~ Diet` operator does the appropriate mutating in-function. Before any of that though, the data is subset to groups 1 & 4. The is mandatory because t-tests can only test 2 things. Including more groups would make `t.test()` choke.
+
+```{r,echo=TRUE, comment="> ", results='markup'}
+wideCW14 <- subset(wideCW, Diet %in% c(1, 4))
+
+t.test(gain ~ Diet, paired = FALSE, var.equal = TRUE, data = wideCW14)
+```
+
+The t-statistic $TS = -2.73$ is the estimate minus the parameter, divided by the standard error of the estimate
+
+$$TS = \frac{etimate - actual}{std error of the estimate}$$
+
+The $\{0.95, 23\}$ t-quantile is $1.72$
+```{r}
+qt(.95,23)
+```
+
+Remember that our rejection rule is "Reject $H_0$ if $TS > tQ$". But, $TS < tQ$, so we reject $H_0$, and conclude that $\mu_{Group 1} \neq \mu_{Group 4}$
+
+### Binomial T-Test
+
+A friend has 8 children, 7 girls and 1 boy. If the probability of having a girl is $0.5$, 7 girls is a very unlikely outcome. But what if our birth-probability model is flawed? What if, for this couple, $p(girl) > 0.5$? 
+
+We can use hypothesis testing to find out the likelihood that this couple's child gender probability is not 50%.
+
+Note that this will not tell us what $p(girl)$ is, only if it is, or is not greater than 50%
+
+* $H_0: p(g) = 0.5$
+* $H_a: p(g) > 0.5$
+
+We are looking for reasons to reject $H_0$. How many girls would a couple need to have before we conclude that $p(g) > 0.5$? If the probability is genetically 50%, a couple may have 6 or 7 girls anyway; we conclude in this case that $p(g) > 0.5$, but we're wrong. We've made a Type I error. Remember that we want a number-of-girls threshold such that our Type I error rate is less than 5% 
+
+
+
+Number of Girls <br /> (Rejection Region) | Type I error rate | Interpretation
+---|---|
+At least 0 | `r pbinom(-1, size = 8, p = .5, lower.tail = FALSE)` | Reject $H_0$ 100% of the time
+At least 1 | `r pbinom( 0, size = 8, p = .5, lower.tail = FALSE)` | If there is at least 1 girl, reject $H_0$
+At least 2 | `r pbinom( 1, size = 8, p = .5, lower.tail = FALSE)`
+At least 3 | `r pbinom( 2, size = 8, p = .5, lower.tail = FALSE)`
+At least 4 | `r pbinom( 3, size = 8, p = .5, lower.tail = FALSE)`
+At least 5 | `r pbinom( 4, size = 8, p = .5, lower.tail = FALSE)`
+At least 6 | `r pbinom( 5, size = 8, p = .5, lower.tail = FALSE)`
+At least 7 | `r pbinom( 6, size = 8, p = .5, lower.tail = FALSE)`
+At least 8 | `r pbinom( 7, size = 8, p = .5, lower.tail = FALSE)`
+
+```{r eval=FALSE, echo=FALSE}
+# simulation code for child example - not used, but corrent
+
+# simulate 8 children, count number of girls
+f <- function(v) {v * sum(sample(0:1, size=8, replace = TRUE))}
+
+# initialize df
+df <- data.frame(rep(1,10000))
+names(df) <- "c1"
+
+df <- apply(df,1,f)
+
+hist(df)
+```
+
+
+
+
 
 
 
