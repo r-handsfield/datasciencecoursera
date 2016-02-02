@@ -5,6 +5,14 @@ date: "January 31, 2016"
 output: html_document
 ---
 
+```{r echo=FALSE}
+# NOT WORKING!!!!!!!!!!
+
+# import custom stylesheet
+source("sources/import_stylesheet.R")
+```
+
+
 # Introduction
 
 We've talked about a Type I error, rejecting the null hypothesis when it's true. We've structured our hypothesis test so that the probability of this happening is small. The other kind of error we could make is to fail to reject when the alternative is true (Type II error). Or we might think about the probability of rejecting the null when it is false. This is called Power = 1 - Type II error. We don't have as much control over this probability, since we've spent all of our flexibility guaranteeing that the Type I error rate is small.
@@ -13,6 +21,8 @@ One avenue for the control of power is at the design phase. There, assuming our 
 
 ---
 
+
+## 1101 Power
 In hypothesis testing, we typically have
 
 * $H_0 : ~~ \mu = \mu_0$
@@ -20,23 +30,243 @@ In hypothesis testing, we typically have
 
 We want to _(a)_ reject, or _(b)_ fail to reject $H_0$.
 
-Sometimes, despite our best efforts, we get it wrong. The rates $\alpha$ and $\beta$ quantify how often we screw up a hypothesis test.
+Sometimes, despite our best efforts, we get it wrong, and commit Type I or II errors. Think about errors like this:
+![table](sources/table.png)
 
-col1 | col2 |
------------|-------------------------------------------------------------|
-$\alpha$   |$p(\mbox{reject } H_0 ~|~ H_0) = p(Type ~ I ~ error)$
-$\beta$    |$p(\mbox{fail to reject } H_0 ~|~ H_a) = p(Type ~ II ~ error)$
-$1-\alpha$ |$p(\mbox{fail to reject } H_0 ~|~ H_0) = p(True ~ positive)$
-$1-\beta$  |$p(\mbox{reject } H_0 ~|~ H_a) = p(True ~ negative)$
+The rates $\alpha$ and $\beta$ quantify how often we screw up a hypothesis test.
 
+Parameter  | Interpretation | Plain English
+-----------|----------------|--------------------------------------------
+$\alpha$   |$p(\mbox{reject } H_0 ~|~ H_0)$ | $p(Type ~ I ~ error)$
+$\beta$    |$p(\mbox{fail to reject } H_0 ~|~ H_a)$ | $p(Type ~ II ~ error)$
+$1-\alpha$ |$p(\mbox{fail to reject } H_0 ~|~ H_0)$ | $p(True ~ positive)$
+$1-\beta$  |$p(\mbox{reject } H_0 ~|~ H_a)$ | $p(True ~ negative)$
 
-## 1101 Power
+The _Power_ is $(1-\beta)$. It is the probability of rejecting the null hypothesis when it's false, i.e. correctly detecting the alternative hypothesis. Power is the same as specificity - probability of a true negative. 
+
+When building models our priorities are to
+
+1. minimize $\alpha$
+2. maximize $1 - \beta$
+
+Alpha and 1-beta are weakly corelated, so doing this can be difficult, if not impossible. Usually they a re directly proportional. Reducing alpha also reduces the power.
 
 
 ## 1102 Calculating Power
 
+Earlier, we said that a priority is to maximize $1-\beta$. A standard way of maximizing the power is to choose $\mu_a$ such that $|\mu_a - \mu_0|$ is large. When designin an experiment, choose a sufficient $\mu_a$, then make sure your data source will give you plenty of values (high $n$) around $\mu_a$.
+
+For a hypothesis test
+
+* $H_0: ~ \mu = \mu_0$
+* $H_a: ~ \mu > \mu_0$
+* $TS = \frac{\bar X - \mu_0}{SE_{Est}}$
+* $tQ = t_{1-\alpha, ~ n-1}$
+* $Reject ~ H_0 ~ when ~ TS > tQ$
+
+<br />
+Then,  
+
+Parameter | Formula
+----------|---------
+$\alpha$  | $\alpha = P \left( TS > tQ ~|~ \mu = \mu_0 \right)$
+$\beta$   | $\beta = P \left( TS \leq tQ ~|~ \mu > \mu_0  \right)$
+$(1-\alpha)$ | $(1 - \alpha) = P \left(  TS \leq tQ ~|~ \mu = \mu_0 \right)$
+$(1-\beta)$  | $(1 - \beta) = P \left( TS > tQ ~|~ \mu > \mu_0 \right)$
+
+If we want to precisely calculate the power, the condition $\mu > \mu_0$ is not very precise. We can do better by specifying a third value $\mu_a > \mu_0$, then ask "What is the value of the power if $\mu = \mu_a$?"
+
+$$(1 - \beta) = P \left( TS > tQ ~|~ \mu = \mu_a \right)$$
+
+The power depends on both the values $\mu_0$, $\mu_a$, and the condition of $H_a$. So, choosing our hypotheses and rejection rules is very important! Also, as a general behavior, as $\mu_a \to \mu$, the values of $\alpha$ and $1-\beta$ converge.
+
+You can think of $mu_a$ as the center of a new, hypothetical distribution, for which $\bar X$ is a much more plausible estimate of the mean. 
+
+### Example
+
+Consider the following hypothesis test. Our data is a standard normal Gaussian distribution.
+
+* $H_0 : \bar X \sim N(\mu_0, \sigma^2 / n) ~~~~(\mu_0)$
+* $H_a : \bar X  \sim N(\mu_a, \sigma^2 / n) ~~~~(\mu_a)$
+* $TS = \frac{\bar X - 30}{\sigma /\sqrt{n}}$
+* $ZQ = Z_{1-\alpha}$
+* Reject $H_0$ if $TS > ZQ$    
+
+ Calculate the power
+```{r, echo=TRUE}
+alpha = 0.05
+mu0 = 30
+mua = 32
+sigma = 4
+n = 16
+
+ZQ = qnorm(1 - alpha)
+
+# power when mean equals population mean: mu0 = 30 -- this is a good way to check that your alpha is 5%
+pnorm(mu0 + ZQ * sigma / sqrt(n), mean = mu0, sd = sigma / sqrt(n), lower.tail = FALSE);
+
+# power when mean equals measured mean (X): mua = 32
+pnorm(mu0 + ZQ * sigma / sqrt(n), mean = mua, sd = sigma / sqrt(n), lower.tail = FALSE);
+```
+
+---
+
+Notice how the power gets bigger as $\mu_a$ increases, but there is also a point of diminishing returns.
+```{r, fig.align='center', fig.height=3, fig.width=4, warning=FALSE}
+library(ggplot2)
+
+alpha = 0.05
+mu0 = 0
+mua = seq(0,5,.1)
+sigma = 4
+n = 16
+
+ZQ = qnorm(1 - alpha)
+
+# power
+power <- pnorm(mu0 + ZQ * sigma / sqrt(n), mean = mua, sd = sigma / sqrt(n), lower.tail = FALSE);
+
+g <- ggplot() + aes(x=mua - mu0, y=power) + geom_line();
+g
+```
+
+---
+
+<br />
+
+### The Power $(1 - \beta)$
+
+This plot of the power curve shows that power increases more rapidly with larger sample sizes.
+```{r, fig.align='center', fig.height=3, fig.width=6, warning=FALSE}
+library(reshape2)
+library(ggplot2)
+
+alpha = 0.05
+mu0 = 30
+sigma = 4
+n = 16
+
+ZQ = qnorm(1 - alpha)
+
+nseq = c(8, 16, 32, 64, 128)
+mua = seq(30, 35, by = 0.1)
+power = sapply(nseq, function(n)
+	    pnorm(mu0 + ZQ * sigma / sqrt(n), mean = mua, sd = sigma / sqrt(n), lower.tail = FALSE)
+	    )
+
+colnames(power) <- paste("n", nseq, sep = "")
+d <- data.frame(mua, power)
+d2 <- melt(d, id.vars = "mua")
+names(d2) <- c("mua", "n", "power")    
+
+g <- ggplot(d2, aes(x = mua, y = power, col = n)) + geom_line(size = 2)
+g            
+```
+
+To see how hypothesis testing works, run the following chunk in RStudio.
+
+The red curve is a population centered at $\mu = \mu_0$. The blue curve is a hypothetical distribution that we think is a more plausible population for our observation. The blue curve is centered at $mu_a$.
+```{r, echo = TRUE, eval=FALSE}
+library(manipulate)
+mu0 = 30
+myplot <- function(sigma, mua, n, alpha){
+    g = ggplot(data.frame(mu = c(27, 36)), aes(x = mu))
+    g = g + stat_function(fun=dnorm, geom = "line", 
+                          args = list(mean = mu0, sd = sigma / sqrt(n)), 
+                          size = 2, col = "red")
+    g = g + stat_function(fun=dnorm, geom = "line", 
+                          args = list(mean = mua, sd = sigma / sqrt(n)), 
+                          size = 2, col = "blue")
+    xitc = mu0 + qnorm(1 - alpha) * sigma / sqrt(n)
+    g = g + geom_vline(xintercept=xitc, size = 3)
+    g
+}
+
+# mua is the center of the blue, "virtual" distribution
+manipulate(
+    myplot(sigma, mua, n, alpha),
+    sigma = slider(1, 10, step = 1, initial = 4),
+    mua = slider(30, 35, step = 1, initial = 32),
+    n = slider(1, 50, step = 1, initial = 16),
+    alpha = slider(0.01, 0.1, step = 0.01, initial = 0.05)
+    )
+
+```
+
+```{r, echo = FALSE}
+mu0 = 30
+sigma = 4
+mua = 32
+n = 16
+alpha = .05
+
+
+g = ggplot(data.frame(mu = c(27, 36)), aes(x = mu))
+g = g + stat_function(fun=dnorm, geom = "line", 
+                  args = list(mean = mu0, sd = sigma / sqrt(n)), size = 2, col = "red")
+g = g + stat_function(fun=dnorm, geom = "line", 
+                  args = list(mean = mua, sd = sigma / sqrt(n)), size = 2, col = "blue")
+
+xitc = mu0 + qnorm(1 - alpha) * sigma / sqrt(n)
+
+g = g + geom_vline(xintercept=xitc, size = 3)
+g
+```
+The red sample distribution under $H_0$ is centered at $\mu_0$. The blue distribution under $H_a$ is centered at $mu_a$. The black line represents $\alpha$
 
 ## 1103 Notes on Power
 
+1. When testing $H_a : \mu > \mu_0$, notice if power is $1 - \beta$, then 
+$$1 - \beta = P\left(\bar X > \mu_0 + z_{1-\alpha} \frac{\sigma}{\sqrt{n}} ; \mu = \mu_a \right)$$
+- where $\bar X \sim N(\mu_a, \sigma^2 / n)$
+- Unknowns: $\mu_a$, $\sigma$, $n$, $\beta$
+- Knowns: $\mu_0$, $\alpha$
+- Specify any 3 of the unknowns and you can solve for the remainder
+
+---
+
+2. The calculation for $H_a:\mu < \mu_0$ is similar
+- For $H_a: \mu \neq \mu_0$ calculate the one sided power using
+  $\alpha / 2$ (this is only approximately right, it excludes the probability of
+  getting a large TS in the opposite direction of the truth)
+- Power goes up as $\alpha$ gets larger
+- Power of a one sided test is greater than the power of the
+  associated two sided test
+- Power goes up as $\mu_1$ gets further away from $\mu_0$
+- Power goes up as $n$ goes up
+- Power doesn't need $\mu_a$, $\sigma$ and $n$, instead only $\frac{\sqrt{n}(\mu_a - \mu_0)}{\sigma}$
+  - The quantity $\frac{\mu_a - \mu_0}{\sigma}$ is called the effect size, the difference in the means in standard deviation units.
+  - Being unit free, it has some hope of interpretability across settings
+
 
 ## 1104 T-Test Power
+
+-  Consider calculating power for a Gossett's $T$ test for our example
+-  The power is
+  $$
+  P\left(\frac{\bar X - \mu_0}{S /\sqrt{n}} > t_{1-\alpha, n-1} ~;~ \mu = \mu_a \right)
+  $$
+- Calcuting this requires the non-central t distribution.
+- `power.t.test` does this very well
+  - Omit one of the arguments and it solves for it
+
+---
+
+### Example - Calculating the power
+
+$n$, $\sigma$, $\bar X$, $\mu_0$, and $\alpha$ are known.
+
+```{r}
+power.t.test(n = 16, delta = 2 / 4, sd=1, type = "one.sample",  alt = "one.sided")$power
+power.t.test(n = 16, delta = 2, sd=4, type = "one.sample",  alt = "one.sided")$power
+power.t.test(n = 16, delta = 100, sd=200, type = "one.sample", alt = "one.sided")$power
+```
+
+### Example - Calculating the sample size
+
+Power, $\sigma$, $\bar X$, $\mu_0$, and $\alpha$ are known.
+```{r}
+power.t.test(power = .8, delta = 2 / 4, sd=1, type = "one.sample",  alt = "one.sided")$n
+power.t.test(power = .8, delta = 2, sd=4, type = "one.sample",  alt = "one.sided")$n
+power.t.test(power = .8, delta = 100, sd=200, type = "one.sample", alt = "one.sided")$n
+```
