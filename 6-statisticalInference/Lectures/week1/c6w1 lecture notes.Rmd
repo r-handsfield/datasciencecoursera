@@ -393,6 +393,14 @@ Define :
   * Prevalence of disease =  probability having the disease; independent to test results	
   	+ $\mbox{Prevalence of Disease} = P(D)$
 
+---
+
+![ppd_quad.png](figures/ppd_quad.png) 
+```{r echo=FALSE, eval=FALSE}
+# ![alt text](/home/rh/Pictures/french_railway.jpg "A photo")
+```
+
+---
 
 #### Example - HIV Tests:
 > HIV tests have a sensitivity of 99.7% and a specificity of 98.5%.  A population has a 0.1% prevalence of
@@ -737,7 +745,6 @@ g + facet_grid(. ~ size)
 	+ ~ the sample mean density function is the Fourier transform of the population distribution ??
 
 
-![alt text](/home/rh/Pictures/french_railway.jpg "A photo")
 
 
 
@@ -746,19 +753,4 @@ g + facet_grid(. ~ size)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-```{r}
-
-```
 
