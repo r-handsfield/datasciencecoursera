@@ -5,13 +5,17 @@ date: "January 31, 2016"
 output: html_document
 ---
 
+<style type="text/css">
+
+</style>
+
+
 ```{r echo=FALSE}
 # NOT WORKING!!!!!!!!!!
 
 # import custom stylesheet
 source("sources/import_stylesheet.R")
 ```
-
 
 # Introduction
 

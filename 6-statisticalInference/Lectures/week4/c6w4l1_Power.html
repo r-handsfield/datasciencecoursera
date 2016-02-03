@@ -74,7 +74,26 @@ img {
 </div>
 
 
-<pre><code>## [1] &quot;It did&quot;</code></pre>
+<style type="text/css">
+
+    table {
+        color: blue;
+        border: 1px solid black;
+    }
+
+</style>
+<table>
+<tr>
+<td>
+Row 1
+</td>
+</tr>
+<tr>
+<td>
+Row 2
+</td>
+</tr>
+</table>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>We’ve talked about a Type I error, rejecting the null hypothesis when it’s true. We’ve structured our hypothesis test so that the probability of this happening is small. The other kind of error we could make is to fail to reject when the alternative is true (Type II error). Or we might think about the probability of rejecting the null when it is false. This is called Power = 1 - Type II error. We don’t have as much control over this probability, since we’ve spent all of our flexibility guaranteeing that the Type I error rate is small.</p>
@@ -283,6 +302,7 @@ manipulate(
 <li>Knowns: <span class="math inline">\(\mu_0\)</span>, <span class="math inline">\(\alpha\)</span></li>
 <li>Specify any 3 of the unknowns and you can solve for the remainder</li>
 </ul>
+<hr />
 <ol start="2" style="list-style-type: decimal">
 <li>The calculation for <span class="math inline">\(H_a:\mu &lt; \mu_0\)</span> is similar</li>
 </ol>
@@ -309,8 +329,9 @@ manipulate(
 <li>Omit one of the arguments and it solves for it</li>
 </ul>
 <hr />
-<div id="example-1" class="section level3">
-<h3>Example</h3>
+<div id="example---calculating-the-power" class="section level3">
+<h3>Example - Calculating the power</h3>
+<p><span class="math inline">\(n\)</span>, <span class="math inline">\(\sigma\)</span>, <span class="math inline">\(\bar X\)</span>, <span class="math inline">\(\mu_0\)</span>, and <span class="math inline">\(\alpha\)</span> are known.</p>
 <pre class="r"><code>power.t.test(n = 16, delta = 2 / 4, sd=1, type = &quot;one.sample&quot;,  alt = &quot;one.sided&quot;)$power</code></pre>
 <pre><code>## [1] 0.6040329</code></pre>
 <pre class="r"><code>power.t.test(n = 16, delta = 2, sd=4, type = &quot;one.sample&quot;,  alt = &quot;one.sided&quot;)$power</code></pre>
@@ -318,8 +339,9 @@ manipulate(
 <pre class="r"><code>power.t.test(n = 16, delta = 100, sd=200, type = &quot;one.sample&quot;, alt = &quot;one.sided&quot;)$power</code></pre>
 <pre><code>## [1] 0.6040329</code></pre>
 </div>
-<div id="example-2" class="section level3">
-<h3>Example</h3>
+<div id="example---calculating-the-sample-size" class="section level3">
+<h3>Example - Calculating the sample size</h3>
+<p>Power, <span class="math inline">\(\sigma\)</span>, <span class="math inline">\(\bar X\)</span>, <span class="math inline">\(\mu_0\)</span>, and <span class="math inline">\(\alpha\)</span> are known.</p>
 <pre class="r"><code>power.t.test(power = .8, delta = 2 / 4, sd=1, type = &quot;one.sample&quot;,  alt = &quot;one.sided&quot;)$n</code></pre>
 <pre><code>## [1] 26.13751</code></pre>
 <pre class="r"><code>power.t.test(power = .8, delta = 2, sd=4, type = &quot;one.sample&quot;,  alt = &quot;one.sided&quot;)$n</code></pre>

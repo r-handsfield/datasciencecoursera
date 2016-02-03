@@ -6,4 +6,4 @@ options(rstudio.markdownToHTML =
 		}
 )
 
-print("It did")
+# print("It did")

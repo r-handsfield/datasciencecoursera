@@ -3,15 +3,17 @@
 /*NOT WORKING!!!*/
 
 table {
-	border-color: red;
-	border-width: 1px;
+	color: red;
+	/*border-color: red;
+	border-width: 1px;*/
 
 }
-
+/*
 table>tr>td {
-	/*display: inline-block;*/
+	display: inline-block;
 	margin: 3px;
 	padding: 30px;
 	text-align: center;
 	border-color: black;
 }
+*/
