@@ -5,6 +5,14 @@ date: "January 14, 2016"
 output: html_document
 ---
 
+<style type="text/css">
+	
+	.math_list > ul > li {
+		margin-bottom: 8px;
+	}
+
+</style>
+
 # 1.
 A pharmaceutical company is interested in testing a potential blood pressure lowering medication. Their first examination considers only subjects that received the medication at baseline then two weeks later. The data are as follows (SBP in mmHg)
 
@@ -16,22 +24,118 @@ A pharmaceutical company is interested in testing a potential blood pressure low
 | 4	  | 148	     | 146
 | 5	  | 135	     | 130
 
-Consider testing the hypothesis that there was a mean reduction in blood pressure? Give the P-value for the associated two sided T test.
+Consider testing the hypothesis that there was a mean reduction in blood pressure? __Give the P-value for the associated two sided T test.__
 
 (Hint, consider that the observations are paired.)
 
 a) 0.10
 b) 0.05
 c) 0.087
-d) 0.043
+d) __0.043__
 
 ## Solution
+There are several ways to do this test
+
+1. Was there a reduction in blood pressure? $~~~ \{H_0: \mu < \mu_0 \}$
+2. Was there an increase in blood pressure? $~~~ \{H_0: \mu > \mu_0 \}$
+3. Was there any effect from the medication? $~~~ \{H_0: \mu = \mu_0 \}$
+
+The question implies that we should use option 3, because $\mu \neq \mu_0$ requires a two-sided test.
+
+We can calculate the average difference before and after the drug, and it should be greater or  less than $\left( 0 \pm random ~ error \right)$ (null hypothesis). There is a small chance that the medication had no effect, but our sample shows a net drop or rise anyway. What is the probability that a $mean_{bp} \neq 0$ truly indicates a population-wide effect?
+
+We interpret this as "For a t-distribution, what is the probability that a very low, or very high value is obtained if the distribution is centered at zero?"
+
+```{r echo=FALSE, warning=FALSE, fig.width=6, fig.height=3, fig.align='center'}
+library(ggplot2);
+
+# domain for distribution
+x <- seq(-4,4,.01); 
+
+# create the polygons for shading
+# polygon vertices are: {x, dnorm(x)}; {x_last, 0}; {x_first, 0}; 
+rx <- seq(2, 4, .1);
+r <- data.frame(hx=c(rx,4,2), hy=c(dt(rx,4),0,0), direction=factor("hi"));
+# lo side is mirror (-x, y) of hi side
+r <- rbind(r, data.frame(hx=-r$hx, hy=r$hy, direction=factor("lo")));
+
+# plot the distribution
+g <- ggplot() + aes(x=x, y=dt(x,4)) + geom_line();
+
+# add the polygons
+# use `group = direction` to tell ggplot that there are 2 regions in the df
+g <- g + geom_polygon(data=r, aes(x=hx, y=hy, group=direction), fill="green")
+
+example_t_dist <- g;
+
+print(example_t_dist);
+```
+If the test statistic is in either of the extreme regions, we should reject the null hypothesis, and conclude that the drug did have an effect.
+
+<br />
+
+<div class="math_list">
+Summary: 
+
+* $\mu_0 = 0, ~~~~ n = 5, ~~~~ df = n-1$
+* $\{H_0: \mu = \mu_0\} ~~~$  $~~~ \{H_a: \mu \neq \mu_0\}$
+* $\bar X \equiv average ~ of ~ (week2 ~ - ~ baseline)$
+* $Reject ~ H_0 ~ if ~ TS \leq tQ_{lo} ~ or ~ TS \geq tQ_{hi}$
+* $\left\{ TS = \frac{\bar X - \mu_0}{SE_\mu} \right\} ~~~$  
+* $~~~ tQ_{.95; ~ df} = \pm t_{\{.025; ~ 4\}}$
+
+</div>
+
+---
+
+```{r}
+mu0 <- 0;
+baseline <- c(140, 138, 150, 148, 135);
+week2 <- c(132, 135, 151, 146, 130);
+X <- mean(week2 - baseline);
+n <- 5;      
+df <- n-1;
+SE <- sd(week2 - baseline)/sqrt(n);
+
+TS <- (X - mu0)/SE;
+tQ <- c(-1,1) * qt(.975,df);
+
+TS <- round(TS, 2);
+tQ <- round(tQ, 2);
+```
+
+```{r echo=FALSE}
+data.frame(X=X, TS=TS)
+data.frame(tQ=tQ)
+```
+
+The average blood pressure difference for the group is $-3.4$, which is $2.26$ standard t-units below the distribution mean of $0$. Our two-sided t-quantiles were set so that _if_ the population distribution is truly centered at zero (the drug has no effect), then there is less than a 5% chance that a test statistic from any sample would fall outside the domain $\pm 2.78$.
+
+Our test statistic is $-2.26$, which is _not_ outside the $\pm 2.78$ domain. So we must conclude that the null hypothesis $\{H_0: \mu = \mu_0\}$ is correct, and from this 5-person sample, we determine that the drug did not have an effect across the broader population.
 
 
-__Answer: __
+---
+
+All the previous work was just the preliminary stuff to understand the question. Now we can calculate the _probability_ that a sample mean $\bar X$ would have a value of $\pm 2.26$ standard t-units from the mean of the distribution.
+
+```{r}
+# from above, TS = -2.26; df = 4
+pt(-2.26, 4, lower.tail = TRUE)
+```
+There is a $4.3\%$ probability that a sample mean $\bar X$ of $-3.4$ might be produced, _if_ the drug had no effect in the broader population $(\mu = 0)$.
+
+---
+
+In terms of doing the R-calculation, you can do it more efficiently with `stats::t.test()`.
+```{r}
+
+t.test(y=baseline, x=week2, alternative="less", mu=0, paired=TRUE, conf.level=0.025)
+```
+
+__Answer: 4.3%__
 
 # 2.
-A sample of 9 men yielded a sample average brain volume of 1,100cc and a standard deviation of 30cc. What is the complete set of values of μ0 that a test of H0:μ=μ0 would fail to reject the null hypothesis in a two sided 5% Students t-test?
+A sample of 9 men yielded a sample average brain volume of 1,100cc and a standard deviation of 30cc. What is the complete set of values of $\mu_0$ that a test of $\{H_0:\mu=\mu_0\}$ would fail to reject the null hypothesis in a two sided 5% Students t-test?
 
 a) 1077 to 1123
 b) 1081 to 1119
@@ -39,6 +143,17 @@ c) 1080 to 1120
 d) 1031 to 1169
 
 ## Solution
+
+
+
+<div class="math_list">
+Summary:
+
+* $\bar X = 1100, ~~~~ \sigma = 30, ~~~~ n = 9, ~~~~ df = (n-1) ~~~~, SE_\bar X = \frac{\sigma}{\sqrt n}$
+* $\{H_0:\mu=\mu_0\}, ~~~~ \{H_a:\mu \neq \mu_0\}$
+* 
+
+</div>
 
 
 __Answer: __
