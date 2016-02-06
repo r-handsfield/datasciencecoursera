@@ -263,6 +263,7 @@ What is the t-confidence interval for the difference between groups 1 and 4?
 The following code asks 
 
 > "If we subtract $(\mbox{Gain}_1 - \mbox{Gain}_4)$, how certain are we that the difference is the actual weight gain difference that would be measured in a larger population of chicks?"
+
 ```{r}
 wideCW14 <- subset(wideCW, Diet %in% c(1, 4)) # subset diets 1 and 4: in order gain1 - gain4
 a <- rbind(
@@ -272,6 +273,8 @@ a <- rbind(
 
 signif(a,4);
 ```
+
+
 > We are 95% confident that chicks on Diet 1 will gain an average of (18 to 104) fewer units than chicks on Diet 4, assuming unequal variances in the sample groups.
 
 Note that assuming whether the group variances are equal makes a difference, a roughly $8.5 \%$ narrower interval. From visual inspection, `var.equal = FALSE` is probably the safer assumption, and the larger values in row 2 are the better interval.

@@ -263,7 +263,7 @@ Groups of chicks are given 4 separate diets, then weighed at semi-regular interv
 The null hypothesis $H_0$ is $\mu_{group 1} = \mu_{group 4}$. The rejection rules are the same: "Reject $H_0$ if $|TS| > |tQ|$"
 
 Loading formatting the data
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(datasets);    library(reshape2);   library(dplyr);
 
 data(ChickWeight);

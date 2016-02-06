@@ -329,26 +329,9 @@ t.test(son_height - father_height)</code></pre>
 <p>Groups of chicks are given 4 separate diets, then weighed at semi-regular intervals</p>
 <p>The null hypothesis <span class="math inline">\(H_0\)</span> is <span class="math inline">\(\mu_{group 1} = \mu_{group 4}\)</span>. The rejection rules are the same: “Reject <span class="math inline">\(H_0\)</span> if <span class="math inline">\(|TS| &gt; |tQ|\)</span>”</p>
 <p>Loading formatting the data</p>
-<pre class="r"><code>library(datasets);    library(reshape2);   library(dplyr);</code></pre>
-<pre><code>## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:Hmisc':
-## 
-##     combine, src, summarize
-## 
-## The following object is masked from 'package:MASS':
-## 
-##     select
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>data(ChickWeight);
+<pre class="r"><code>library(datasets);    library(reshape2);   library(dplyr);
+
+data(ChickWeight);
 
 ##define weight gain or loss
 wideCW &lt;- dcast(ChickWeight, Diet + Chick ~ Time, value.var = &quot;weight&quot;)
