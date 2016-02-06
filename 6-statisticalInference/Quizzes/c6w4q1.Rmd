@@ -30,8 +30,8 @@ Consider testing the hypothesis that there was a mean reduction in blood pressur
 
 a) 0.10
 b) 0.05
-c) 0.087
-d) __0.043__
+c) __0.087__
+d) 0.043
 
 ## Solution
 There are several ways to do this test
@@ -120,43 +120,97 @@ All the previous work was just the preliminary stuff to understand the question.
 
 ```{r}
 # from above, TS = -2.26; df = 4
-pt(-2.26, 4, lower.tail = TRUE)
+pt(-2.26, 4, lower.tail = TRUE) * 2 
 ```
-There is a $4.3\%$ probability that a sample mean $\bar X$ of $-3.4$ might be produced, _if_ the drug had no effect in the broader population $(\mu = 0)$.
+There is an $8.7\%$ probability that a sample mean $\bar X$ of $\pm3.4$ might be produced, _if_ the drug had no effect in the broader population $(\mu = 0)$.
 
 ---
 
 In terms of doing the R-calculation, you can do it more efficiently with `stats::t.test()`.
 ```{r}
 
-t.test(y=baseline, x=week2, alternative="less", mu=0, paired=TRUE, conf.level=0.025)
+t.test(y=baseline, x=week2, alternative="two.sided", mu=0, paired=TRUE, conf.level=0.025)
 ```
 
-__Answer: 4.3%__
+__Answer: 8.7%__
 
 # 2.
 A sample of 9 men yielded a sample average brain volume of 1,100cc and a standard deviation of 30cc. What is the complete set of values of $\mu_0$ that a test of $\{H_0:\mu=\mu_0\}$ would fail to reject the null hypothesis in a two sided 5% Students t-test?
 
-a) 1077 to 1123
+a) __1077 to 1123__
 b) 1081 to 1119
 c) 1080 to 1120
 d) 1031 to 1169
 
 ## Solution
 
+In summary, this question supplies $\bar X$ and asks for all values of $\mu_0$ that are within the 95% t-confidence interval. Most questions supply $\mu_0$ and ask for $\bar X$. Both forms are the same damn calculation.
+```{r}
+1100 + c(-1,1) * qt(.975,8) * (30/sqrt(9))
+```
 
+The longer derivation and interpretation follow.
+
+---
+
+For the given data, any test statistic in the outer regions means we reject $H_0$. Any test statistic that lies in the central region means we fail to reject $H_0$.
+
+```{r echo=FALSE}
+print(example_t_dist)
+```
+
+Since the test statistic $TS$ is a function of $\bar X, \mu_0, \sigma,$ and $n$, we can easily solve for $\mu_0$.
+
+$$TS = \frac{\bar X - \mu_0}{SE_\bar X} ~ \therefore ~ \mu_0 = \bar X - SE_\bar X * TS$$
+
+The domain for which we fail to reject $H_0$ is 
+$$tQ_{lo} < TS < tQ_{hi} ~~~ \to ~~~ tQ_{lo} < \frac{\bar X - \mu_0}{SE_\bar X} < tQ_{hi}$$
+
+$$\therefore ~~~~ \mu_0 \in
+\left\{\begin{matrix}
+\mathbb{R} > ( \bar X - tQ_{hi} * SE_\bar X )\\ 
+\mathbb{R} < ( \bar X - tQ_{lo} * SE_\bar X )
+\end{matrix}\right.
+$$
+
+Additionally, because the t-distribution is symetric, and $tQ_{lo} = -tQ_{hi}$ we can simplify the problem, and find the entire domain of $\mu_0$ in terms of $tQ_{hi}$:
+$$ \mu_0 \in
+\left\{\begin{matrix}
+\mathbb{R} > ( \bar X - tQ_{hi} * SE_\bar X )\\ 
+\mathbb{R} < ( \bar X + tQ_{hi} * SE_\bar X )
+\end{matrix}\right.
+$$
+
+$$( \bar X - tQ_{hi} * SE_\bar X ) < \mu_0 < ( \bar X + tQ_{hi} * SE_\bar X )$$
+
+---
+
+The interpretation of this is "If the population is centered anywhere in $\bar X \pm tQ * SE_\bar X$, then a given sample mean $~ \bar X$ suggests that $\{H_0:\mu=\mu_0\}$ should not be rejected."
+
+<br />
 
 <div class="math_list">
 Summary:
 
 * $\bar X = 1100, ~~~~ \sigma = 30, ~~~~ n = 9, ~~~~ df = (n-1) ~~~~, SE_\bar X = \frac{\sigma}{\sqrt n}$
 * $\{H_0:\mu=\mu_0\}, ~~~~ \{H_a:\mu \neq \mu_0\}$
-* 
+* $TS = \frac{\bar X - \mu_0}{SE_\mu}$
+* $SE_\bar X = \frac{\sigma_\mu}{\sqrt n}$
+* $tQ_{hi} = t_{\{ 1 - \frac{\alpha}{2}; ~ df \}} = t_{\{.975; ~ 8\}}$
 
 </div>
 
 
-__Answer: __
+```{r}
+X <- 1100
+n <- 9
+sigma <- 30
+SE <- sigma / sqrt(n)
+
+X + c(-1, 1) * qt(.975,8) * SE
+```
+
+__Answer: 1077 to 1123__
 
 # 3.
 Researchers conducted a blind taste test of Coke versus Pepsi. Each of four people was asked which of two blinded drinks given in random order that they preferred. The data was such that 3 of the 4 people chose Coke. Assuming that this sample is representative, report a P-value for a test of the hypothesis that Coke is preferred to Pepsi using a one sided exact test.
@@ -164,81 +218,196 @@ Researchers conducted a blind taste test of Coke versus Pepsi. Each of four peop
 a) 0.10
 b) 0.005
 c) 0.62
-d) 0.31
+d) __0.31__
 
 ## Solution
 
-__Answer: __
+Coke vs Pepsi is a binomial system. "Coke" = Success, or $1$. 
+
+What is the probability that $\{3 Coke, 1 Pepsi\}$ was drawn from a sample in which the true Coke preference is greater than 0.5?
+
+
+<div class="math_list">
+
+* $H_0: P(Coke) = 0.5$
+* $H_a: P(Coke) > 0.5$
+</div>
+
+The parameter `alternative` determines whether $H_a$ is $'>', '<', or '\neq'$.
+```{r}
+binom.test(x = c(3,1), p = 0.5, alternative="greater", conf.level = .95)$p.value
+
+pbinom(2, size = 4, prob = 0.5, lower.tail = FALSE)
+
+choose(4, 3) * 0.5^4 + choose(4, 4) * 0.5^4
+```
+
+
+There is only a 31% probability that {3 Coke, 1 Pepsi} is drawn from a population in which $P(Coke) = 0.5$
+
+__Answer: $31 \%$__
 
 # 4.
 Infection rates at a hospital above 1 infection per 100 person days at risk are believed to be too high and are used as a benchmark. A hospital that had previously been above the benchmark recently had 10 infections over the last 1,787 person days at risk. About what is the one sided P-value for the relevant test of whether the hospital is *below* the standard?
 
 a) 0.52
 b) 0.22
-c) 0.03
+c) __0.03__
 d) 0.11
 
 ## Solution
 
-__Answer: __
+Rates of infection can be modeled by the Poisson distribution
 
-# 5.
-Suppose that 18 obese subjects were randomized, 9 each, to a new diet pill and a placebo. Subjects’ body mass indices (BMIs) were measured at a baseline and again after having received the treatment or placebo for four weeks. The average difference from follow-up to the baseline (followup - baseline) was −3 kg/m2 for the treated group and 1 kg/m2 for the placebo group. The corresponding standard deviations of the differences was 1.5 kg/m2 for the treatment group and 1.8 kg/m2 for the placebo group. Does the change in BMI appear to differ between the treated and placebo groups? Assuming normality of the underlying data and a common population variance, give a pvalue for a two sided t test.
+Infection benchmark = `r 1/100` infection per person-day  
+Infection value = `r 10/1787` infection per person-day
+
+<div class="math_list">
+
+* $H_0: rate_I = 0.01$
+* $H_a: rate_I < 0.01$
+</div>
+
+If the benchmark rate is 0.01, what is the probability of a hospital having such a low actual rate (.0056)?
+```{r}
+poisson.test(x=10, T=1787, r=.01, alternative = "less")$p.value
+
+ppois(10, lambda = 0.01 * 1787)
+```
+
+There is only a 3% chance that the hospital's low infection sample is an outlying sample from a Poisson distribution with the benchmark infection rate $.01$. This hospital has probably done something to truly reduce their infection rate.
+
+__Answer: 0.03__
+
+# 5. WRONG
+Suppose that 18 obese subjects were randomized, 9 each, to a new diet pill and a placebo. Subjects’ body mass indices (BMIs) were measured at a baseline and again after having received the treatment or placebo for four weeks. The average difference from follow-up to the baseline (followup - baseline) was −3 kg/m2 for the treated group and 1 kg/m2 for the placebo group. The corresponding standard deviations of the differences was 1.5 kg/m2 for the treatment group and 1.8 kg/m2 for the placebo group. __Does the change in BMI appear to differ between the treated and placebo groups?__ Assuming normality of the underlying data and a common population variance, __give a p-value__ for a two sided t test.
 
 a) Less than 0.05, but larger than 0.01
 b) Less than 0.10 but larger than 0.05
 c) Larger than 0.10
-d) Less than 0.01
+d) __Less than 0.01__
 
 ## Solution
 
+<div class="math_list">
+
+* $H_0: (d_1-d_2) = 0$
+* $H_a: (d_1-d_2) \neq 0$
+</div>
+
+```{r}
+n1 <- 9;  d1 <- -3;  s1 <- 1.5;
+n2 <- 9;  d2 <-  1;  s2 <- 1.8;
+
+TS1 <- d1 / (s1/sqrt(n1));
+TS2 <- d2 / (s2/sqrt(n2));
+
+TS1; TS2;
+# t.test(d1, d2, alternative = "two.sided")
+```
+
+What is the probability that d1 and d2 were drawn from the same population? 
+
+What are the relevant quantiles for each group?
+```{r}
+n1 <- 9;  d1 <- -3;  s1 <- 1.5;
+n2 <- 9;  d2 <-  1;  s2 <- 1.8;
+
+tQ1 <- c(-1,1) * qt(.975,8) * (1.5/3);
+tQ2 <- c(-1,1) * qt(.975,8) * (1.8/3);
+
+tQ1; tQ2;
+```
+
+The $.975$ t-quantile for these groups is `r round(qt(.975,8),2)`. d1 is outside that, d2 is within that. The probability that d1 and d2 are drawn from the same population is the product of probabilities that each is drawn from a population centered at $\mu_0 = 0$?????
+
+```{r}
+p1 <- pt(TS1, 8, lower.tail=TRUE) * 2;
+p2 <- pt(TS2, 8, lower.tail=TRUE) * 2;
+
+p1 * p2;
+```
+
+That's a tiny probability.
+
+
 __Answer: __
 
-# 6
+# 6.
 Brain volumes for 9 men yielded a 90% confidence interval of 1,077 cc to 1,123 cc. Would you reject in a two sided 5% hypothesis test of  H0:μ=1,078?
 
-a) No you wouldn't reject.
+a) __No you wouldn't reject.__
 b) It's impossible to tell.
 c) Where does Brian come up with these questions?
 d) Yes you would reject.
 
 ## Solution
 
-__Answer: __
+The higher % confidence interval is always wider, so by definition, the _fail-to-reject_ region in a 5% two-sided test includes the 90% interval. A value inside the 90% interval is definitley inside the 95% _fail-to-reject_ region.
 
-# 7
+
+__Answer: Don't Reject__
+
+# 7.
 Researchers would like to conduct a study of 100 healthy adults to detect a four year mean brain volume loss of .01 mm3. Assume that the standard deviation of four year volume loss in this population is .04 mm3. About what would be the power of the study for a 5% one sided test versus a null hypothesis of no volume loss?
 
-a) 0.80
+a) __0.80__
 b) 0.60
 c) 0.70
 d) 0.50
 
 ## Solution
+The difference in before/after subject means they hope(??) to observe is $0.01 mm^3$
 
-__Answer: __
+<div class="math_list">
 
-# 8
+* $H_0: mu = 0$
+* $H_a: mu > 0$
+</div>
+
+```{r}
+n <- 100;
+d <- .01;
+s <- .04;
+
+power.t.test(n=100, delta=.01, sd=.04, type="paired", alternative="one.sided")$power
+
+pnorm(1.645 * 0.004, mean = 0.01, sd = 0.004, lower.tail = FALSE)
+```
+
+
+__Answer: 0.80__
+
+# 8.
 Researchers would like to conduct a study of n healthy adults to detect a four year mean brain volume loss of .01 mm3. Assume that the standard deviation of four year volume loss in this population is .04 mm3. About what would be the value of n needed for 90% power of type one error rate of 5% one sided test versus a null hypothesis of no volume loss?
 
 a) 120
 b) 180
 c) 160
-d) 140
+d) __140__
 
 ## Solution
 
-__Answer: __
+```{r}
+power.t.test(n=NULL, delta=.01, sd=.04, power=.9, type="paired", alternative="one.sided")$n
 
-# 9
+ceiling((4 * (qnorm(0.95) - qnorm(0.1)))^2)
+```
+
+
+__Answer: 138.4__
+
+# 9.
 As you increase the type one error rate, α, what happens to power?
 
 a) It's impossible to tell given the information in the problem.
-b) You will get larger power.
+b) __You will get larger power.__
 c) You will get smaller power.
 d) No, for real, where does Brian come up with these problems?
 
 ## Solution
 
-__Answer: __
+At the extreme high alpha, you reject every $H_0$, which includes rejecting 100% of $H_0$ when $H_a$ is true, 100% power.
+
+__Answer: Larger Power__
 
