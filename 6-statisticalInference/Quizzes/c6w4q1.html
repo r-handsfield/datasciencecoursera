@@ -313,8 +313,8 @@ Infection value = 0.005596 infection per person-day</p>
 <p><strong>Answer: 0.03</strong></p>
 </div>
 </div>
-<div id="wrong" class="section level1">
-<h1>5. WRONG</h1>
+<div id="section-4" class="section level1">
+<h1>5.</h1>
 <p>Suppose that 18 obese subjects were randomized, 9 each, to a new diet pill and a placebo. Subjects’ body mass indices (BMIs) were measured at a baseline and again after having received the treatment or placebo for four weeks. The average difference from follow-up to the baseline (followup - baseline) was −3 kg/m2 for the treated group and 1 kg/m2 for the placebo group. The corresponding standard deviations of the differences was 1.5 kg/m2 for the treatment group and 1.8 kg/m2 for the placebo group. <strong>Does the change in BMI appear to differ between the treated and placebo groups?</strong> Assuming normality of the underlying data and a common population variance, <strong>give a p-value</strong> for a two sided t test.</p>
 <ol style="list-style-type: lower-alpha">
 <li>Less than 0.05, but larger than 0.01</li>
@@ -324,44 +324,42 @@ Infection value = 0.005596 infection per person-day</p>
 </ol>
 <div id="solution-4" class="section level2">
 <h2>Solution</h2>
+<p>We need to do a two-sample t-test.</p>
 <div class="math_list">
 <ul>
-<li><span class="math inline">\(H_0: (d_1-d_2) = 0\)</span></li>
-<li><span class="math inline">\(H_a: (d_1-d_2) \neq 0\)</span></li>
+<li><span class="math display">\[\{H_0: \mu_1 = \mu_2\}, ~~~~ \{H_a: \mu_1 \neq \mu_2\}\]</span></li>
+<li><span class="math display">\[TS = \frac{\bar X_1 - \bar X_2}{SE_{\bar X_1 - \bar X_2}}\]</span></li>
+<li><span class="math display">\[SE_{\bar X_1 - \bar X_2} = S_p \left( \frac{1}{n_1} + \frac{1}{n_2} \right)^{1 \over 2}\]</span></li>
+<li><span class="math display">\[\mbox{Pooled Variance: } ~ S_p^2 = \frac{df_1 s_1^2 + df_2 s_2^2 }{df_1 + df_2}\]</span></li>
+<li><span class="math display">\[df = df_1 + df_2 - 2\]</span></li>
+<li></li>
+<li><span class="math display">\[P = Pr[t &gt; TS]\]</span></li>
+<li><span class="math inline">\(Reject ~~ H_0 ~~ if ~~ P &gt; \alpha; ~~~ \alpha = 0.05\)</span></li>
 </ul>
 </div>
-<pre class="r"><code>n1 &lt;- 9;  d1 &lt;- -3;  s1 &lt;- 1.5;
-n2 &lt;- 9;  d2 &lt;-  1;  s2 &lt;- 1.8;
+<pre class="r"><code>n1 &lt;- n2 &lt;- 9
+x1 &lt;- -3 ##treated
+x2 &lt;- 1 ##placebo
+s1 &lt;- 1.5 ##treated
+s2 &lt;- 1.8 ##placebo
+df1 &lt;- df2 &lt;- 8
+dof &lt;- 16
 
-TS1 &lt;- d1 / (s1/sqrt(n1));
-TS2 &lt;- d2 / (s2/sqrt(n2));
+Sp &lt;- sqrt( 8*(s1^2 + s2^2) /16 )
+SE &lt;- Sp * sqrt(2/9)
+TS &lt;- (x1 - x2) / SE
+P &lt;- pt(TS, dof) * 2  # b/c two-sided, pt is half the probability
 
-TS1; TS2;</code></pre>
-<pre><code>## [1] -6</code></pre>
-<pre><code>## [1] 1.666667</code></pre>
-<pre class="r"><code># t.test(d1, d2, alternative = &quot;two.sided&quot;)</code></pre>
-<p>What is the probability that d1 and d2 were drawn from the same population?</p>
-<p>What are the relevant quantiles for each group?</p>
-<pre class="r"><code>n1 &lt;- 9;  d1 &lt;- -3;  s1 &lt;- 1.5;
-n2 &lt;- 9;  d2 &lt;-  1;  s2 &lt;- 1.8;
+Sp &lt;- signif(Sp, 3);  SE &lt;- signif(SE, 3);  TS &lt;- signif(TS, 3);  P &lt;- signif(P, 3);
 
-tQ1 &lt;- c(-1,1) * qt(.975,8) * (1.5/3);
-tQ2 &lt;- c(-1,1) * qt(.975,8) * (1.8/3);
-
-tQ1; tQ2;</code></pre>
-<pre><code>## [1] -1.153002  1.153002</code></pre>
-<pre><code>## [1] -1.383602  1.383602</code></pre>
-<p>The <span class="math inline">\(.975\)</span> t-quantile for these groups is 2.31. d1 is outside that, d2 is within that. The probability that d1 and d2 are drawn from the same population is the product of probabilities that each is drawn from a population centered at <span class="math inline">\(\mu_0 = 0\)</span>?????</p>
-<pre class="r"><code>p1 &lt;- pt(TS1, 8, lower.tail=TRUE) * 2;
-p2 &lt;- pt(TS2, 8, lower.tail=TRUE) * 2;
-
-p1 * p2;</code></pre>
-<pre><code>## [1] 0.0006034063</code></pre>
+data.frame(Sp, SE, TS, P)</code></pre>
+<pre><code>##     Sp    SE    TS        P
+## 1 1.66 0.781 -5.12 0.000103</code></pre>
 <p>That’s a tiny probability.</p>
-<p><strong>Answer: </strong></p>
+<p><strong>Answer: 0.0001</strong></p>
 </div>
 </div>
-<div id="section-4" class="section level1">
+<div id="section-5" class="section level1">
 <h1>6.</h1>
 <p>Brain volumes for 9 men yielded a 90% confidence interval of 1,077 cc to 1,123 cc. Would you reject in a two sided 5% hypothesis test of H0:μ=1,078?</p>
 <ol style="list-style-type: lower-alpha">
@@ -376,7 +374,7 @@ p1 * p2;</code></pre>
 <p><strong>Answer: Don’t Reject</strong></p>
 </div>
 </div>
-<div id="section-5" class="section level1">
+<div id="section-6" class="section level1">
 <h1>7.</h1>
 <p>Researchers would like to conduct a study of 100 healthy adults to detect a four year mean brain volume loss of .01 mm3. Assume that the standard deviation of four year volume loss in this population is .04 mm3. About what would be the power of the study for a 5% one sided test versus a null hypothesis of no volume loss?</p>
 <ol style="list-style-type: lower-alpha">
@@ -405,7 +403,7 @@ power.t.test(n=100, delta=.01, sd=.04, type=&quot;paired&quot;, alternative=&quo
 <p><strong>Answer: 0.80</strong></p>
 </div>
 </div>
-<div id="section-6" class="section level1">
+<div id="section-7" class="section level1">
 <h1>8.</h1>
 <p>Researchers would like to conduct a study of n healthy adults to detect a four year mean brain volume loss of .01 mm3. Assume that the standard deviation of four year volume loss in this population is .04 mm3. About what would be the value of n needed for 90% power of type one error rate of 5% one sided test versus a null hypothesis of no volume loss?</p>
 <ol style="list-style-type: lower-alpha">
@@ -423,7 +421,7 @@ power.t.test(n=100, delta=.01, sd=.04, type=&quot;paired&quot;, alternative=&quo
 <p><strong>Answer: 138.4</strong></p>
 </div>
 </div>
-<div id="section-7" class="section level1">
+<div id="section-8" class="section level1">
 <h1>9.</h1>
 <p>As you increase the type one error rate, α, what happens to power?</p>
 <ol style="list-style-type: lower-alpha">

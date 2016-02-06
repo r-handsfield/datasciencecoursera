@@ -279,7 +279,7 @@ There is only a 3% chance that the hospital's low infection sample is an outlyin
 
 __Answer: 0.03__
 
-# 5. WRONG
+# 5.
 Suppose that 18 obese subjects were randomized, 9 each, to a new diet pill and a placebo. Subjects’ body mass indices (BMIs) were measured at a baseline and again after having received the treatment or placebo for four weeks. The average difference from follow-up to the baseline (followup - baseline) was −3 kg/m2 for the treated group and 1 kg/m2 for the placebo group. The corresponding standard deviations of the differences was 1.5 kg/m2 for the treatment group and 1.8 kg/m2 for the placebo group. __Does the change in BMI appear to differ between the treated and placebo groups?__ Assuming normality of the underlying data and a common population variance, __give a p-value__ for a two sided t test.
 
 a) Less than 0.05, but larger than 0.01
@@ -288,50 +288,44 @@ c) Larger than 0.10
 d) __Less than 0.01__
 
 ## Solution
+We need to do a two-sample t-test.
 
 <div class="math_list">
 
-* $H_0: (d_1-d_2) = 0$
-* $H_a: (d_1-d_2) \neq 0$
+* $$\{H_0: \mu_1 = \mu_2\}, ~~~~ \{H_a: \mu_1 \neq \mu_2\}$$
+* $$TS = \frac{\bar X_1 - \bar X_2}{SE_{\bar X_1 - \bar X_2}}$$ 
+* $$SE_{\bar X_1 - \bar X_2} = S_p \left( \frac{1}{n_1} + \frac{1}{n_2} \right)^{1 \over 2}$$
+* $$\mbox{Pooled Variance: } ~ S_p^2 = \frac{df_1 s_1^2 + df_2 s_2^2 }{df_1 + df_2}$$ 
+* $$df = df_1 + df_2 - 2$$
+*
+* $$P = Pr[t > TS]$$
+* $Reject ~~ H_0 ~~ if ~~ P > \alpha; ~~~ \alpha = 0.05$
 </div>
 
 ```{r}
-n1 <- 9;  d1 <- -3;  s1 <- 1.5;
-n2 <- 9;  d2 <-  1;  s2 <- 1.8;
+n1 <- n2 <- 9
+x1 <- -3 ##treated
+x2 <- 1 ##placebo
+s1 <- 1.5 ##treated
+s2 <- 1.8 ##placebo
+df1 <- df2 <- 8
+dof <- 16
 
-TS1 <- d1 / (s1/sqrt(n1));
-TS2 <- d2 / (s2/sqrt(n2));
+Sp <- sqrt( 8*(s1^2 + s2^2) /16 )
+SE <- Sp * sqrt(2/9)
+TS <- (x1 - x2) / SE
+P <- pt(TS, dof) * 2  # b/c two-sided, pt is half the probability
 
-TS1; TS2;
-# t.test(d1, d2, alternative = "two.sided")
+Sp <- signif(Sp, 3);  SE <- signif(SE, 3);  TS <- signif(TS, 3);  P <- signif(P, 3);
+
+data.frame(Sp, SE, TS, P)
 ```
 
-What is the probability that d1 and d2 were drawn from the same population? 
-
-What are the relevant quantiles for each group?
-```{r}
-n1 <- 9;  d1 <- -3;  s1 <- 1.5;
-n2 <- 9;  d2 <-  1;  s2 <- 1.8;
-
-tQ1 <- c(-1,1) * qt(.975,8) * (1.5/3);
-tQ2 <- c(-1,1) * qt(.975,8) * (1.8/3);
-
-tQ1; tQ2;
-```
-
-The $.975$ t-quantile for these groups is `r round(qt(.975,8),2)`. d1 is outside that, d2 is within that. The probability that d1 and d2 are drawn from the same population is the product of probabilities that each is drawn from a population centered at $\mu_0 = 0$?????
-
-```{r}
-p1 <- pt(TS1, 8, lower.tail=TRUE) * 2;
-p2 <- pt(TS2, 8, lower.tail=TRUE) * 2;
-
-p1 * p2;
-```
 
 That's a tiny probability.
 
 
-__Answer: __
+__Answer: 0.0001__
 
 # 6.
 Brain volumes for 9 men yielded a 90% confidence interval of 1,077 cc to 1,123 cc. Would you reject in a two sided 5% hypothesis test of  H0:μ=1,078?
