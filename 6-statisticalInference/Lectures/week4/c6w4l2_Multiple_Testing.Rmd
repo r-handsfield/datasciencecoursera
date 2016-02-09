@@ -5,4 +5,268 @@ date: "January 31, 2016"
 output: html_document
 ---
 
-#
+<style type="text/css">
+	.example {
+		background-color: lavenderblush;
+		padding: 3px;
+		margin-bottom: 15px;
+	}
+	
+	.math_list > ul > li {
+		margin-bottom: 8px;
+	}
+</style>
+
+# The _Multiple Comparisons_ Problem
+
+When testing data sets over and over again, you increase the odds that a statistically significant result will appear purely by random chance. [[1]](https://en.wikipedia.org/wiki/Multiple_comparisons_problem)
+
+A _p-value_ is the probability that a result was obtained by random coincidence. As p-values decrease, there is a better chance that a result is caused by a genuine phenomenon. Genuine results are termed _statistically significant_. We choose an arbitrary significance threshold $\alpha$ for $p$. Most commonly, $\alpha = 0.05$, and any $p < \alpha$ confirms a significant result.
+
+However, if you perform many tests, then a value $(p < { 1 \over n})$ is likely to appear after $m$ tests. For example, if you perform $1000$ hypothesis tests, you are likely to get one $(p < .001)$, ten $(p < .01)$, and fifty $(p < .05)$, purely by random chance!
+
+To correct for the multiple comparison problem, you must use a significance threshold $\alpha$ that is proportional to the number of tests $m$.
+
+> Use $~~(p < {\alpha \over m })~~$ or $~~ (mp < \alpha)$
+
+
+<div class="example">
+
+#### Example - Do Power Lines Cause Illness?
+
+A Swedish study in 1992 tried to determine whether or not power lines caused some kind of poor health effects. 
+
+The researchers surveyed everyone living within 300 meters of high-voltage power lines over a 25-year period and looked for statistically significant increases in rates of over 800 ailments. The study found that the incidence of childhood leukemia was four times higher among those that lived closest to the power lines, and it spurred calls to action by the Swedish government. 
+
+The problem with the conclusion, however, was that they failed to compensate for the look-elsewhere effect; in any collection of 800 random samples, __it is likely that at least one will be at least _3 standard deviations_ above the expected value__, by chance alone. Subsequent studies failed to show any links between power lines and childhood leukemia, neither in causation nor even in correlation.
+</div>
+
+<div class="example">
+
+#### Example - Drug Efficacy
+
+Suppose we consider the efficacy of a drug in terms of the reduction of any one of a number of disease symptoms. As __more symptoms__ are considered, it becomes more likely that the drug will appear to be an improvement over existing drugs in terms of at least one symptom, _by random chance alone_.
+</div>
+
+<div class="example">
+
+#### Example - Drug Side Effects
+
+Suppose we consider the safety of a drug in terms of the occurrences of different types of side effects. As __more types of side effects__ are considered, it becomes more likely that the new drug will appear to be less safe than existing drugs in terms of at least one side effect.
+</div>
+
+## Key Ideas
+
+Two common mistakes that you will see are
+
+1. Calculating many p-values for one data set, but reporting only the smallest
+2. Reporting all the p-values, but claiming _all_ $(p < .05)$ are significant, ignoring the random chance effect
+
+
+
+## Classification of $m$ Hypothesis Tests
+
+For the hypothesis $~\{H_0: \beta = 0\}$, $~\{H_a: \beta \neq 0\}$, and performing $m$ hypothesis tests
+
+|                                             | $H_0$ is true | $H_a$ is true  | Total
+|---------------------------------------------|---------------|----------------|--------------------------------
+| __Claim__ $(\beta \neq 0)~~$ (significant)  | $V ~~~ (fp)$  | $S ~~~ (tp)$   | $R ~~~ (reject ~ H_0)$
+| __Claim__ $(\beta = 0)~~$ (not significant) | $U ~~~ (tn)$  | $T ~~~ (fn)$   | $m-R ~~~ (don't ~ reject ~ H_0)$
+| __Total__			              | $m_0$         | $m-m_0$        | $m$
+
+* $m$ is the total number hypotheses tested
+* $m_0$ is the number of true $H_0$
+* $m - m_0$ is the number of true $H_a$
+* $V$ is the number of false positives (Type I error) (also called "false discoveries") - claim parameter doesn't equal zero when it does
+* $S$ is the number of true positives (also called "true discoveries")
+* $T$ is the number of false negatives (Type II error) - claim that parameter equals zero when it doesn't
+* $U$ is the number of true negatives
+* $R$ is the number of rejected $H_0$ (also called "discoveries")
+
+In $m$ hypothesis tests of which $m_0$ are true null hypotheses, $R$ is an observable random variable, and $S, T, U$, and $V$ are unobservable random variables.
+
+From a set of $m$ hypothesis test, we measure the rates of three possible multi-testing errors
+
+1. False Positive Rate: the ratio of false positives to true $H_0$.  
+	+ the fpr is _equal to_, but __not__ the same as the Type I error rate $\alpha$ 
+	$$FPR = E \left[\frac{V}{m_0} \right] ~=~ E \left[\frac{fp}{fp + tn} \right] $$
+2. Family_Wise Error Rate: The probability of at least one false positive $V$. $$FWER = P(V \geq 1)$$
+3. False Discovery Rate: the rate at which claims of significance $(p < \alpha)$ are false. 
+$$FDR = E \left[ \frac{V}{R} \right] ~=~ E \left[\frac{fp}{fp + tp} \right]$$
+
+## Controlling Error Rates
+
+### 1. Controlling FWER
+
+Use the [Bonferroni Correction](http://en.wikipedia.org/wiki/Bonferroni_correction)
+
+> $alpha_{fwer} = \frac{\alpha}{m}
+
+* very small, may result in zero successes
+
+### 2. Controlling FDR
+
+To control the false discovery rate, use the Benjamin Hochberger (BH) correction
+
+> Arrange all p-values in ascending order $P_1 ... P_m$  
+> $\{P_i < \alpha \times {i \over m} \}$ is significant
+
+This correction is popular in genomics, astronomy, imaging, and signal processing.
+
+* less strict than the $\alpha / m$ correction
+* may behave strangely under dependance
+* seems arbitrary
+
+<div class="example">
+#### Example - Controlling Error Rates
+
+```{r, message=FALSE, warning=FALSE, fig.align='center', fig.height=4.5, fig.width=6}
+library(ggplot2)
+set.seed(2235)
+
+Rank <- seq(1,10)
+P_Value <- sort(sample(seq(0,.8,.01),10, replace=TRUE))
+
+No_Correction <- rep(.2,10)
+Bonferroni_FWER <- No_Correction/ length(Rank)
+BH_FDR <- P_Value/Rank
+	
+g <- ggplot() + aes(Rank, P_Value) + geom_point();
+g <- g + scale_y_continuous( breaks=seq(0,.8,.2) );
+g <- g + geom_line(aes(x=Rank, y=No_Correction), color="red", show.legend = TRUE);
+g <- g + geom_line(aes(x=Rank, y=Bonferroni_FWER), color="blue", show.legend = TRUE);
+g <- g + geom_line(aes(x=Rank, y=BH_FDR), color="gray", show.legend = TRUE);
+
+g
+```
+<br />
+Under <span style="color: red;">$alpha = 0.2$</span>, three of the p-values are significant. Under the <span style="color: gray;">BH (FDR)</span> correction, one p-value is significant. Under the <span style="color: blue;">Bonferroni (FWER)</span> correction, two p-values are significant.
+</div>
+
+<div class="example">
+
+#### Case Study I - No true positives $~(S = 0)$
+
+Instead of correcting $\alpha$, we can adjust the p-values.
+
+$$P_i^{fwer} = P_i \times m ~~~ (to ~ a ~ maximum ~ of 1)$$
+
+```{r cache=TRUE}
+set.seed(1010093)
+
+pValues <- rep(NA, 1000)
+
+for(i in 1:1000) {
+	
+	# simulate 2 independant, unrelated variables
+	y <- rnorm(20)
+  	x <- rnorm(20)
+	
+	# fit y to x, and get the p-value
+	pValues[i] <- summary(lm(y ~ x))$coeff[2,4]
+	
+}
+
+head(pValues)
+sum(pValues < .05)
+```
+<br />
+There are $51$ significant p-values when $\alpha = 0.05$; what happens when we correct for multiple testing errors?
+
+Use the `stats::p.adjust()` method:
+```{r cache=TRUE}
+# The FWER adjustment
+sum(p.adjust(pValues, method = "bonferroni") < 0.05)
+
+
+# The FDR adjustment
+sum(p.adjust(pValues, method = "BH") < 0.05)
+```
+It appears that the previous 51 p-values appeared significant by chance, and none of the p-values are actually significant. This is correct because we made X and Y completely random
+</div>
+
+<div class="example">
+
+#### Case Study I - 50% true positives $~(S/m = 0.5)$
+
+Assume $H_0: \beta = 0$, $~~~H_a: \beta \neq 0$
+```{r cache=TRUE}
+set.seed(1010093)
+
+pValues <- rep(NA, 1000)
+
+for(i in 1:1000) {
+	
+	x <- rnorm(20)
+	
+	if (i <= 500) { # first 500 are random, i.e. Beta = 0
+		y <- rnorm(20)
+	} 
+	
+	else { # for last 500, y = 2*x, i.e. Beta = 2
+		y <- rnorm(20, mean = 2*x)
+	}
+	
+	# fit y to x, and get the p-value
+	pValues[i] <- summary(lm(y ~ x))$coeff[2,4]
+	
+}
+
+# True status is:
+# first 500: Beta = 0
+# last 500:  Beta not = 0
+trueStatus <- rep(c("zero","not zero"),each=500)
+table(pValues < 0.05, trueStatus)
+```
+<br />
+
+For the case in which there is no relationship between X and Y, there are 24 false positives (about 5%). For the case in which $y = 2x$, all pValues were significiant (returned true positives). We can say that this model "discovers" all the real signals in this data set.
+
+What happens when we adjust the pValues?
+```{r cache=TRUE}
+# The FWER adjustment
+table(p.adjust(pValues, method = "bonferroni") < 0.05, trueStatus)
+```
+When we use the Bonferroni FWER correction, we successfully reject all the false positives, but we also reject 23 false negatives. The net improvement is basically zero.
+
+```{r cache=TRUE}
+# The FDR adjustment
+table(p.adjust(pValues, method = "BH") < 0.05, trueStatus)
+```
+When using the BH FDR correction, we correctly accept all the true positives, and we now accept only 13 false positives. The false discovery rate is $13/500 = .026$. So about $2.6%$ of the significant p-values are false positives.
+
+This is somewhat of an improvement.
+
+What do the corrected vs uncorrected p-values look like?
+__P-values versus adjusted P-values__
+```{r, dependson="createPvals2",fig.height=4,fig.width=8}
+par(mfrow=c(1,2))
+plot(pValues,p.adjust(pValues,method="bonferroni"),pch=19)
+plot(pValues,p.adjust(pValues,method="BH"),pch=19)
+```
+</div>
+
+
+## Notes and resources
+
+__Notes__:
+* Multiple testing is an entire subfield
+* A basic Bonferroni/BH correction is usually enough
+* If there is strong dependence between tests there may be problems
+  * Consider method="BY"
+
+__Further resources__:
+* [Multiple testing procedures with applications to genomics](http://www.amazon.com/Multiple-Procedures-Applications-Genomics-Statistics/dp/0387493166/ref=sr_1_2/102-3292576-129059?ie=UTF8&s=books&qid=1187394873&sr=1-2)
+* [Statistical significance for genome-wide studies](http://www.pnas.org/content/100/16/9440.full)
+* [Introduction to multiple testing](http://ies.ed.gov/ncee/pubs/20084018/app_b.asp)
+
+
+
+
+
+
+
+
+
+
+
