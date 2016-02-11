@@ -5,6 +5,18 @@ date: "January 31, 2016"
 output: html_document
 ---
 
+<style type="text/css">
+	.example {
+		background-color: lavenderblush;
+		padding: 3px;
+		margin-bottom: 15px;
+	}
+	
+	.math_list > ul > li {
+		margin-bottom: 8px;
+	}
+</style>
+
 
 # Resampling
 Resampling based procedures are ways to perform population based statistical inferences, while living within our data. Data Scientists tend to really like resampling based inferences, since they are very data centric procedures, they scale well to large studies and they often make very few assumptions.
@@ -13,13 +25,255 @@ Resampling based procedures are ways to perform population based statistical inf
 
 ## 1301 Bootstrapping
 
+When a sample's population is completely unknown, we can't draw inferences about the population from the sample. In these cases, we sample from the sample, and use the subsamples to draw inferences about the sample. This process is called _Bootstrapping_. The subsamples are canonically named __resamples__ or __bootstrap samples__.
 
+## 1302 Example - Bootstrapping the Median
 
-## 1302 Bootstrapping Example
+<div class="example">
 
+What is the distribution of son's height medians? We don't know anything about the population from which `father.son` was drawn, so we resample the data 10,000 times, and use the resampled set to determine the resamples population distribution of medians.
+```{r cache=TRUE, message=FALSE, warning=FALSE}
+library(UsingR)
 
+x <- father.son$sheight;  # son's heights
+n <- length(x); # columns = num of data values (1078)
+B <- 10000;  # do 10,000 Bootstrap resamples
+
+values <- sample(x, size = n*B, replace=TRUE);  # take a complete sample from son's heights, 10,000 times
+
+resamples <- matrix(values, nrow = B, ncol = n);  # each row is a random, n-sized sample (1078)
+
+resampledMedians <- apply(resamples, 1, median);  # find median of each row
+
+head(resampledMedians, 3L)
+```
+
+```{r, fig.align='center', fig.height=6, fig.width=6, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+
+g = ggplot(data.frame(x = resampledMedians), aes(x = x)) 
+
+# use a density estimate in place of histogram for a radder looking graph
+g = g + geom_density(size = 1, fill = "red") + ggtitle("Density Distribution of Resampled Medians")
+# g = g + geom_histogram(alpha = .20, binwidth=.3, colour = "black", fill = "blue", aes(y = ..density..)) 
+g = g + geom_vline(xintercept = median(x), size = 1)  # median of medians
+g
+```
+</div>
+<br />
+We presume that the _sample_ disribution of medians looks the same as this _resampled_ distribution of medians. By the same logic, the standard deviation of the resampled medians equals the standard error of the sample median.
+
+$$SD_{resample ~ median} = SE_{sample ~ median}$$
 
 ## 1303 Notes on the Bootstrap
 
+### The Bootstrap Principle
+
+The bootstrap principle is: If we have a statistic that estimates some population parameter, but we don't know its sampling distribution, the bootstrap principle suggests using the distribution defined by the sample data to approximate its own sampling distribution.
+
+### The Bootstrap Algorithm
+
+1. From the sample data, sample $n$ observations with replacement, resulting in exactly one simulated complete (resampled) data set
+2. Take a statistic (median, mean, etc.) of the simulated (resampled) data set
+3. Repeat steps 1-2 $B$ times, resulting in $B$ simulated (resampled) means, medians, etc.
+4. Draw a histogram or density estimate of the simulated statistice (mean, median, etc.)
+5. Calculate the standard deviation to estimate the standard error of your statistic
+6. Take the $2.5^{th}$ and $97.5^{th}$ quantiles as the _bootstrap_ confidence interval for your statistic
+
+<div class="example">
+
+#### Example
+
+Recall the previous example
+```{r cache=TRUE, message=FALSE, warning=FALSE}
+library(UsingR)
+
+x <- father.son$sheight;  # son's heights
+n <- length(x); # columns = num of data values (1078)
+B <- 10000;  # do 10,000 Bootstrap resamples
+
+# 1,3) sample N observations; repeat B times
+values <- sample(x, size = n*B, replace=TRUE);
+resamples <- matrix(values, nrow = B, ncol = n); 
+
+# 2,3) take a statistic (median); repeat B times
+medians <- apply(resamples, 1, median);
+
+# 5) take the standard deviation to estimate the standard error of your statistic 
+sd(medians);  
+
+# 6) take 2.5 and 97.5 percentiles to approximate the confidence interval of your statistic
+quantile(medians, c(.025, .975));
+```
+
+4. Draw a histogram of the resampled data set
+```{r, fig.align='center', fig.height=6, fig.width=6, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+
+g = ggplot(data.frame(medians = medians), aes(x = medians));
+g = g + geom_histogram(binwidth=.05, colour = "black", fill = "lightblue"); 
+g
+```
+</div>
+
+### Considerations
+
+* The bootstrap with replacement is _non-parametric_
+	+ The bootstrap without replacement is parametric
+* The $.025/.975$ confidence interval is not consistently accurate
+	+ Use the _bias-corrected and accelerated (__BCa__)_ interval
+	+ Via functions `bootstrap::bcanon()` or `boot::abc.ci()`
+* There are lots of variations on bootstrap procedures; the book "An Introduction to the Bootstrap" by Efron and Tibshirani is a great place to start for both bootstrap and jackknife information
 
 ## 1304 Permutation Tests
+
+Permutation tests are similar to hyppothesis tests, but are used to compare groups.
+
+<div class="example">
+
+#### Example - Which is the Best Pesticide?
+
+Researchers used 6 pesticides, {A, B, C, D, E, F}, on 12 groups of insects each.
+```{r message=FALSE}
+data(InsectSprays);
+table(InsectSprays$spray);
+```
+<br />
+
+After spraying, the researches counted the number of dead insects in each group.
+```{r}
+head(InsectSprays, 3L);
+```
+<br />
+
+A boxplot of death counts for all 6 sprays looks like this.
+```{r, fig.height=6, fig.width=8, echo=FALSE, fig.align='center'}
+
+g = ggplot(InsectSprays, aes(spray, count, fill = spray))
+g = g + geom_boxplot()
+g
+```
+<br />
+
+Horizontal lines are $0.50$ quantiles (medians); bottom and top hinges are $0.25$ and $0.75$ quantiles; whiskers are greatest value within $1.5 ~ IQR$ of the respective hinge. (Top - Bottom hinge is the IQR).
+
+__How do we compare pesticides B and C?__
+
+The way we do it gets weird, so pay attention.
+
+If we randomly shuffle measured death counts between pesticides B and C, we create a _null distribution_ in which B and C are unrelated. Comparing our observation to this distribution tells us whether there is an actual difference between B and C.
+
+To compare B and C, find the difference in group means. This becomes our test statistic $TS$. We then shuffle (permute) values randomly between the groups and find the new difference of means. We do this many times, and compare our test statistic to the distribution of permuted differences of means.
+
+```{r}
+
+subdata <- InsectSprays[InsectSprays$spray %in% c('B','C'),];  # subset sprays B & C
+y <- subdata$count;  # the death tolls
+
+group <- as.character(subdata$spray)  # unfactor the spray indices
+
+# our TS is the difference in group means; write a function to calculate this
+testStat <- function(w, g) {
+# 	print(w[g=='B'])
+# 	print(w[g=='C'])
+	mean( w[g == 'B'] ) - mean( w[g == 'C'] );
+}
+
+TS <- testStat(y, group);  # the difference in group means
+TS;
+
+# shuffle values between groups, and recalculate the difference of means
+permutations <- sapply(1:10000, function(i) testStat(y, sample(group)));
+
+head(permutations, 3L);
+```
+<br />
+
+The permuted difference in means represents the _null distribution_, the distribution that would arise if there was no difference between pesticides B and C. The null distribution is centered at $(\mu = 0)$.
+```{r}
+mean(permutations);
+```
+<br />
+
+If there is truly a difference between pesticides B and C, then the test statistic should fall in a low p-value (high quantile) region of the null distribution. Use any number of methods to compare the test statistic to the null distribution.
+```{r}
+# compare permuted values to the test statistic (original diff of means)
+head(permutations > TS)
+sum(permutations > TS)
+mean(permutations > TS)
+```
+<br />
+
+Plot the histogram if it floats your boat.
+```{r, echo= FALSE, fig.width=6, fig.height=6, fig.align='center'}
+g = ggplot(data.frame(permutations = permutations), aes(permutations))
+g = g + geom_histogram(fill = "lightblue", color = "black", binwidth = 1)
+g = g + geom_vline(xintercept = TS, size = 1)
+g
+```
+<br />
+
+The null distribution is centered near zero. The observed difference of $13.25$ (black vline) would be an extreme outlier of this distribution. This means that there is a true difference between pesticides B and C. 
+
+What if pesticides B and C really are equivalent, but the observed data was a fluke?
+
+There is virtually no chance that $TS = 13.25$ could be drawn from the null distribution.
+
+```{r}
+signif(pnorm(13.25, mean=mean(permutations), sd=sd(permutations), lower.tail = FALSE), 3)
+```
+<br />
+That's a tiny fucking probability.
+</div>
+
+### Permutation Test Algorithm
+
+1. Calculate a group-wise test statistic (TS) from your observed data
+2. Randomly shuffle values between groups
+3. Recalculate the test statistic (permuted test statistic = PS)
+4. Repeat steps 2-3 many many times
+5. Plot the PS distribution and compare to the TS
+	+ PS distribution is the _null distribution_
+
+> Use this method to test if variables are equal
+
+If the TS lies far outside the null distribution, the variables are not equal.
+From the PS distribution, you can calculate the probability of the observed TS occuring (probability that variables are equal, and your obersvations were a fluke).
+
+Oftentimes the associated hypotheses are
+* $H_0: A = B$ 
+* $H_a: A \neq B$ 
+
+### Variations on Permutation Testing
+
+Permutation tests are often called specific names for specific data types
+
+| Data Type | Statistic | Test Name
+|-----------|-----------|----------
+| Ranks	    | Rank Sum	| Rank Sum Tes
+| Binary    | Hypergeometric Probability | Fisher's Exact Test
+| Raw Data  |		| Ordinary Permutation Test
+
+Also,
+
+* _Randomiztion Tests_ are permutation tests with different motivation
+* For matched data, you can randomize the $\pm$ signs
+	+ For ranked data, this is called the _Signed Rank Test_
+* Permutation strategies can be used for regression
+	+ Permute a regressor of interest
+* Permutation tests work very well in multivariate settings
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
