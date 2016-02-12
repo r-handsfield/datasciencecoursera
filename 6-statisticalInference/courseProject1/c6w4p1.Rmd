@@ -6,6 +6,10 @@ date: "January 10, 2016"
 output: pdf_document
 ---
 
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2);
+```
+
 # Assignment Part 1
 
 In this project you will investigate the [exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution) in R and compare it with the Central Limit Theorem. The exponential distribution can be simulated in R with `rexp(n, lambda)` where `lambda` is the _rate parameter_. The mean and standard deviation of the exponential distribution are both $1 / \lambda$. Set `lambda = 0.2` for all of the simulations. You will investigate the distribution of averages of 40 exponentials. Note that you will need to do a thousand simulations.
@@ -14,10 +18,24 @@ In this project you will investigate the [exponential distribution](https://en.w
  \lambda e^{- \lambda x} & x \geq 0 \\ 
  0 & x < 0 
 \end{matrix}\right.$
-* $\mu = 1 / \lambda$ 
-* $\sigma = 1 / \lambda$
 * $\lambda = 0.2$
+* $\mu = 1 / \lambda = 5$ 
+* $\sigma = 1 / \lambda = 5$
 
+
+```{r}
+x <- seq(0,5,.01)
+df <- data.frame(x, dexp(x), pexp(x), rexp(x) );
+names(df) <- c("x", "exp.dist", "exp.prob", "exp.sim");
+
+g <- ggplot(data=df) + aes(x=x, y=exp.dist) + geom_line();
+g <- g + ylab("Probability") + ggtitle("Probability Distribution")
+
+h <- ggplot(data=df) + aes(x=x, y=exp.prob) + geom_line();
+h <- h + ylab("Normalized Probability") + ggtitle("Probability Density")
+g
+h
+```
 
 Illustrate via simulation and associated explanatory text the properties of the distribution of the mean of 40 exponentials. You should
 
@@ -71,6 +89,54 @@ A sample set of headings that could be used to guide the creation of your report
 *    Sample Variance versus Theoretical Variance: Include figures (output from R) with titles. Highlight the variances you are comparing. Include text that explains your understanding of the differences of the variances.
 *    Distribution: Via figures and text, explain how one can tell the distribution is approximately normal.
 
+
+# Title
+
+# Overview
+
+# Simulations
+
+```{r}
+
+means <- NULL;  # initialize list of means
+sigmas <- NULL;
+
+for( i in 1:1000 ){
+# 	print(i);
+	sim <- rexp(40, rate=0.2);
+	means <- c(means, mean(sim));
+	sigmas <- c(sigmas, sd(sim));
+}
+
+g <- ggplot() + aes(x=means) + geom_histogram(color='black', fill='lightblue');
+g <- g + geom_vline(xintercept = 5, size=2, color='red');
+g
+```
+
+# Sample Mean vs Theoretical Mean
+
+### 1. Show the sample mean and compare it to the theoretical mean of the distribution.
+
+The theoretical mean of the distribution is given: $~ \mu=1$
+
+1. Simulate an exponential distribution
+2. Calculate the mean
+3. Repeat 40 times
+4. Plot the simulated means
+
+
+# Sample Variance vs Theoretical Variance
+
+# Distribution
+
+
+
+
+
+
+
+---
+
 # Part 2
 
 Now in the second portion of the class, we're going to analyze the `ToothGrowth` data in the R datasets package.
@@ -89,15 +155,12 @@ Some criteria that you will be evaluated on
 
 ### Part 2 Solution
 
+
 ```{r}
 library("datasets")
 
-dftg <- ToothGrowth
-
-head(dftg)
 ?ToothGrowth
 ```
-
 __Description__
 
 The response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid).
@@ -114,10 +177,17 @@ A data frame with 60 observations on 3 variables.
 `[,2]`	`supp`	`factor`	Supplement type (VC or OJ).  
 `[,3]`	`dose`	`numeric`	Dose in milligrams.  
 
+```{r}
+dftg <- ToothGrowth
+head(dftg)
+summary(dftg)
+```
 
-
-
-
+```{r}
+dftg[dftg$supp == 'VC', ]
+dftg[dftg$supp == 'OJ', ]
+```
+Two treatments, each of 10 samples at 3 dosages.
 
 
 
