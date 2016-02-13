@@ -2,40 +2,34 @@
 title: "c6w4p1"
 author: "R. Handsfield"
 date: "January 10, 2016"
-#output: html_document
-output: pdf_document
+output: html_document
+#output: pdf_document
 ---
+
+<style type="text/css">
+	.panel_pinkish{
+		background-color: lavenderblush;
+		padding: 5px;
+	}
+	
+	.math_list > ul > li {
+		/*extra space to accomodate LaTeX figures*/
+		margin-bottom: 3px;
+	}
+</style>
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(ggplot2);
+library(gridExtra);
+
+set.seed(15112);
 ```
 
 # Assignment Part 1
 
 In this project you will investigate the [exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution) in R and compare it with the Central Limit Theorem. The exponential distribution can be simulated in R with `rexp(n, lambda)` where `lambda` is the _rate parameter_. The mean and standard deviation of the exponential distribution are both $1 / \lambda$. Set `lambda = 0.2` for all of the simulations. You will investigate the distribution of averages of 40 exponentials. Note that you will need to do a thousand simulations.
 
-* $f(x;\lambda) = \left\{\begin{matrix} 
- \lambda e^{- \lambda x} & x \geq 0 \\ 
- 0 & x < 0 
-\end{matrix}\right.$
-* $\lambda = 0.2$
-* $\mu = 1 / \lambda = 5$ 
-* $\sigma = 1 / \lambda = 5$
 
-
-```{r}
-x <- seq(0,5,.01)
-df <- data.frame(x, dexp(x), pexp(x), rexp(x) );
-names(df) <- c("x", "exp.dist", "exp.prob", "exp.sim");
-
-g <- ggplot(data=df) + aes(x=x, y=exp.dist) + geom_line();
-g <- g + ylab("Probability") + ggtitle("Probability Distribution")
-
-h <- ggplot(data=df) + aes(x=x, y=exp.prob) + geom_line();
-h <- h + ylab("Normalized Probability") + ggtitle("Probability Density")
-g
-h
-```
 
 Illustrate via simulation and associated explanatory text the properties of the distribution of the mean of 40 exponentials. You should
 
@@ -92,45 +86,135 @@ A sample set of headings that could be used to guide the creation of your report
 
 # Title
 
-# Overview
+# Part I
 
-# Simulations
+In part 1 of this project, we will compare the exponential distribution to the Central Limit Theorem.
 
-```{r}
+For all simulations, sample $40$ values from an exponential distribution with rate parameter $\lambda = 0.2$.
+
+## Overview
+
+The exponential distribution, also known as the _Poisson_ distribution, is often
+used to measure rates. The probability density and cumulative probability distributions are 
+
+$$
+f(x;\lambda) = \left\{\begin{matrix} 
+ \lambda e^{- \lambda x} & x \geq 0 \\ 
+ 0 & x < 0 
+\end{matrix}\right.
+$$ 
+$$
+F(x;\lambda) = \left\{\begin{matrix} 
+ 1 - e^{- \lambda x} & x \geq 0 \\ 
+ 0 & x < 0
+\end{matrix}\right.
+$$
+
+The parameter _lambda_ is known as the _rate parameter_, and is directly related to the mean and standard deviation.
+$$\mu = \frac{1}{\lambda}$$ 
+$$\sigma = \frac{1}{\lambda}$$
+
+The distributions look like this
+
+<div class="panel_pinkish">
+```{r echo=FALSE, fig.align='center', fig.width=(7), fig.asp=.5}
+x <- seq(0,5,.01)
+df <- data.frame(x, dexp(x), pexp(x), rexp(x) );
+names(df) <- c("x", "exp.dens", "exp.dist", "exp.sim");
+
+h <- ggplot(data=df) + aes(x=x, y=exp.dist) + geom_line();
+h <- h + ggtitle("Cumulative Distribution") + ylab("P(X ≤ x)");
+
+g <- ggplot(data=df) + aes(x=x, y=exp.dens) + geom_line();
+g <- g + ggtitle("Probability Density") + ylab("P(x)");
+
+grid.arrange(g,h, ncol=2, top="Exponential Distribution");
+```
+</div>
+
+## Simulations
+
+Run 1000 simulations of 40 exponentially distributed values. Calculated the average simulated mean.
+```{r cache=TRUE, message=FALSE}
 
 means <- NULL;  # initialize list of means
-sigmas <- NULL;
 
 for( i in 1:1000 ){
 # 	print(i);
-	sim <- rexp(40, rate=0.2);
-	means <- c(means, mean(sim));
-	sigmas <- c(sigmas, sd(sim));
+	sim <- rexp(40, rate=0.2); # simulate 40 values with lambda = 0.2
+	means <- c(means, mean(sim));  # calculate means
 }
 
-g <- ggplot() + aes(x=means) + geom_histogram(color='black', fill='lightblue');
-g <- g + geom_vline(xintercept = 5, size=2, color='red');
-g
+mean(means);
+var(means);
+```
+```{r echo=FALSE}
+M <- mean(means);
+V <- var(means);
 ```
 
-# Sample Mean vs Theoretical Mean
 
-### 1. Show the sample mean and compare it to the theoretical mean of the distribution.
+```{r eval=FALSE, echo=FALSE}
+# vectorised simulation & calculation // time this later
+sds <- rep(NA, 1000)
+df <- data.frame(mns=sds, sds=sds)
+df$mns <- sapply(1:1000, function(x) {mean(rexp(40, 0.2))})
+df$sds <- sapply(1:1000, function(x) {sd(rexp(40, 0.2))})
+head(df)
 
-The theoretical mean of the distribution is given: $~ \mu=1$
+apply(df, 2, mean)
+```
+ 
 
-1. Simulate an exponential distribution
-2. Calculate the mean
-3. Repeat 40 times
-4. Plot the simulated means
+## Question 1 - Sample Mean vs Theoretical Mean
 
+The average of simulated means is the ___Sample Mean:___ $\bar X_{\mu} =$ `r signif(M,3)`. 
 
-# Sample Variance vs Theoretical Variance
-
-# Distribution
-
+The population mean of the exponential distribution is
+$$~ \mu = \frac{1}{\lambda} = \frac{1}{0.2} = 5.0$$
 
 
+The histogram of the simulated means is 
+```{r warning=FALSE, message=FALSE}
+gm <- ggplot() + aes(x=means) + ggtitle("Sample Means"); 
+gm <- gm + geom_histogram(aes(y=..density..), color='black', fill='lightblue');
+gm <- gm + geom_vline(xintercept = 5, size=2, color='red');
+
+gm
+```
+
+The sample means are normally distributed and centered near the population mean (red line).
+
+The probability of the sample means randomly centering at `r signif(M,3)` is:
+```{r}
+1 - 2*(pnorm(abs(M-5), mean=0, sd=sd(means), lower.tail = FALSE))
+```
+
+## Question 2 - Variance of the Sample Mean
+
+According to the central limit theorem, a sample estimates a statistic, and has variance proportional to the sample size $n$.
+
+$$Var(\bar X) = \left( \frac{\sigma}{\sqrt n}\right)^2$$
+
+For the exponential distribution
+$$Var(\bar X) = \left( \frac{1}{\lambda \sqrt n} \right)^{2} = \left( 0.2 \sqrt {40}\right)^{-2} = 0.625$$
+
+
+Variance of the sample mean
+```{r}
+(.2 * sqrt(40))^-2;
+var(means);
+```
+It appears that the sample variance underestimates the population variance.
+
+## Question 3 - Distribution
+
+Overlaying a normal distribution plot on the the histogram of means shows that the distribution of means is approximately normal.
+```{r, warning=FALSE, message=FALSE}
+# add normal distribution plot to histograms
+gm <- gm + stat_function(fun=dnorm, args=list(mean=5, sd=sd(means)), size=2)
+gm
+```
 
 
 
@@ -184,8 +268,8 @@ summary(dftg)
 ```
 
 ```{r}
-dftg[dftg$supp == 'VC', ]
-dftg[dftg$supp == 'OJ', ]
+# dftg[dftg$supp == 'VC', ]
+# dftg[dftg$supp == 'OJ', ]
 ```
 Two treatments, each of 10 samples at 3 dosages.
 
