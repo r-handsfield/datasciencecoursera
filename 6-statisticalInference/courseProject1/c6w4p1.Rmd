@@ -242,16 +242,12 @@ Some criteria that you will be evaluated on
 
 ```{r}
 library("datasets")
-
-?ToothGrowth
+data(ToothGrowth)
 ```
 __Description__
+The dataset reports _The Effect of Vitamin C on Tooth Growth in Guinea Pigs_ in 3 columns, _tooth length_, _supplement type_, and _dose (mg)_.
 
 The response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid).
-
-__Usage__
-
-ToothGrowth
 
 __Format__
 
@@ -264,16 +260,21 @@ A data frame with 60 observations on 3 variables.
 ```{r}
 dftg <- ToothGrowth
 head(dftg)
-summary(dftg)
+str(dftg)
+table(dftg[, c('supp','dose')])
 ```
 
-```{r}
-# dftg[dftg$supp == 'VC', ]
-# dftg[dftg$supp == 'OJ', ]
+```{r eval=FALSE, echo=FALSE}
+table(dftg[dftg$supp == 'VC', 'dose'])
+dftg[dftg$supp == 'OJ', 'dose']
 ```
 Two treatments, each of 10 samples at 3 dosages.
 
-
+```{r}
+g <- ggplot(dftg) + aes(x=factor(dose), y=len, fill=factor(dose)) + geom_boxplot()
+g <- g + facet_grid(.~supp) + xlab("Dose (mg)")
+g
+```
 
 
 
