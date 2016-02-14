@@ -2,8 +2,9 @@
 title: "c6w4p1"
 author: "R. Handsfield"
 date: "January 10, 2016"
-output: html_document
-#output: pdf_document
+output:
+  pdf_document:
+    latex_engine: xelatex
 ---
 
 <style type="text/css">
@@ -15,6 +16,10 @@ output: html_document
 	.math_list > ul > li {
 		/*extra space to accomodate LaTeX figures*/
 		margin-bottom: 3px;
+	}
+	
+	.code_block {
+		margin-bottom: 5px;
 	}
 </style>
 
@@ -117,7 +122,7 @@ $$\sigma = \frac{1}{\lambda}$$
 The distributions look like this
 
 <div class="panel_pinkish">
-```{r echo=FALSE, fig.align='center', fig.width=(7), fig.asp=.5}
+```{r echo=FALSE, warning=FALSE, fig.align='center', fig.width=(7), fig.asp=.5}
 x <- seq(0,5,.01)
 df <- data.frame(x, dexp(x), pexp(x), rexp(x) );
 names(df) <- c("x", "exp.dens", "exp.dist", "exp.sim");
@@ -144,13 +149,16 @@ for( i in 1:1000 ){
 	sim <- rexp(40, rate=0.2); # simulate 40 values with lambda = 0.2
 	means <- c(means, mean(sim));  # calculate means
 }
-
-mean(means);
-var(means);
 ```
+
 ```{r echo=FALSE}
 M <- mean(means);
 V <- var(means);
+```
+
+The average of simulated means is the ___Sample Mean:___ $\bar X_{\mu}$
+```{r}
+mean(means);
 ```
 
 
@@ -175,7 +183,11 @@ $$~ \mu = \frac{1}{\lambda} = \frac{1}{0.2} = 5.0$$
 
 
 The histogram of the simulated means is 
-```{r warning=FALSE, message=FALSE}
+```{r echo=FALSE}
+k <- "The sample means are normally distributed and centered near the population mean (red line)."
+```
+
+```{r warning=FALSE, message=FALSE, fig.align='center', fig.cap=k}
 gm <- ggplot() + aes(x=means) + ggtitle("Sample Means"); 
 gm <- gm + geom_histogram(aes(y=..density..), color='black', fill='lightblue');
 gm <- gm + geom_vline(xintercept = 5, size=2, color='red');
@@ -183,9 +195,13 @@ gm <- gm + geom_vline(xintercept = 5, size=2, color='red');
 gm
 ```
 
-The sample means are normally distributed and centered near the population mean (red line).
+<br />
+The variance of this distribution of sample means $Var(\bar X_\mu)$ is
+```{r}
+var(means);
+```
 
-The probability of the sample means randomly centering at `r signif(M,3)` is:
+The probability of the sample means randomly centering at `r round(M,2)` is:
 ```{r}
 1 - 2*(pnorm(abs(M-5), mean=0, sd=sd(means), lower.tail = FALSE))
 ```
@@ -237,25 +253,16 @@ Some criteria that you will be evaluated on
 *    Were the results of the tests and/or intervals interpreted in the context of the problem correctly?
 *    Did the student describe the assumptions needed for their conclusions?
 
-### Part 2 Solution
+## Part 2 Solution
 
+## Overview
+The `ToothGrowth` data set reports _The Effect of Vitamin C on Tooth Growth in Guinea Pigs_ in 3 columns: tooth length, supplement type, and dose.
 
+## Exploratory Analysis
 ```{r}
 library("datasets")
 data(ToothGrowth)
 ```
-__Description__
-The dataset reports _The Effect of Vitamin C on Tooth Growth in Guinea Pigs_ in 3 columns, _tooth length_, _supplement type_, and _dose (mg)_.
-
-The response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid).
-
-__Format__
-
-A data frame with 60 observations on 3 variables.
-
-`[,1]`	`len`	`numeric`	Tooth length  
-`[,2]`	`supp`	`factor`	Supplement type (VC or OJ).  
-`[,3]`	`dose`	`numeric`	Dose in milligrams.  
 
 ```{r}
 dftg <- ToothGrowth
@@ -263,21 +270,39 @@ head(dftg)
 str(dftg)
 table(dftg[, c('supp','dose')])
 ```
+<br />
 
-```{r eval=FALSE, echo=FALSE}
-table(dftg[dftg$supp == 'VC', 'dose'])
-dftg[dftg$supp == 'OJ', 'dose']
-```
-Two treatments, each of 10 samples at 3 dosages.
+The data set reports the tooth length in each of 10 guinea pigs receiving one of three doses of Vitamin C (0.5, 1, 2 mg), with one of two delivery methods (orange juice or ascorbic acid). Accounting for dosage and delivery method, there are 6 independent groups of 10 guinea pigs.
 
-```{r}
+| __Column__  | `len`        | `supp` 	 		| `dose`    |
+|-------------|--------------|--------------------------|-----------|
+| __Type__    | `numeric`    | `factor`                 | `numeric` |
+| __Content__ | tooth length | supplement type {VC, OJ} | dose (mg) |
+
+
+```{r fig.align='center', fig.cap="Two treatments, each of 10 samples at 3 dosages."}
 g <- ggplot(dftg) + aes(x=factor(dose), y=len, fill=factor(dose)) + geom_boxplot()
-g <- g + facet_grid(.~supp) + xlab("Dose (mg)")
+g <- g + facet_grid(.~supp) + xlab("Dose (mg)") + ggtitle("Tooth Growth by Supplement & Dose")
 g
 ```
 
+## Data Summary
 
+```{r}
+summary(dftg);
 
+# summary of VC groups
+summary(dftg[dftg$supp == 'VC',])
 
+# summary of OJ groups
+summary(dftg[dftg$supp == 'OJ',])
+```
+The mean tooth length is longer in the _OJ_ guinea pig group.
 
+## Tooth Growth Comparison
 
+How is tooth growth affected by supplement-type and dosage level?
+```{r}
+aggregate(len ~ dose + supp, data=dftg, FUN=mean)
+```
+Dosage seems to have a stronger effect in the _VC_ group.
