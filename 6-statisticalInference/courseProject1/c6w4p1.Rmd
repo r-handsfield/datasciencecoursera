@@ -3,7 +3,6 @@ title: "c6w4p1"
 author: "R. Handsfield"
 date: "January 10, 2016"
 output:
-  # html_document: default
   pdf_document:
     latex_engine: xelatex
 ---
@@ -17,6 +16,10 @@ output:
 	.math_list > ul > li {
 		/*extra space to accomodate LaTeX figures*/
 		margin-bottom: 3px;
+	}
+	
+	.code_block {
+		margin-bottom: 5px;
 	}
 </style>
 
@@ -56,7 +59,7 @@ $$\mu = \frac{1}{\lambda} ~~~~~~~~~~ ~~~~~~~~~~ \sigma = \frac{1}{\lambda}$$
 Plots of the exponential distribution look like this
 
 <div class="panel_pinkish">
-```{r echo=FALSE, fig.align='center', fig.width=(7), fig.asp=.5, warning=FALSE}
+```{r echo=FALSE, warning=FALSE, fig.align='center', fig.width=(7), fig.asp=.5}
 x <- seq(0,5,.01)
 df <- data.frame(x, dexp(x), pexp(x), rexp(x) );
 names(df) <- c("x", "exp.dens", "exp.dist", "exp.sim");
@@ -91,12 +94,20 @@ for( i in 1:1000 ){
 mean(means);
 var(means);
 ```
+
 ```{r echo=FALSE}
 M <- signif(mean(means),3);
 V <- signif(var(means),3);
 ```
 <br />
 According to the Central Limit Theorem, the average of these 1000 means should be a fairly accurate estimate of the true population mean $\mu$. The means should be normally distributed, with a variance proportional to the number of values in each simulation (40).
+=======
+
+The average of simulated means is the ___Sample Mean:___ $\bar X_{\mu}$
+```{r}
+mean(means);
+```
+
 
 ```{r eval=FALSE, echo=FALSE}
 # vectorised simulation & calculation // time this later
@@ -120,7 +131,7 @@ $$~ \mu = \frac{1}{\lambda} = \frac{1}{0.2} = 5.0$$
 `r M` seems close to $5.0$, but how close of an estimate is this? We can figure it out by looking at the distribution of simulated means.
 
 The histogram of simulated means is: 
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, message=FALSE, fig.align='center'}
 gm <- ggplot() + aes(x=means) + ggtitle("Sample Means"); 
 gm <- gm + geom_histogram(aes(y=..density..), color='black', fill='lightblue');
 gm <- gm + geom_vline(xintercept = 5, size=2, color='red');
@@ -186,6 +197,7 @@ In this project, we analyze the `datasets::ToothGrowth` data set to determine th
 The `ToothGrowth` dataset reports the effect of Vitamin C on tooth growth in guinea pigs. The data frame contains 3 columns representing, _tooth length_, _supplement type_, and _dose (mg)_.
 
 # Exploratory Analysis
+
 ```{r}
 library("datasets")
 data(ToothGrowth)
@@ -197,6 +209,7 @@ head(dftg)
 str(dftg)
 table(dftg[, c('supp','dose')])
 ```
+<br />
 
 ```{r eval=FALSE, echo=FALSE}
 table(dftg[dftg$supp == 'VC', 'dose'])
@@ -204,12 +217,14 @@ dftg[dftg$supp == 'OJ', 'dose']
 ```
 There are two treatments (OJ and VC), each administered at 3 different dosages to independant groups of 10 guinea pigs. 
 
-```{r}
+
+```{r fig.align='center', fig.cap="Two treatments, each of 10 samples at 3 dosages."}
 g <- ggplot(dftg) + aes(x=factor(dose), y=len, fill=factor(dose)) + geom_boxplot()
 g <- g + facet_grid(.~supp) + xlab("Dose (mg)") + ylab("Tooth Length")
 g
 ```
 
+## Data Summary
 
 # Comparing Treatments
 
@@ -292,3 +307,22 @@ t.test(len~supp, data=dftg, paired=FALSE, var.equal=FALSE)
 t.test(len~dose, data=rbind(df_half, df_one), paired=FALSE, var.equal=FALSE)
 t.test(len~dose, data=rbind(df_two, df_one), paired=FALSE, var.equal=FALSE)
 ```
+=======
+```{r}
+summary(dftg);
+
+# summary of VC groups
+summary(dftg[dftg$supp == 'VC',])
+
+# summary of OJ groups
+summary(dftg[dftg$supp == 'OJ',])
+```
+The mean tooth length is longer in the _OJ_ guinea pig group.
+
+## Tooth Growth Comparison
+
+How is tooth growth affected by supplement-type and dosage level?
+```{r}
+aggregate(len ~ dose + supp, data=dftg, FUN=mean)
+```
+Dosage seems to have a stronger effect in the _VC_ group.
