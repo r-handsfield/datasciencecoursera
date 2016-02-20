@@ -1,0 +1,182 @@
+---
+title: "Sample Estimates vs the Central Limit Theorem"
+author: "R. Handsfield"
+date: "February 19, 2016"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+---
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2);
+library(gridExtra);
+
+set.seed(15112);
+```
+
+
+# Abstract
+
+In this project, we compare the [exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution) to the Central Limit Theorem. Simulated exponential distributions of $n = 40$ are sampled from an exponential distribution with rate parameter $\lambda = 0.2$.
+
+# Overview
+
+The exponential distribution, also known as the _Poisson_ distribution, is often
+used to measure rates. The probability density and cumulative probability distributions are 
+
+$$
+f(x;\lambda) = \left\{\begin{matrix} 
+ \lambda e^{- \lambda x} & x \geq 0 \\ 
+ 0 & x < 0 
+\end{matrix}\right.
+ ~~~~~~~~~~ ~~~~~~~~~~
+F(x;\lambda) = \left\{\begin{matrix} 
+ 1 - e^{- \lambda x} & x \geq 0 \\ 
+ 0 & x < 0
+\end{matrix}\right.
+$$
+
+The parameter _lambda_ is known as the _rate parameter_, and is directly related to the mean and standard deviation.
+$$\mu = \frac{1}{\lambda} ~~~~~~~~~~ ~~~~~~~~~~ \sigma = \frac{1}{\lambda}$$
+
+
+Plots of the exponential distribution look like this
+```{r echo=FALSE, fig.align='center', fig.height=3, warning=FALSE}
+x <- seq(0,5,.01)
+df <- data.frame(x, dexp(x), pexp(x), rexp(x) );
+names(df) <- c("x", "exp.dens", "exp.dist", "exp.sim");
+
+h <- ggplot(data=df) + aes(x=x, y=exp.dist) + geom_line();
+h <- h + ggtitle("Cumulative Distribution") + ylab("P(X ≤ x)");
+
+g <- ggplot(data=df) + aes(x=x, y=exp.dens) + geom_line();
+g <- g + ggtitle("Probability Density") + ylab("P(x)");
+
+grid.arrange(g,h, ncol=2, top="");
+```
+
+
+# Simulations
+
+We create each comparison distribution by sampling 40 values randomly from the exponential distribution.
+We simulate a total of 1000 comparisons; the mean of each simulation ($\bar X$) is calculated and appended to the vector `means`.
+
+
+```{r echo=FALSE, cache=TRUE, message=FALSE}
+means <- NULL;  # initialize list of means
+
+for( i in 1:1000 ){
+# 	print(i);
+	sim <- rexp(40, rate=0.2); # simulate 40 values with lambda = 0.2
+	means <- c(means, mean(sim));  # calculate means
+}
+```
+
+```{r echo=FALSE}
+M <- signif(mean(means),3);
+V <- signif(var(means),3);
+```
+\pagebreak
+
+* Average of simulated means: `mean(means)` = `r M`
+* Variance of simulated means: `var(means)` = `r V`
+
+
+According to the Central Limit Theorem, the average of these 1000 means should estimate the true population mean $\mu$. The means should be normally distributed, with a variance proportional to the number of values in each simulation (40).
+ 
+
+## Sample Mean vs Population Mean
+
+The average of simulated means is the ___Sample Mean:___ $\bar X_{\mu} =$ `r M`. 
+
+The population mean of the exponential distribution is
+$$~ \mu = \frac{1}{\lambda} = \frac{1}{0.2} = 5.0$$
+
+`r M` seems close to $5.0$, but how close of an estimate is this? We can figure it out by looking at the distribution of simulated means.
+
+The histogram of simulated means is: 
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.align='center', fig.height=3}
+gm <- ggplot() + aes(x=means) + ggtitle("Sample Means"); 
+gm <- gm + geom_histogram(aes(y=..density..), color='black', fill='lightblue');
+gm <- gm + geom_vline(xintercept = 5, size=2, color='red');
+
+gm
+```
+
+The 1000 simulated means are normally distributed and centered near the true population mean $\mu$ (red line). Because the means are normally distributed, we can use normal statistics to determine how good of an estimte `r M` actually is.
+
+The probability of the sample means randomly centering at `r M` is:
+```{r}
+1 - 2*(pnorm( abs( mean(means)-5 ), mean=0, sd=sd(means), lower.tail = FALSE) )
+```
+
+There is a probability of just a few chances out of 100 that our sample mean estimates a non-exponential population mean, but randomly averages to a value near $5.0$.
+
+## Variance of the Sample Mean
+
+According to the central limit theorem, a sample estimates a statistic, and has variance proportional to the sample size $n$.
+
+$$Var(\bar X) = \left( \frac{\sigma}{\sqrt n}\right)^2$$
+
+For the exponential distribution
+$$Var(\bar X) = \left( \frac{1}{\lambda \sqrt n} \right)^{2} = \left( 0.2 \sqrt {40}\right)^{-2} = 0.625$$
+
+The variance of the sample mean is
+```{r}
+var(means);
+```
+It appears that the sample variance slightly underestimates the population variance.
+
+## Distribution of the Sample Mean
+
+Overlaying a normal distribution plot on the the histogram of means shows that the distribution of means is approximately normal.
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center', fig.height=3}
+# add normal distribution plot to histograms
+gm <- gm + stat_function(fun=dnorm, args=list(mean=5, sd=sd(means)), size=2)
+gm
+```
+
+# Conclusion
+
+The simulated distributions yield the following statistic.
+
+* Sample Mean: `r M`
+* Variance of Sample Mean: `r V`
+
+Both are in good agreement with the predictions of the central limit theorem.
+
+Distribution of simulated means is approximately normal.
+
+\pagebreak
+
+# Appendix 1: Simulating the Exponential Distribution
+```{r eval=FALSE, cache=TRUE, message=FALSE}
+means <- NULL;  # initialize list of means
+
+for( i in 1:1000 ){
+# 	print(i);
+	sim <- rexp(40, rate=0.2); # simulate 40 values with lambda = 0.2
+	means <- c(means, mean(sim));  # calculate means
+}
+
+mean(means)
+var(means)
+```
+
+
+# Appendix 2: Histogram of Simulations
+```{r eval=FALSE, warning=FALSE, message=FALSE, fig.height=3}
+# plot the histogram
+gm <- ggplot() + aes(x=means) + ggtitle("Sample Means"); 
+gm <- gm + geom_histogram(aes(y=..density..), color='black', fill='lightblue');
+gm <- gm + geom_vline(xintercept = 5, size=2, color='red');
+
+gm
+```
+
+```{r, eval=FALSE, warning=FALSE, message=FALSE, fig.height=3}
+# add normal distribution plot to histograms
+gm <- gm + stat_function(fun=dnorm, args=list(mean=5, sd=sd(means)), size=2)
+gm
+```

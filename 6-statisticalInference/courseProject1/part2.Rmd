@@ -1,0 +1,154 @@
+---
+title: "Effect of Vitamin C on Tooth Growth"
+author: "R. Handsfield"
+date: "February 19, 2016"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2);
+```
+
+
+# Abstract
+
+In this project, we analyze the `datasets::ToothGrowth` data set to determine the effect Vitamin C supplement and dosage on the average tooth length of guinea pigs. We use exploratory analysis and hypothesis testing to achieve our results.
+
+# Overview
+
+The `ToothGrowth` dataset reports the effect of Vitamin C on tooth growth in guinea pigs. The data frame contains 3 columns representing, _tooth length_, _supplement type_, and _dose (mg)_.
+
+# Exploratory Analysis
+```{r}
+library("datasets")
+data(ToothGrowth)
+```
+
+```{r}
+dftg <- ToothGrowth
+head(dftg, 3L)
+str(dftg)
+table(dftg[, c('supp','dose')])
+```
+
+```{r eval=FALSE, echo=FALSE}
+table(dftg[dftg$supp == 'VC', 'dose'])
+dftg[dftg$supp == 'OJ', 'dose']
+```
+There are two treatments (OJ and VC), each administered at 3 different dosages to independant groups of 10 guinea pigs. 
+
+```{r fig.height=3}
+g <- ggplot(dftg) + aes(x=factor(dose), y=len, fill=factor(dose)) + geom_boxplot()
+g <- g + facet_grid(.~supp) + xlab("Dose (mg)") + ylab("Tooth Length")
+g
+```
+
+
+# Comparing Treatments
+
+* Null hypothesis:  $~~ H_0 : \mu_1 = \mu_2$
+* Alternative hypothesis:  $~~H_a : \mu_1 \neq \mu_2$ 
+	
+```{r echo=FALSE}
+# subset individual groups
+df_oj <- dftg[dftg$supp=='OJ',]
+df_vc <- dftg[dftg$supp=='VC',]
+
+df_half <- dftg[dftg$dose==0.5,]
+df_one <- dftg[dftg$dose==1,]
+df_two <- dftg[dftg$dose==2,]
+```
+
+Summary of Mean Tooth Lengths
+
+| Group | Mean Length |
+|-------|-------------|
+| OJ | `r round(mean(df_oj$len),3)` |
+| VC | `r round(mean(df_vc$len),3)` |
+| 0.5 mg | `r round(mean(df_half$len),3)` |
+| 1.0 mg | `r round(mean(df_one$len),3)` |
+| 2.0 mg | `r round(mean(df_two$len),3)` |
+
+The means of the supplement and dosage groups are all distinct, but are they different enough to suggest that each experimental parameter had an effect?
+
+## T-Testing
+
+Comparing standard errors of each experimental group tells us whether we should use equal variance t-tests.
+```{r echo=FALSE}
+data.frame(group=c('OJ', 'VC', '0.5 mg', '1 mg', '2 mg'), 
+	   std.error= c(sd(df_oj$len)/sqrt(30),
+			sd(df_vc$len)/sqrt(30),
+			sd(df_half$len)/sqrt(20),
+			sd(df_one$len)/sqrt(20),
+			sd(df_two$len)/sqrt(20)
+			)
+	)
+```
+Neither the treatment nor the dosage groups have similar variances, therefore we use unequal variance t-tests.
+
+
+```{r}
+t <- t.test(len~supp, data=dftg, paired=FALSE, var.equal=FALSE)
+data.frame(t$estimate, t$p.value)
+
+t <- t.test(len~dose, data=rbind(df_half, df_one), paired=FALSE, var.equal=FALSE)
+data.frame(t$estimate, t$p.value)
+
+t <- t.test(len~dose, data=rbind(df_two, df_one), paired=FALSE, var.equal=FALSE)
+data.frame(t$estimate, t$p.value)
+```
+
+The means of every group-pair are different, with p-values of 0.06 or better.
+
+# Conclusions
+Every experimental parameter caused some change in the tooth growth of a guinea pig population. From t-testing group pairs, we obtain the following results.
+
+| Group | Mean Tooth Length | P-Value |
+|-------|-------------------|---------|
+| OJ | `r round(mean(df_oj$len),3)` | $0.06$ |
+| VC | `r round(mean(df_vc$len),3)` | $0.06$ |
+||||
+| 0.5 mg | `r round(mean(df_half$len),3)` | $1.27 \times 10^{-7}$ |
+| 1.0 mg | `r round(mean(df_one$len),3)` | $1.27 \times 10^{-7}$ |
+||||
+| 1.0 mg | `r round(mean(df_one$len),3)` | $1.91 \times 10^{-5}$ |
+| 2.0 mg | `r round(mean(df_two$len),3)` | $1.91 \times 10^{-5}$ |
+
+To obtain these results, we assume that each guinea pig group is experimentally independant, and has a variance unequal to that of any other group.
+
+\pagebreak
+
+# Appendix 1: Subsetting Groups
+
+```{r eval=FALSE}
+# subset individual groups
+df_oj <- dftg[dftg$supp=='OJ',]
+df_vc <- dftg[dftg$supp=='VC',]
+
+df_half <- dftg[dftg$dose==0.5,]
+df_one <- dftg[dftg$dose==1,]
+df_two <- dftg[dftg$dose==2,]
+```
+
+# Appendix 2: Standard Errors of Groups
+
+```{r}
+data.frame(group=c('OJ', 'VC', '0.5 mg', '1 mg', '2 mg'), 
+	   std.error= c(sd(df_oj$len)/sqrt(30),
+			sd(df_vc$len)/sqrt(30),
+			sd(df_half$len)/sqrt(20),
+			sd(df_one$len)/sqrt(20),
+			sd(df_two$len)/sqrt(20)
+			)
+	)
+```
+
+# Appendix 3: T-Test Results
+
+```{r}
+t.test(len~supp, data=dftg, paired=FALSE, var.equal=FALSE)
+t.test(len~dose, data=rbind(df_half, df_one), paired=FALSE, var.equal=FALSE)
+t.test(len~dose, data=rbind(df_two, df_one), paired=FALSE, var.equal=FALSE)
+```
