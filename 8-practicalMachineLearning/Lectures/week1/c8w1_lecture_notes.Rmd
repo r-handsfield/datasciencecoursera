@@ -2,21 +2,90 @@
 title: "c8w1 lecture notes"
 author: "Robert Handsfield"
 date: "05/10/2015"
-output: html_document
+output:
+  html_document:
+    highlight: kate
+    theme: cerulean
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+The R __caret__ (Classification And Regression Training) package includes functions to streamline complex classification and regression problems. Most R machine learning makes use of this package.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Install with 
+
+```{r, message=FALSE}
+if( !("caret" %in% installed.packages()) ) {
+	install.packages("caret", dependencies = c("Depends", "Suggests"), repos = "http://cran.us.r-project.org");
+}
+library("caret");
+```
+
+# What is prediction?
+An overlooked issue in machine learning ischoosing which data to include in the training set. An example is the Google Flu Trends Algorithm, which attempted to predict finnfluenza epidemiology form isearch terms. However, the designers did not anticipate that population search queries change over time, causing the algorithm to fail.
+
+## Components of a Predictor
+
+QUESTION -> INPUT DATA -> FEATURES -> ALGORITHM -> PARAMETERS -> EVALUATION
+
+## Designing a Question
+
+All problems start with a general question. To design a well-posed question, __always__ start off by answering
+
+1. What am I trying to predict?
+2. What am I trying to predict it with? 
+
+This is somewhat contrary to the generally true _more data is better_ approach to machine learning. How much more efficient is a well-posed question?
+
+### Example 1
+
+* General question: _Can I automatically detect SPAM?_
+* Well-posed question: _Can I use __quantitative characteristics of the emails__ to classify them as __SPAM or HAM___?
+
+Suitable input data may be found in the `r::kernlab::spam` dataset
+```{r, message=FALSE}
+if( !("kernlab" %in% installed.packages()) ) {
+	install.packages("kernlab", repos = "http://cran.us.r-project.org");
+}
+library("kernlab");
+data(spam);
+```
+
+#### Features
+Possible features could be the frequency with which certain words appear (columns 1:55 of `spam`).
+
+```{r, eval=TRUE}
+plot(
+	density( spam$your[spam$type=='nonspam'] ), 
+	col='blue', main='Spam vs Nonspam', 
+	xlab='Frequency of "your"' 
+    );
+
+lines( density(spam$your[spam$type=="spam"]), col='red' );
+legend(x="topright", pch=c(19), legend = c("Spam", "Nonspam"), col = c("red", "blue"))
+```
+
+Spam tends to contain more instances of the word _your_ than nonspam.
+
+#### Algorithm
+
+An algorithm might establish some value $C$; an email than contains more than $C$ instances of _"your"_ is labeled spam.
 
 ```{r}
-summary(cars)
+plot( 
+	density( spam$your[spam$type=='nonspam'] ), 
+	col='blue', main='Spam vs Nonspam, C = 0.5', 
+	xlab="Frequency of 'your'" 
+     );
+
+lines( density(spam$your[spam$type=="spam"]), col='red' );
+legend(x="topright", pch=c(19), legend = c("Spam", "Nonspam"), col = c("red", "blue"));
+abline(v=0.5, col='black', lwd=3);
 ```
 
-You can also embed plots, for example:
+```{r}
+options(digits = 3) # set precision for display
 
-```{r, echo=FALSE}
-plot(cars)
+prediction <- ifelse(spam$your > 0.5, "spam", "nonspam")
+table(prediction, spam$type) / length(spam$type) 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+$$\mbox{Accuracy} = tp + tn \approx 0.292 + 0.459 = 0.751$$
