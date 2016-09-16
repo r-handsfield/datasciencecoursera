@@ -1,0 +1,251 @@
+---
+title: "c8w2_lecture_notes"
+author: "R. Handsfield"
+date: "September 14, 2016"
+output:
+  html_document:
+    highlight: kate
+    number_sections: yes
+    theme: cerulean
+    toc: yes
+---
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align='center')
+```
+
+# The `caret` Package
+
+The `caret` package has functions to simplify just about everything in data science/ machine learning. 
+
+## Tutorials
+
+* [http://edii.uclm.es/~useR-2013/Tutorials/kuhn/user_caret_2up.pdf](http://edii.uclm.es/~useR-2013/Tutorials/kuhn/user_caret_2up.pdf)
+* [http://cran.r-project.org/web/packages/caret/vignettes/caret.pdf](http://cran.r-project.org/web/packages/caret/vignettes/caret.pdf)
+* [http://www.jstatsoft.org/v28/i05/paper](http://www.jstatsoft.org/v28/i05/paper)
+* [https://www.youtube.com/watch?v=7Jbb2ItbTC4](https://www.youtube.com/watch?v=7Jbb2ItbTC4)
+
+## Installation
+
+Install with: 
+```{r, cache=TRUE, message=FALSE}
+if( !("caret" %in% installed.packages()) ) {
+	install.packages("caret", dependencies = c("Depends", "Suggests"), repos = "http://cran.us.r-project.org");
+}
+library("caret");
+```
+
+--- 
+
+## Useful Caret Functions
+
+__Preprocessing__
+
+```{r, eval=FALSE}
+preProcess(x, method = c("center", "scale"), thresh = 0.95,pcaComp = NULL,na.remove = TRUE,k = 5,knnSummary = mean,outcome = NULL,fudge = .2,numUnique = 3,verbose = FALSE,...)
+```
+
+__Segmenting Data__
+
+```{r, eval=FALSE}
+createDataPartition(y, times = 1, p = 0.5,list = TRUE, groups = min(5, length(y)))
+```  
+```{r, eval=FALSE}
+createResample(y, times = 10, list = TRUE)
+```  
+```{r, eval=FALSE}
+createFolds(y, k = 10, list = TRUE, returnTrain = FALSE)
+```  
+```{r, eval=FALSE}
+createMultiFolds(y, k = 10, times = 5)
+```  
+```{r, eval=FALSE}
+createTimeSlices(y, initialWindow, horizon = 1, fixedWindow = TRUE, skip = 0)
+```  
+
+__Training and Testing__
+
+```{r, eval=FALSE}
+train(x, y, method = "rf", preProcess = NULL, ..., weights = NULL, metric = ifelse(is.factor(y), "Accuracy", "RMSE"), maximize = ifelse(metric %in% c("RMSE", "logLoss"), FALSE, TRUE), trControl = trainControl(), tuneGrid = NULL, tuneLength = 3)
+```  
+```{r, eval=FALSE}
+predict (object, ...)
+```  
+
+__Comparing Models__
+```{r, eval=FALSE}
+confusionMatrix(data, reference, positive = NULL, dnn = c("Prediction", "Reference"), prevalence = NULL, mode = "sens_spec", ...)
+```
+
+All possible models are trained the same way -- by passing a string to `caret::train(..., method='string', ...)`. The full list of method strings is below. For details see [http://topepo.github.io/caret/using-your-own-model-in-train.html](http://topepo.github.io/caret/using-your-own-model-in-train.html)
+```{r, cache=TRUE}
+names(getModelInfo)
+```
+
+
+---
+
+### Example: Creating Training Sets
+
+Use `caret::createDataPartition( y=srcData, times=1, p=0.5, list=TRUE, groups=min(5, length(y)) )`:
+```{r cache=TRUE, message=FALSE}
+library(caret); library(kernlab); data(spam);
+
+# creates a numeric vector that can subset from spam
+inTrain<-createDataPartition(y=spam$type, p=0.75, list=FALSE)
+
+training <- spam[inTrain, ]
+testing <- spam[-inTrain, ]
+
+dim(inTrain)
+
+# The training set
+head( spam[inTrain, 1:8 ]); 
+
+# The test set
+head(spam[-inTrain, 1:8]);
+```
+Note the row numbers
+
+### Example: Fitting a Model
+
+```{r, cache=TRUE, warning=FALSE}
+set.seed(32343)
+
+# trains a generalized linear model
+modelFit <- train(type ~., data = training, method = 'glm')
+
+# view summary of model
+modelFit
+
+# view parameters (weights/theta) of final model
+modelFit$finalModel
+```
+
+### Example: Predicting with the Model
+
+```{r, cache=TRUE}
+predictions <- predict(object = modelFit, newdata = testing)
+
+# produces a factor vector of class labels, 'spam' or 'nonspam'
+predictions[1:16]
+```
+
+### Example: Evaluating a Model
+
+```{r, cache=TRUE}
+confusionMatrix(data = predictions, reference = testing$type)
+```
+
+
+
+
+## Caret Prediction Algorithms
+* Linear Discriminant Analysis
+* Regression
+* Naive Bays
+* SVM
+* Classification & Regression Trees
+* Random Forest
+* Boosting
+* Etc
+
+# Data Slicing
+
+### Example: Random Subsampling
+```{r cache=TRUE, message=FALSE, eval=FALSE}
+library(caret); library(kernlab); data(spam);
+
+# creates a numeric vector that can subset from spam
+inTrain <- createDataPartition(y=spam$type, p=0.75, list=FALSE)
+
+training <- spam[inTrain, ]
+testing <- spam[-inTrain, ]
+```
+
+```{r}
+dim(training); dim(testing)
+```
+
+### Example: K-Fold Cross Val
+```{r, cache=TRUE}
+set.seed(32323)
+
+# split data into 10 groups with random dropout in each
+# returns a list of folds
+# each fold is a numeric vector of row nums from spam$type
+folds <- createFolds(y=spam$type, k=10, list=TRUE, returnTrain=TRUE) # vs returnTrain=FALSE for test set
+
+# display num of examples in each fold, source had 4601 rows
+sapply(folds, length)
+
+# view row dropout in various folds
+folds[[1]][1:20]; folds[[2]][1:20]
+```
+```{r, eval=FALSE}
+# use folds to index data sets via
+trn2 <- spam$type[folds[[2]]]]
+val2 <- spam$type[-folds[[2]]]
+```
+or
+```{r cache=TRUE}
+createFolds(y=spam$type, k=10, list=TRUE, returnTrain=FALSE)
+```
+
+
+### Example: Resampling
+
+```{r cache=TRUE}
+set.seed(32323)
+
+# fill each fold with random sample (with replacement) of rows
+folds <- createResample(y = spam$type, times = 10, list = TRUE)
+
+# view sizes of resampled folds, note the random collection of rows
+sapply(folds, length)
+
+# note the repeated rows
+folds[[1]][1:20]
+```
+
+### Example: Time Series
+```{r, cache=TRUE}
+set.seed(32323)
+
+tme <- 1:1000
+
+folds <- createTimeSlices(y = tme, initialWindow = 20, horizon = 10)
+
+# what are the factors in each of our time slices?
+names(folds)
+
+```
+
+
+
+# Training Options
+
+
+# Plotting Predictors
+
+
+# Basic Preprocessing
+
+
+# Preprocessing with Principal Components (PCA)
+
+
+# Predicting with Univariate Regression
+
+
+# Predicting with Multivariate Regression
+
+
+
+
+
+
+
+
+
