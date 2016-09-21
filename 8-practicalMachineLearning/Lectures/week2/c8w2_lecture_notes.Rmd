@@ -80,7 +80,7 @@ confusionMatrix(data, reference, positive = NULL, dnn = c("Prediction", "Referen
 
 All possible models are trained the same way -- by passing a string to `caret::train(..., method='string', ...)`. The full list of method strings is below. For details see [http://topepo.github.io/caret/using-your-own-model-in-train.html](http://topepo.github.io/caret/using-your-own-model-in-train.html)
 ```{r, cache=TRUE}
-names(getModelInfo)
+names(getModelInfo())
 ```
 
 
@@ -96,6 +96,8 @@ library(caret); library(kernlab); data(spam);
 inTrain<-createDataPartition(y=spam$type, p=0.75, list=FALSE)
 
 training <- spam[inTrain, ]
+
+# subsets rows NOT indexed by inTrain
 testing <- spam[-inTrain, ]
 
 dim(inTrain)
@@ -169,6 +171,13 @@ dim(training); dim(testing)
 ```
 
 ### Example: K-Fold Cross Val
+
+* `k =` the number of folds
+* `returnTrain=` specifies whether the folds are training or test folds
+	+ values = {`TRUE`, `FALSE`}
+* `list=` determines the return structure data type
+	+ values = {`list`, `vector`, `matrix`}
+
 ```{r, cache=TRUE}
 set.seed(32323)
 
@@ -189,9 +198,10 @@ trn2 <- spam$type[folds[[2]]]]
 val2 <- spam$type[-folds[[2]]]
 ```
 or
-```{r cache=TRUE}
-createFolds(y=spam$type, k=10, list=TRUE, returnTrain=FALSE)
+```{r eval=FALSE}
+tst <- createFolds(y=spam$type, k=10, list=TRUE, returnTrain=FALSE) # vs returnTrain=TRUE for training set
 ```
+Return the __training__ set via something like `df[-tst, :]`
 
 
 ### Example: Resampling
@@ -210,6 +220,10 @@ folds[[1]][1:20]
 ```
 
 ### Example: Time Series
+
+* `initialWindow=` rows in the _training set_
+* `horizon=` the next $n$ continuous rows (_test set_)
+
 ```{r, cache=TRUE}
 set.seed(32323)
 
@@ -223,14 +237,355 @@ names(folds)
 ```
 
 
-
 # Training Options
+
+Recall the generalized linear model trained on the `spam` dataset:
+```{r eval=FALSE}
+library(caret); library(kernlab); data(spam);
+
+inTrain <- createDataPartition(y=spam$type, p=0.75, list=FALSE)
+
+training <- spam[inTrain, ]
+testing <- spam[-inTrain, ]
+
+modelFit <- train(type ~., data = training, method = 'glm')
+```
+
+The `caret::train()` has a number of options to control how training is done. (View any default method parameters with `base::args(functionName.default)`)
+```{r}
+library(caret)
+args(train.default)
+```
+
+* `preProcess = NULL, ...` takes a string vector of preprocessing methods
+	+ { "BoxCox", "YeoJohnson", "expoTrans", "center", "scale", "range", "knnImpute", "bagImpute", "medianImpute", "pca", "ica" and "spatialSign"}
+* `weights = NULL` takes a numeric vector of case weights, to manually up or down-weight observations
+* `metric = ...` a string that specifies the cost function to minimize; by default is RMSE for numerics and fractional accuracy for factors
+	+ regression: {"RMSE", "Rsquared"}
+	+ classification: {"Accuracy", "Kappa"}
+* `trControl = trainControl(...)` controls additional options 
+	+ view via `?trainControl`
+
+```{r}
+args(trainControl)
+```
+
+* `method = boot` the _resampling_ method
+	+ {"boot", "boot632", "cv", "repeatedcv", "LOOCV", "LGOCV", "none", "oob", "adaptive_cv", "adaptive_boot", "adaptive_LGOCV"}
+* `number = ` the number of folds / resampling iterations (convergence limit??)
+* `repeats = ` the number repetitions for k-fold cross validation
+* `initialWindow = ` size of time series training set
+* `horizon = ` size of time series test set
+* `savePredictions = ` flag to return predictions from _each_ iteration of model
+	+ {`"all"`, `"none"`, `"final"`} = {`TRUE`, `FALSE`, `"final"`}
+* `allowParallel = ` flag to enable parallel processing 	
+* `seeds = NA` initializes the random number generator to a determined state
+	+ for parallel processing, seed each resample
+	
+	
 
 
 # Plotting Predictors
 
+```{r, echo=FALSE, cache=TRUE}
+if( !("ggplot2" %in% installed.packages()) ) {
+	install.packages("ggplot2", repos = "http://cran.us.r-project.org");
+}
+
+if( !("gridExtra" %in% installed.packages()) ) {
+	install.packages("grid", repos = "http://cran.us.r-project.org");
+	install.packages("gridExtra", repos = "http://cran.us.r-project.org");
+}
+
+library(ggplot2)
+library(grid)
+library(gridExtra)
+```
+
+
+Plots are your friends. Git gud at them. For this section, we use example data from [ISLR Package](), the companion to the book [Introduction to Statistical Learning with R]().
+
+Install with: 
+```{r, cache=TRUE, message=FALSE}
+if( !("ISLR" %in% installed.packages()) ) {
+	install.packages("ISLR", repos = "http://cran.us.r-project.org");
+}
+
+```
+
+### Example: Wage Data
+```{r}
+library("ISLR"); library(ggplot2);
+
+data(Wage)
+
+summary(Wage)
+```
+
+Set aside a test set (and validation set) __before__ beginning exploratory analysis.
+```{r, cache=TRUE}
+inTrain <- createDataPartition(y = Wage$wage, p = 0.7, list = FALSE)
+
+training <- Wage[inTrain,]
+testing <- Wage[-inTrain,]
+
+dim(training); dim(testing)
+```
+
+### Example: Lattice Plot a Subset of Wage Features
+
+Using `caret::featurePlot()`
+```{r}
+# choose 3 features
+mySet <- training[, c('age', 'education', 'jobclass')]
+
+# plot wage as a function of features (4x4 = 16)
+featurePlot(x=mySet, y=training$wage, plot='pairs')
+```
+
+### Example: Scatter Plot Wage vs Age
+
+```{r}
+ggplot(data=training) + aes(x=age, y=wage) + geom_point() 
+```
+Note the natural vertical segregation. How to investigate this further?
+
+Answer: color the scatter by an additional feature:
+```{r}
+ggplot(data=training) + aes(x=age, y=wage, color=jobclass) + geom_point() 
+```
+Very few industrial jobs are in the upper group.
+
+### Example: Plot with Feature Regressions
+
+It is easy to do simple regressions inside a plot, for easy viewing. Oddly, it's actually very difficult to do your own regression, then add that to a plot. Proceed accordingly!
+```{r}
+g <- ggplot(data=training) + aes(x=age, y=wage, color=education) + geom_point() 
+
+# add linear regression: wage = f(age)
+g <- g + geom_smooth(method = "lm", formula = y~x)
+print(g)
+```
+Regression lines have been added to plot
+
+### Example: Plot by Quantiles
+
+The method here is to pseudo-manually cut the data with `Hmisc::cut2()`, then plot the resulting quantiles.
+```{r, cache=TRUE, message=FALSE}
+if( !("Hmisc" %in% installed.packages()) ) {
+	install.packages("Hmisc", repos = "http://cran.us.r-project.org");
+}
+```
+
+```{r}
+library(Hmisc)
+
+cutWage <- cut2(training$wage, g=3)
+table(cutWage)
+
+t1 <- table(cutWage, training$jobclass)
+t1
+
+# a proportional table
+prop.table(x = t1, margin = 1)  # margin=dimension
+```
+
+Plot this table to look for trends
+```{r}
+library(gridExtra)
+g1 <- ggplot(data=training) + aes(x=cutWage, y=age, fill=cutWage) + geom_boxplot()
+
+# view points on top of boxplot
+g2 <- ggplot(data=training) + aes(x=cutWage, y=age, fill=cutWage) + geom_boxplot() + geom_jitter()
+grid.arrange(g1,g2, ncol=2)
+```
+
+### Example: A Density Plot of Wage by Quantile
+
+For continuous predictors
+```{r}
+ggplot(data=training) + aes(x=cutWage, color=education) + geom_density()
+```
+
+
+
+All of the above are ways to examine properties of your data set, but __don't__ use your _test_ set for exploration.
+
+You're always looking for 
+
+* trends
+* skewed variables
+* imbalance in outcomes/predictors
+* outcomes not explained by predictors
+
+
+
 
 # Basic Preprocessing
+
+After plotting the variables up front, it's time to prep the data set for training.
+
+Consider the `kernlab::spam` data set one more time:
+```{r, cache=TRUE}
+library(caret); library(kernlab); data(spam);
+
+# creates a numeric vector that can subset from spam
+inTrain<-createDataPartition(y=spam$type, p=0.75, list=FALSE)
+
+training <- spam[inTrain, ]
+testing <- spam[-inTrain, ]
+
+hist(training$capitalAve, main="", xlab="ave. capital run length")
+```
+This is the distribution of capital letter sequence length between spam/nonspam. This variable is highly skewed, and will bone most learning algorithms. We can redress this by shifting/stretching/squashing the input data and writing the result to an _R::caret Preprocess Object_. That object becomes the training inputs to a hypothesis function, and we pass it to the `caret::train(type= ,data=preObj, method="string")` and `caret::predict(object=preObj, newdata=groundTruth`) functions.
+
+1. Preprocess an input set with `preObj <- preProcess(object = inputSet , method = "" )`
+2. Pass the Preprocess Object to another caret function: `predict(object = preObj, newdata = groundTruth)`
+
+## The Statistical Z-Transform
+
+One way to fix model-boning is by doing a statistical z-transform on the data:
+```{r}
+testCapAve <- testing$capitalAve
+
+# z-transform based on training set distribution
+testCapAveS <- (testCapAve - mean(training$capitalAve)) / sd(training$capitalAve)
+
+hist(testCapAveS, xlab="ave capital run length deviation")
+```
+
+Another way to do this is with the `caret::preProcess()` function:
+```{r}
+# col 58 is the ground-truth outcome
+preObj <- preProcess( training[,-58], method=c("center", "scale") )
+
+# pass the Preprocess object into the predict() method
+trainCapAveS <- predict(preObj, training[,-58])$capitalAve
+hist(testCapAveS, xlab="ave capital run length deviation")
+```
+
+To z-transform the corresponding test set, you would create a Preprocess Object from the _training set_, then pass that object to `predict()`, along with the _testing set_:
+```{r eval=FALSE}
+preObj <- preProcess( training[,-58], method=c("center", "scale") )
+
+# must pass subset of same dims to preProcess() and predict(): ex train[-58] vs test[-58]
+trainCapAveS <- predict(preObj, training[,-58])$capitalAve
+testCapAveS <- predict(preObj, testing[,-58])$capitalAve
+```
+
+You could also pass the `preProcess()` function as an argument to `train()`:
+```{r, cache=TRUE, warning=FALSE, message=FALSE}
+set.seed(32343)
+
+modelFit <- train(type ~., data=training, method="glm", preProcess=c("center", "scale"))
+modelFit
+```
+
+## Box-Cox Transform
+
+Other preprocessing transforms are avaialable. The _Box-Cox_ is a power transform takes any continuous variable and forces it to fit a normal distribution by introducing a new parameter $\lambda$
+
+$$
+\mbox{for } y \geq 0: ~~
+y(\lambda) = \left\{\begin{matrix}
+\frac{ y^{\lambda}-1 }{\lambda}, & \mbox{if } \lambda \neq 0\\ 
+ log(y), & \mbox{if } \lambda = 0
+\end{matrix}\right.
+$$
+
+```{r cache=TRUE}
+preObj <- preProcess(training[,-58], method=c("BoxCox"))
+
+trainCapAveS <- predict(object = preObj, newdata = training[,-58])$capitalAve
+
+par(mfrow=c(1,2))
+hist(trainCapAveS)
+qqnorm(trainCapAveS)
+```
+
+## Imputing Data
+
+_Imputing_ is the process of assigning values to `NA`s in the data set. Imputing may use any number of interpolation methods. A common method is _k nearest neighbors_, which averages the values surrounding each `NA`. 
+
+This is super easy, just add `"knnImpute"` to `preProcess(..., method="...")`:
+
+```{r, cache=TRUE}
+set.seed(13343)
+
+# introduce NAs
+training$capAve <- training$capitalAve  # copy a column
+selectNA <- rbinom(dim(training)[1], size=1, prob=.5) == 1  # make a boolean vector
+training$capAve[selectNA] <- NA  # overwrite some values with NA
+
+# Impute and standardize
+preObj <- preProcess(training[,-58], method=c("knnImpute"))
+capAve <- predict(preObj, training[,-58])$capAve
+
+# Standardize the values
+capAveTruth <- training$capitalAve
+capAveTruth <- (capAveTruth - mean(capAveTruth)) / sd(capAveTruth)
+
+quantile(capAve - capAveTruth)
+quantile((capAve - capAveTruth)[selectNA])
+quantile((capAve - capAveTruth)[!selectNA])
+```
+
+Be mindful that if you preprocess training data, you __cannot__ preprocess test data when predicting; you must reuse the preprocessed training data. The reason is that __any__ transformation creates new features, and creating new features on a test set will skew the predictions in unpredictable ways.
+
+
+# Creating Covariates
+
+A _covariate_ is yet another name for a model feature. In the real world, not all data variables make it into the model. Covariates (or features, or predictors) have the implicit meaning that they may have been subset from a larger group, and are intended for model inclusion.
+
+Covariates are created in 2 levels, which sort of correspond to in-model and out-model. The goal is to include the most data in the fewest number of features (e.g. maximize data density).
+
+* Level 1: Raw data to covariats
+	+ email ascii text into numeric descriptive variables num caps, frac ngrams, etc.
+	+ image into pixel subsets representing edges, corners, blobs, etc.
+	+ rendering of a website into a DOM object with element parameters - color, size, etc
+* Level 2: Transformivariables into tidy covariates
+	+ Ex: If $A \times B$ is an important feature, create new variable $~~ \mbox{aTimesB} = A \times B$
+	
+## Discussion
+
+Creating covariates is delicate balancing act between information density (summarization) and information loss. It requires substantial application knowledge and domain expertise.
+
+* Level 1
+	+ When in doubt, err on the side of more features
+	+ Can be automated, but don't do it; it rarely works
+* Level 2
+	+ only done on training sets
+	+ often necessary for regressions and SVMs
+	+ rarely needed for classification trees
+	+ achived through exploratory analysis
+	+ new covariates should be added to data frames 
+	+ use practical variable names
+	
+## Dummy Variables
+
+_Dummy Variables_ are a stupid way to describe the process of converting factor levels into feature variables. If there is a factor variable with 2 levels, create a new feature for each level. Each of those features will have a boolean value for each example. This process expands the data space, widens the data set, and is also known as _one-hot encoding_.
+
+```{r cache=TRUE}
+library(ISLR); library(caret); data(Wage);
+
+inTrain <- createDataPartition(y=Wage$wage, p=0.7, list=FALSE)
+training <- Wage[inTrain,]; testing <- Wage[-inTrain,]
+```
+
+Explore the data
+```{r}
+table(training$jobclass)
+```
+
+Create 2 new variables for these classes with `caret::dummyVars(formula = , data = , ...)`
+```{r cache=TRUE}
+dummies <- dummyVars(formula = wage~jobclass, data = training)
+
+str(dummies)
+
+head(predict(object = dummies, newdata = training))
+```
+The training set now has a boolean flag for each person and job class.
 
 
 # Preprocessing with Principal Components (PCA)
