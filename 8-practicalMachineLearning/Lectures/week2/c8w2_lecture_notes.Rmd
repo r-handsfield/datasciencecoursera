@@ -9,11 +9,12 @@ output:
     theme: cerulean
     toc: yes
 ---
+
+```{r setup, include=TRUE, echo=FALSE}
+knitr::opts_chunk$set(fig.align = 'center')
+```
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.align='center')
-```
 
 # The `caret` Package
 
@@ -545,6 +546,7 @@ Covariates are created in 2 levels, which sort of correspond to in-model and out
 	+ rendering of a website into a DOM object with element parameters - color, size, etc
 * Level 2: Transformivariables into tidy covariates
 	+ Ex: If $A \times B$ is an important feature, create new variable $~~ \mbox{aTimesB} = A \times B$
+	+ many `caret` functions to simplify this
 	
 ## Discussion
 
@@ -587,14 +589,183 @@ head(predict(object = dummies, newdata = training))
 ```
 The training set now has a boolean flag for each person and job class.
 
+## Maximizing Feature Variability
+
+Some features, both qualitative, quantitative, and boolean, have very little variability, and won't add much information to a model. Finding numeric features of this kind is easy with `caret::nearZeroVar(x= , freqCut = 95/5, uniqueCut = 10)` or `caret::nzv()`
+
+For `nearZeroVar()`: if `saveMetrics = FALSE`, returns a vector of integers corresponding to the column positions of the problematic predictors. If `saveMetrics = TRUE`, a data frame with columns:
+```{r}
+nsv <- nearZeroVar(x = training, saveMetrics = TRUE)
+nsv
+```
+* freqRatio: the ratio of frequencies for the most common value over the second most common value
+* percentUnique: the percentage of unique data points out of the total number of data points
+* zeroVar: a vector of logicals for whether the predictor has __only one distinct value__
+* nzv: a vector of logicals for whether the predictor __is a near zero variance predictor__
+
+## Creating Polynomial Covariates
+
+Recall that creating polynomial features is a simple way to improve model fit. Again, this is super easy with the splines package `splines::bs` function.
+
+### Example: Create 2 New Features
+
+From the `training$age` variable, we want to create $\{age, age^2, age^3 \}$:
+```{r}
+library(splines)
+
+# uses B-splines with 3 dof
+bsBasis <- bs(training$age, df=3)
+head(bsBasis, 3L)
+```
+
+### Example: Fitting Splines
+
+For computational efficiency, in practice the modeling code should be separated from the plotting code.
+```{r cache=TRUE}
+lm1 <- lm(wage~bsBasis, data=training)
+
+# the spline will be the y-arg of a geom_line()
+splineLine <- predict(object = lm1, newdata = training)
+
+g <- ggplot(data=training) + aes(x=age, y=wage) + geom_point() 
+
+g <- g + geom_line(aes(x=age, y=splineLine), color='red', lwd=2)
+print(g)
+```
+
+* `caret:gam()` also works, but is more complicated
 
 # Preprocessing with Principal Components (PCA)
+
+
+
+Principal Components Analysis will segment out variables that are highly correlated.
+
+Once again, the `kernlab::spam` dataset:
+```{r, cache=TRUE}
+library(caret); library(kernlab); data(spam);
+
+# creates a numeric vector that can subset from spam
+inTrain<-createDataPartition(y=spam$type, p=0.75, list=FALSE)
+
+training <- spam[inTrain, ]
+testing <- spam[-inTrain, ]
+
+M <- abs(cor(x = training[,-58]))
+diag(M) <- 0  # remove autocorrelations
+which(M > 0.9, arr.ind=TRUE) # which vars are more than 90% correlated?
+```
+
+Two features are highly correlated: `r names(spam[c(34,32)])`. Double check to be sure:
+```{r}
+# index by col num if you don't have the names
+plot(spam[,34], spam[,32])
+```
+A straight line with $slope \approx 1$; this is almost perfect correlation. A weighted combination of these features might capture most of the variance while removing all the correlation. Extending this idea, we want to find the smallest matrix $M$ (subset) that captures the most variability (best explains) the original set. This matrix can be found via SVD/PCA
+
+## The Singular Value Decomposition (SVD)
+
+Take an original matrix $X$ and decompose it into a product of 3 matrices such that
+
+$$X = UDV^T$$
+
+* columns of $U$ are orthogonal (left singular vectors)
+* $D$ is a diagonal matrix (singular values)
+* columns of $V$ are orthogonal (right singular vectors)
+	+ (in most real data sets, if $X$ is factorable, then $U = V$)
+
+## The Principal Components
+
+The Principal Components of $X$ capture the most variability of $X$ in descending cardinality order. Conveniently, __if__ the input variables have been scaled and mean-shifted (z-transformed), the principal components are equal to the columns of $V$ (often also $U$).
+
+Principal Components are very easy to find with `stats::prcomp()`
+
+### Example: PCA of Correlated Variables
+
+From the previous example, columns 32 and 32 of `spam` are correlated:
+```{r}
+ggplot() + aes(spam[,34], spam[,32]) + geom_point()
+```
+
+If we find and plot the principal components of these variables:
+```{r}
+prComp <- prcomp(x = spam[,c(34,32)] )
+
+# plot the first 2 principal components
+ggplot() + aes(prComp$x[,1], prComp$x[,2]) + geom_point()
+```
+Mostly flat line, there is almost no correlation between the first 2 principle components of `num415` and `num857`.
+
+What does the rotation matrix look like?
+```{r}
+round( prComp$rotation, digits=4)
+```
+
+
+### Exampple: PCA with R::stats
+
+```{r}
+typeColor <- ((spam$type=="spam")*1 + 1)
+prComp <- prcomp(x = log10(spam[ , -58]+1) )  # Gaussify to correct data skew (log10(...))
+
+ggplot() + aes(prComp$x[,1], prComp$x[,2], color = typeColor) + geom_point() +
+		xlab("PC1") + ylab("PC2")
+```
+The principal components are pretty distinct.
+
+
+### Example: PCA with R::caret
+
+During preprocessing (the `preProcess()` method), use `method="pca"`): 
+```{r cache=TRUE, warning=FALSE, message=FALSE}
+# log10(...) Gaussifies the input for better PCA results
+preProc <- preProcess(log10(spam[,-58]+1), method="pca", pcaComp=2)
+
+# the principal components matrix is actually created with predict()
+spamPC <- predict(object = preProc, newdata = log10(spam[,-58]+1))
+
+ggplot() + aes(spamPC[,1], spamPC[,2], color=typeColor) + geom_point() +
+		xlab("PC1") + ylab("PC2")
+```
+Principal Components still pretty distinct.
+
+### Example: Fitting to Principal Components
+
+From the previous example, `spamPC` is the training set, the first 2 principal components of `kernlab::spam`.
+```{r cache=TRUE, warning=FALSE, message=FALSE}
+# scales & shifts for pca
+preProc <- preProcess(log10(training[,-58]+1), method="pca", pcaComp=2)
+
+# predict() actually does the PCA, returning the PCM
+trainPC <- predict(object = preProc, newdata = log10(training[,-58]+1))
+
+trainPC$type <- training$type
+modelFit <- train(type ~., data=trainPC, method="glm")
+# modelFit <- train(type ~., data = training, method = 'glm')
+modelFit$results
+
+# make some predictions with this model
+testPC <- predict(preProc, log10(testing[,-58]+1))
+confusionMatrix(testing$type, predict(object=modelFit, newdata=testPC))
+```
+
+A simpler form for doing the same thing is
+```{r cache=TRUE, warning=FALSE, message=FALSE}
+modelFit <- train(type ~ ., method="glm", preProcess="pca", data=training)
+confusionMatrix(testing$type, predict(modelFit, testing))
+```
+
+In conclusion, transform data & remove outliers before doing this
 
 
 # Predicting with Univariate Regression
 
 
 # Predicting with Multivariate Regression
+
+
+
+
 
 
 
