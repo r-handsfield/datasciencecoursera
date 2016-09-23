@@ -550,7 +550,7 @@ Covariates are created in 2 levels, which sort of correspond to in-model and out
 	
 ## Discussion
 
-Creating covariates is delicate balancing act between information density (summarization) and information loss. It requires substantial application knowledge and domain expertise.
+Creating covariates is delicate balancing act between information density (summarization) and information loss. It requires substantial application knowledge and domain expertise. Including more features tends toward overfitting (high bias), which can be corrected by regularization.
 
 * Level 1
 	+ When in doubt, err on the side of more features
@@ -665,7 +665,7 @@ A straight line with $slope \approx 1$; this is almost perfect correlation. A we
 
 ## The Singular Value Decomposition (SVD)
 
-Take an original matrix $X$ and decompose it into a product of 3 matrices such that
+Takes an original matrix $X$ and decomposes it into a product of 3 matrices such that
 
 $$X = UDV^T$$
 
@@ -760,6 +760,152 @@ In conclusion, transform data & remove outliers before doing this
 
 # Predicting with Univariate Regression
 
+Linear regressions are simple and easy, but limited to linear settings. With one variable (univariate), just create a line of form $y = mx + b$. In most machine learning settings, the parameters $m$ and $b$ are called _weights_, and notated with a single symbol: $\{w_0, w_1 \}$, $\{\theta_0, \theta_1\}$, etc.
+
+In R, univariate regression is done with `caret::train()` or `stats::predict()`
+
+### Example: Modeling Geyser Eruptions
+
+In this example, 1 output (eruption duration) is modeled by 1 input (time between eruptions).
+```{r cache=TRUE}
+# data in caret::faithful
+library(caret); data(faithful); library(ggplot2);
+
+set.seed(333)
+
+inTrain <- createDataPartition(y=faithful$waiting, p=0.5, list=FALSE)
+trainFaith <- faithful[inTrain,]
+testFaith <- faithful[-inTrain,]
+
+head(trainFaith)
+
+ggplot(data=trainFaith) + aes(x=waiting, y=eruptions) + geom_point(color='blue') +
+			geom_abline(slope = 0.07, intercept = -1.5, linetype="dashed") +
+			xlab("Waiting") + ylab("Duration")
+```
+The relationship looks pretty linear, $Duration \approx m \times Waiting + b$
+
+---
+
+We can find the best fit line more precisely with `stats::lm`:
+```{r cache=TRUE}
+library(stats)
+
+lm1 <- lm(eruptions ~ waiting, data=trainFaith)
+summary(lm1)
+```
+
+The slope and intercepts are in `Coefficients: `; slope = `waiting  0.073901`, intercept = `(Intercept)  -1.792739`.
+
+An easy way to access the parameters is:
+```{r, results='hold'}
+# returns named vectors
+lm1$coefficients   
+# or
+coef(lm1)
+```
+
+Making a single prediction is simply:
+```{r}
+# new imput = 80
+coef(lm1)[1] + coef(lm1)[2]*80
+```
+Ignore the `(Intercept)` label. It's a bug.
+
+Single predictions are even easier with `stats::predict`:
+```{r}
+# takes a linear model object, and data frame of new inputs
+predict(object=lm1, data.frame(waiting=80) )
+```
+
+
+You can access all the _predictions_ of this model with: 
+```{r}
+lm1$fitted[1:5]  # returns a numeric vector
+```
+
+This makes plotting easy:
+```{r}
+ggplot(data=trainFaith) + aes(x=waiting, y=eruptions) + geom_point(color='blue') +
+			geom_line(aes(x=waiting, y=lm1$fitted), color="red", lwd=1.5) +
+			xlab("Waiting") + ylab("Duration")
+```
+
+### Exaple: Plot Predictions
+
+We use `stats::predict` and the existing linear model, built on the training data. When predicting from the test set, we pass the test set into `predict()` as an argument.
+```{r}
+library(gridExtra)
+# training set
+g1 <- ggplot(data=trainFaith) + aes(x=waiting, y=eruptions) + geom_point(color='blue') +
+			geom_line( aes( x=waiting, y=predict(lm1) ) ) +
+			xlab("Waiting") + ylab("Duration") + ggtitle("Training Set")
+print(g1)
+
+# test set 
+g2 <- ggplot(data=testFaith) + aes(x=waiting, y=eruptions) + geom_point(color='blue') +
+			geom_line( aes( x=waiting, y=predict(lm1, newdata = testFaith ) ) ) +
+			xlab("Waiting") + ylab("Duration") + ggtitle("Test Set")
+
+grid.arrange(g1, g2, ncol=2)
+```
+Note the differing arguments in `ggplot( data =  )` and `y = predict()`. The test fit is not quite as good, which makes sense.
+
+### Example: Training and Test Set Errors
+
+#### MSE
+```{r}
+# training
+sum((lm1$fitted - trainFaith$eruptions)^2)/length(trainFaith$eruptions)
+
+# test -  substitute predict(...) for lm1$fitted
+sum((  predict(lm1, newdata=testFaith) - trainFaith$eruptions)^2)/length(testFaith$eruptions)
+```
+
+#### RMSE
+```{r}
+# training
+sqrt(sum((lm1$fitted - trainFaith$eruptions)^2)/length(trainFaith$eruptions))
+
+# test -  substitute predict(...) for lm1$fitted
+sqrt(sum((  predict(lm1, newdata=testFaith) - trainFaith$eruptions)^2)/length(testFaith$eruptions))
+```
+
+### Example: Plotting Prediction Intervals with R::stats
+
+`stats::predict()` can calculate intervals automatically, if you pass the `interval=" "` argument.
+The resulting prediction object has 3 columns: {`"fit", "lwr", "upr"`} containing the best fit predictions, as well as the corresponding plus/minus one (??) standard deviation boundaries. Unfortunately, the columnes can't be accessed with `pred1$fit`; they must be indexed via `pred1[rows, "fit"]`.
+```{r cache=TRUE}
+pred1 <- predict(lm1, newdata=testFaith, interval="prediction")
+ord <- order(testFaith$waiting)
+
+ggplot(data=testFaith) + aes(x=waiting, y=eruptions) + geom_point(color="blue") +
+	geom_line( aes(x=waiting[ord], y=pred1[ord,"lwr"]), color="red" ) +
+	geom_line( aes(x=waiting[ord], y=pred1[ord,"fit"]), lwd=1.2) +
+	geom_line( aes(x=waiting[ord], y=pred1[ord,"upr"]), color="red" ) 
+```
+
+### Example: Plotting Prediction Intervals with R::caret
+
+This method passes a `caret` linear model object to `stats::predict()`, which calculates the confidence interals. 
+
+```{r cache=TRUE}
+# get a glm with caret::train()
+modFit <- train(eruptions ~ waiting, data=trainFaith, method="lm")
+summary(modFit$finalModel)
+
+# pass finalModel to stats::predict()
+pred1 <- predict(modFit$finalModel, newdata=testFaith, interval="prediction")
+ord <- order(testFaith$waiting)
+
+# plot it!!!
+ggplot(data=testFaith) + aes(x=waiting, y=eruptions) + geom_point(color="blue") +
+	geom_line( aes(x=waiting[ord], y=pred1[ord,"lwr"]), color="red" ) +
+	geom_line( aes(x=waiting[ord], y=pred1[ord,"fit"]), lwd=1.2) +
+	geom_line( aes(x=waiting[ord], y=pred1[ord,"upr"]), color="red" ) 
+```
+
+
 
 # Predicting with Multivariate Regression
 
@@ -774,4 +920,95 @@ In conclusion, transform data & remove outliers before doing this
 
 
 
+Taking another look at the `ISLR::Wage` data set reveals multiple features that seem important.
+```{r}
+library(ISLR); library(ggplot2); library(caret);
+data(Wage)
+
+# subset out the variable we're trying to predict
+Wage <- subset(Wage, select= -c(logwage))
+summary(Wage)
+```
+
+At this point, create training and test sets, just for the helluvit.
+```{r}
+inTrain <- createDataPartition(y=Wage$wage, p=0.7, list=FALSE)
+training <- Wage[inTrain,]
+testing <- Wage[-inTrain,]
+
+dim(training); dim(testing);
+```
+
+To begin exploration, a feature plot reveals relationships between the 3 features and the output
+```{r}
+# caret::featurePlot()
+featurePlot(x=training[, c("age", "education", "jobclass")], y=training$wage, plot="pairs")
+```
+Each pair plot shows a mild trend with some outliers, suggesting that each feature may be used as a predictor. 
+
+Let's take a closer look at age
+```{r}
+# this first plot shows a VERY subtle trend
+g1 <- ggplot(data=training) + aes(x=age, y=wage) + geom_point()
+
+# we can plot a second feature by using color
+g2 <- ggplot(data=training) + aes(x=age, y=wage, color=jobclass) + geom_point()
+
+grid.arrange(ncol=2, g1, g2)
+```
+The gray plot shows that high wage correlates with middle age, but not much else.
+Adding color shows that information jobs skew higher wages, and account for most of the high wage outliers.
+
+What about education?
+```{r}
+g3 <- ggplot(data=training) + aes(x=age, y=wage, color=education) + geom_point()
+grid.arrange(ncol=2, g2, g3)
+```
+Now we see that more education generally correlates with higher wage.
+
+### Example: Fit a Multivariate Linear Model
+
+`caret::train(formula= )` can take multiple features as x-arguments; it will then fit a model of the form
+
+$$
+y = b_0 + b_1*age + \sum_{j=1}^{J}b_2_j(jobclass_j) + \sum_{k=1}^{K}b_3_k(education_k)
+$$
+```{r cache=TRUE}
+modFit <- train(wage ~ age+jobclass+education, method="lm", data=training)
+
+finMod <- modFit$finalModel
+print(modFit)
+```
+Each iteration sampled all 2102 rows of the training set. The 3 features have been expanded to 10 predictors to account for the multiple classes of jobclass and education.
+
+The base `plot()` function will iterate through all the pairwise plots in the multivariate model (there are 6).
+```{r}
+plot(finMod, which = 1, cex=0.5, col="#00000010")
+```
+Outliers at top-left are labeled.
+
+Sometimes, coloring by a variable not included in the model will show relationships.
+```{r}
+ggplot(data=training) + aes(finMod$fitted, finMod$residuals, color=training$race) + geom_point()
+```
+The highest outliers are all black, hmmm. What might that suggest?
+
+### Example: Plotting Residuals v Index
+
+Sometimes there will be systemic bias due to the row-ordering of a data set. Plotting residuals vs row-index will show this.
+```{r}
+ggplot() + aes(x=1:2102, y=finMod$residuals) + geom_point()
+```
+That doesn't seem to be the case here, but when there is a trend, it suggests that __a variable is missing from the model__.
+
+### Example: Plotting All Covariates
+
+
+```{r cache=TRUE}
+modFitAll <- train(wage ~ age+jobclass+education, method="lm", data=training)
+pred <- predict(modFitAll, testing)
+
+ggplot(data=testing) + aes(x=wage, y=pred) + geom_point()
+```
+This plot shows the predicted wage that corresponds to each actual wage.
 
