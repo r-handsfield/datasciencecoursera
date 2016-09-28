@@ -1,0 +1,177 @@
+---
+title: "c8w2_lecture_notes"
+author: "R. Handsfield"
+date: "September 14, 2016"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.align = 'center', fig.height=3, fig.width=5)
+```
+
+```{r echo=FALSE}
+library(caret)
+library(ggplot2); library(gridExtra)
+```
+
+# Decision Trees
+
+Prepare the _Iris_ data set.
+```{r}
+data(iris)
+names(iris)
+
+table(iris$Species)
+
+inTrain <- createDataPartition(y=iris$Species, p=0.7, list=FALSE)
+training <- iris[inTrain, ]
+testing <- iris[-inTrain, ]
+
+dim(training); dim(testing)
+```
+
+Explore the general relationship between petal width and sepal width:
+```{r}
+ggplot(data=iris) + aes(x=Petal.Width, y=Sepal.Width, color=Species) + geom_point()
+```
+
+Train a decision tree with `caret::train(..., method="rpart")`
+```{r cache=TRUE}
+modFit <- train(form = Species~., method = "rpart", data = training )
+
+# model object is huge and complicated; just view the final model member
+print(modFit$finalModel)
+```
+
+Plot the deicision tree with the base plotting package
+```{r}
+plot(modFit$finalModel, uniform=TRUE, main = "Classification Tree")
+text(modFit$finalModel, use.n=TRUE, all=TRUE, cex=.8)
+```
+
+Make a prettier plot with `r::rattle` (uses Gtk+/ X/ XQuartz)
+```{r}
+library(RGtk2); 
+library(rattle)
+fancyRpartPlot(modFit$finalModel)
+```
+
+Use morphology to predict species of new examples with `caret::predict`
+```{r}
+predict(object = modFit, newdata = testing)
+```
+
+
+
+
+# Bootstrap Aggregating (Bagging)
+
+Bootstrap Aggregating is a meta-algorithm that improves the stability and accuracy of other algorithms averaging many small models. Remember that _models_ are created by __algorithms__ operating on _training sets_; by random sampling from one large data set, we can create many different models (sets of specific parameters/ 1 fit to 1 specific subset).
+
+Basic algorithm
+
+1. Random sample a training set
+2. Train a model 
+3. Repeat many times
+4. Aggregate the model parameters
+	+ aggregation methods can be average, majority vote, etc.
+
+For the following examples, use the `ElemStatLearn::ozone` package.
+```{r}
+library(ElemStatLearn); data(ozone, package = "ElemStatLearn")
+
+ozone <- ozone[order(ozone$ozone),]
+head(ozone)
+```
+
+### Example: Fit a Polynomial Model
+
+Use `stats::loess()` to train a multivariate polynomial (uses local fitting, susceptible to overtraining)
+```{r}
+# span is a smoothing parameter
+ll <- loess(formula = temperature ~ ozone, data = ozone, span = 0.2)
+```
+
+`ll` is another massive object of type `loess` that represents a trained polynomial model. We can use it to make predictions with `stats::predict()`
+```{r}
+predict(object = ll, newdata = ozone[1:5,] )
+```
+
+### Example: Aggregate Polynomial Models
+
+The previous example can be statistically robustified by taking many subsamples of `ozone`, training a `loess()` model on each, then taking the statistical mean of all their parameters.
+```{r cache=TRUE, warning=FALSE}
+# prepare a structure to hold all the models (rows of parameters)
+ll <- matrix(NA, nrow=10, ncol=155)
+
+# take 10 random subsets from ozone - then train model on each
+for (i in 1:10) {
+	ss <- sample(x = 1:nrow(ozone), replace = TRUE)
+	
+	ozone0 <- ozone[ss,]
+	ozone0 <- ozone0[order(ozone0$ozone),]
+	
+	# train model of temperature as a function of ozone level
+	loess0 <- loess(formula = temperature ~ ozone, data = ozone0, span = 0.2)
+	
+	# use little model to predict ozone based on a dummy vector of temperatures
+	ll[i,] <- predict(object = loess0, newdata = data.frame( ozone=1:155 ) )
+}
+
+# plot the 10 models against the data 
+plot(ozone$ozone, ozone$temperature, pch=19, cex=.5)
+for (i in 1:10) {
+	lines(x = 1:155, y = ll[i,], col="grey", lwd=1)	
+}
+```
+
+Note that the 10 predicted vectors don't agree very well. What happens when we average all the predictions?
+```{r}
+# plot the 10 models against the data 
+plot(ozone$ozone, ozone$temperature, pch=19, cex=.5)
+for (i in 1:10) {
+	lines(x = 1:155, y = ll[i,], col="grey", lwd=1)	
+}
+
+# plot the average of all predictions from the 10 models
+avg <- apply(X = ll, MARGIN = 2, FUN = mean)
+lines(x = 1:155, y = avg, col="red", lwd=2)
+```
+The average is less susceptible to outliers and local extrema. (`loess()` preforms local fitting, thus is easily biased by outliers.)
+
+## Bagging in Caret
+
+Caret can automate bagging in 2 ways
+
+1. `caret::train(..., method = {bagEarth, treebag, bagFDA} )`
+2. The _bag_ function `caret::bag()`
+
+### Example: Aggregate with Caret
+
+```{r eval=TRUE}
+predictors <- data.frame(ozone = ozone$ozone)
+temperature <- ozone$temperature
+
+# assign parameters to bag() with bagControl() fcn
+
+# B = num of bootstrap iterations/folds
+
+# DOESN'T WORK
+treebag <- bag(x = predictors, temperature, B=10, 
+	       bagControl=bagControl(fit = ctreeBag$fit, predict = ctreeBag$predict, aggregate = ctreeBag$aggregate)
+	   )
+```
+
+	
+
+
+
+
+# Random Forests
+
+
+# Boosting
+
+
+# Model Based Preidction
