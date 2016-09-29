@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=TRUE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(fig.align = 'center', fig.height=3, fig.width=5)
+knitr::opts_chunk$set(fig.align = 'center', fig.height=3.5, fig.width=5)
 ```
 
 ```{r echo=FALSE}
@@ -149,20 +149,17 @@ Caret can automate bagging in 2 ways
 
 ### Example: Aggregate with Caret
 
-```{r eval=TRUE}
+```{r cache=TRUE}
 predictors <- data.frame(ozone = ozone$ozone)
 temperature <- ozone$temperature
 
 # assign parameters to bag() with bagControl() fcn
+bg <- bagControl(fit = ctreeBag$fit, predict = ctreeBag$pred, aggregate = ctreeBag$aggregate)
 
 # B = num of bootstrap iterations/folds
-
-# DOESN'T WORK
-treebag <- bag(x = predictors, temperature, B=10, 
-	       bagControl=bagControl(fit = ctreeBag$fit, predict = ctreeBag$predict, aggregate = ctreeBag$aggregate)
-	   )
+treebag <- bag(predictors, temperature, B=10, bagControl=bg)
 ```
-
+Creates a _bag_ class object holding the aggregated parameters???
 	
 
 
