@@ -1,0 +1,63 @@
+---
+title: "c8w4p1"
+author: "R. Handsfield"
+date: "September 24, 2016"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.align = 'center', fig.height=3, fig.width=5)
+```
+
+```{r echo=FALSE}
+library(caret)
+library(ggplot2); library(gridExtra)
+```
+
+Download data
+```{r}
+setwd("courseProject1")
+
+if ( !("pml-training.csv" %in% list.files()) ) {
+	urlTrn <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+	download.file(urlTrn, destfile = "pml-training.csv")
+}
+
+if ( !("pml-testing.csv" %in% list.files()) ) {
+	urlTst <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+	download.file(urlTst, destfile = "pml-testing.csv")
+}
+
+# read empty cells and char 'NA' as NA
+dfTrn <- read.csv(file = "pml-training.csv", na.strings = c("", "NA"));
+dfTst <- read.csv(file = "pml-training.csv", na.strings = c("", "NA"));
+```
+
+Examine data frames
+```{r}
+names(dfTrn)
+head(dfTrn)
+head(dfTst)
+```
+
+Remove columns with missing data
+```{r}
+keepers <- (apply(X = dfTrn, MARGIN = 2, FUN = function(df) !any(is.na(df)) ))
+dfTrn <- dfTrn[, keepers]
+
+keepers <- (apply(X = dfTst, MARGIN = 2, FUN = function(df) !any(is.na(df)) ))
+dfTst <- dfTst[, keepers]
+
+```
+
+
+Remove incomplete rows
+```{r}
+dfTrn <- dfTrn[complete.cases(dfTrn), ]
+dfTst <- dfTst[complete.cases(dfTst), ]
+```
+
+
+
+
