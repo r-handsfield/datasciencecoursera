@@ -6,3 +6,6 @@
 .DS_Store
 
 Brian Caffo - Developing Data Products.pdf
+
+**/*_cache/**
+**/*_files/**
