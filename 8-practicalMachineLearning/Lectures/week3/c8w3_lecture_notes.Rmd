@@ -51,7 +51,7 @@ text(modFit$finalModel, use.n=TRUE, all=TRUE, cex=.8)
 ```
 
 Make a prettier plot with `r::rattle` (uses Gtk+/ X/ XQuartz)
-```{r eval=TRUE}
+```{r message=FALSE}
 library(RGtk2) 
 library(rattle)
 
@@ -150,7 +150,7 @@ Caret can automate bagging in 2 ways
 
 ### Example: Aggregate with Caret
 
-```{r cache=TRUE}
+```{r cache=TRUE, warning=FALSE}
 predictors <- data.frame(ozone = ozone$ozone)
 temperature <- ozone$temperature
 
@@ -174,9 +174,13 @@ points(x = ozone$ozone, predict(treebag, predictors), pch=19, col="blue")
 
 ```{r}
 ctreeBag$fit
+```
 
+```{r}
 ctreeBag$pred
+```
 
+```{r}
 ctreeBag$aggregate
 ```
 
@@ -201,7 +205,7 @@ dim(training); dim(testing)
 ```
 
 Train a random forest with `caret::train(..., method="rf")`
-```{r cache=TRUE}
+```{r cache=TRUE, message=FALSE}
 library(caret); library(randomForest)
 
 modFit <- train(form = Species~., method = "rf", data = training, prox=TRUE )
@@ -212,7 +216,8 @@ modFit
 ### Example: Extracting Trees
 
 Extract a single tree from the forest with
-```{r}
+```{r message=FALSE}
+library(randomForest)
 getTree(rfobj = modFit$finalModel, k=2)
 ```
 
@@ -255,4 +260,66 @@ print(p)
 # Boosting
 
 
+
+### Example
+
+```{r}
+library(ISLR); library(ggplot2); library(caret)
+data(Wage) 
+  
+Wage <- subset(Wage, select=-c(logwage))
+inTrain <- createDataPartition(y=Wage$wage, p=0.7, list=FALSE)
+training <- Wage[inTrain, ]; testing <- Wage[-inTrain, ]
+```
+
+```{r cache=TRUE, message=FALSE, warning=FALSE}  
+modFit <- train(form = wage~., method = "gbm", data = training, verbose = FALSE)
+print(modFit)
+
+```
+
+Plot it
+```{r}
+predictions <- predict(object = modFit, newdata = testing)
+ggplot(data=testing) + aes(x=predictions, y=wage) + geom_point()
+```
+
+
 # Model Based Preidction
+
+
+Using the `iris` data set
+```{r}
+library(ggplot2)
+
+data(iris)
+names(iris)
+
+table(iris$Species)
+
+inTrain <- createDataPartition(y = iris$Species, p = 0.7, list = FALSE)
+training <- iris[inTrain,]
+testing <- iris[-inTrain,]
+
+dim(training); dim(testing)
+```
+
+Making predictions with two different methods
+```{r cache=TRUE, message=FALSE, warning=FALSE}
+modlda <- train(form = Species~., method="lda", data=training)
+modnb <- train(form = Species~., method="nb", data=training)
+
+plda <- predict(object = modlda, newdata = testing)
+pnb <- predict(object = modnb, newdata = testing)
+
+table(plda, pnb)
+```
+
+Compare predictions
+```{r}
+equalPredictions <- (plda == pnb)
+table(equalPredictions)
+
+ggplot(data=testing) + aes(x=Petal.Width , y=Sepal.Width, color=equalPredictions) + geom_point()
+```
+
