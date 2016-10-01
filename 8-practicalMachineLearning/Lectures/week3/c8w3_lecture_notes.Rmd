@@ -51,9 +51,10 @@ text(modFit$finalModel, use.n=TRUE, all=TRUE, cex=.8)
 ```
 
 Make a prettier plot with `r::rattle` (uses Gtk+/ X/ XQuartz)
-```{r}
-library(RGtk2); 
+```{r eval=TRUE}
+library(RGtk2) 
 library(rattle)
+
 fancyRpartPlot(modFit$finalModel)
 ```
 
@@ -160,12 +161,95 @@ bg <- bagControl(fit = ctreeBag$fit, predict = ctreeBag$pred, aggregate = ctreeB
 treebag <- bag(predictors, temperature, B=10, bagControl=bg)
 ```
 Creates a _bag_ class object holding the aggregated parameters???
-	
 
+Plot it
+```{r}
+plot(x = ozone$ozone, y = temperature, col="lightgrey", pch=19)
+points(x = ozone$ozone, y = predict(object = treebag$fits[[1]]$fit, predictors), pch=19, col="red" )
+points(x = ozone$ozone, predict(treebag, predictors), pch=19, col="blue")
+
+```
+
+## Parts of Bagging
+
+```{r}
+ctreeBag$fit
+
+ctreeBag$pred
+
+ctreeBag$aggregate
+```
 
 
 
 # Random Forests
+
+The `randomForest` package should be installed by the base `stats` package.
+
+Using the _Iris_ data set.
+```{r}
+data(iris)
+names(iris)
+
+table(iris$Species)
+
+inTrain <- createDataPartition(y=iris$Species, p=0.7, list=FALSE)
+training <- iris[inTrain, ]
+testing <- iris[-inTrain, ]
+
+dim(training); dim(testing)
+```
+
+Train a random forest with `caret::train(..., method="rf")`
+```{r cache=TRUE}
+library(caret); library(randomForest)
+
+modFit <- train(form = Species~., method = "rf", data = training, prox=TRUE )
+modFit
+```
+
+
+### Example: Extracting Trees
+
+Extract a single tree from the forest with
+```{r}
+getTree(rfobj = modFit$finalModel, k=2)
+```
+
+## Mean Class Values (Centers)
+
+The `randomForest::classCenter()` function
+```{r}
+# outputs a matrix
+irisP <- classCenter(training[,c(3,4)], training$Species, modFit$finalMod$prox  )
+
+
+irisP <- as.data.frame(irisP)
+irisP$Species <- rownames(irisP)
+
+# plot points
+p <- ggplot(data=training) + aes(x=Petal.Width, y=Petal.Length, color=Species) +geom_point()
+
+# plot class centers
+p <- p + geom_point(data=irisP, aes(x=Petal.Width, y=Petal.Length, color=Species), color="black", size=5, shape=4)
+print(p)
+```
+
+### Example: Making Predictions
+
+```{r cache=TRUE}
+pred <- predict(modFit, testing)
+testing$predRight <- (pred == testing$Species)
+
+table(pred, testing$Species)
+
+p <- ggplot(data=testing) + aes(x=Petal.Width, y=Petal.Length, color=predRight) + geom_point()
+p <- p + ggtitle("newdata Predictions")
+
+print(p)
+```
+
+
 
 
 # Boosting
