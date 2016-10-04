@@ -2,7 +2,12 @@
 title: "c8w4_lecture_notes"
 author: "R. Handsfield"
 date: "September 14, 2016"
-output: html_document
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    theme: cerulean
+    toc: yes
 ---
 
 ```{r setup, include=TRUE, echo=FALSE}
@@ -15,22 +20,315 @@ library(caret)
 library(ggplot2); library(gridExtra)
 ```
 
-## R Markdown
+[https://github.com/jtleek](https://github.com/jtleek)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# Regularized Regression
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+If $x_1$ and $x_2$ are highly correlated, then
+$$
+y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \epsilon
+\approx \beta_0 + (\beta_1 + \beta_2) x_1 + \epsilon
+$$
 
-```{r cars}
-summary(cars)
+### Example Prostate Cancer
+
+```{r}
+library(ElemStatLearn)
+data(prostate)
+
+str(prostate)
 ```
 
-## Including Plots
+Train a linear model
+```{r cache=TRUE}
 
-You can also embed plots, for example:
+covnames <- names(prostate[-(9:10)])
+y <- prostate$lpsa
+x <- prostate[,covnames]
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# pseudo-train linear model 
+form <- as.formula(paste("lpsa~", paste(covnames, collapse="+"), sep=""))
+summary(lm(form, data=prostate[prostate$train,]))
+
+# create training/test sets
+set.seed(1)
+train.ind <- sample(nrow(prostate), ceiling(nrow(prostate))/2)
+y.test <- prostate$lpsa[-train.ind]
+x.test <- x[-train.ind,]
+y <- prostate$lpsa[train.ind]
+x <- x[train.ind,]
+
+p <- length(covnames)
+rss <- list()
+
+# calculate the accuracy (metric = sum of squared residuals) of the model as num of features increase
+for (i in 1:p) {
+  
+  # for each i create a 2 x pCi dim array of X column (feature) combinations
+  Index <- combn(p,i)
+
+  # rss - row1 = trn SSE; row2 = tst SSE
+  rss[[i]] <- apply(Index, 2, function(is) {
+    form <- as.formula(paste("y~", paste(covnames[is], collapse="+"), sep=""))
+    isfit <- lm(form, data=x)
+    yhat <- predict(isfit)
+    train.rss <- sum((y - yhat)^2)
+
+    yhat <- predict(isfit, newdata=x.test)
+    test.rss <- sum((y.test - yhat)^2)
+    c(train.rss, test.rss)
+  })
+}
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Plot performance of a linear regression model
+```{r fig.height=5, fig.width=7}
+### PLOTTING CODE CLUSTERFUCKERY ###
+# create dummy axes of appropriate space;  `type="n"` means no-plot 
+plot(1:p, 1:p, type="n", ylim=range(unlist(rss)), xlim=c(0,p), xlab="number of predictors", ylab="residual sum of squares", main="Prostate cancer data")
+
+# modify trn & tst data for plotting
+for (i in 1:p) {
+  # x-vec = num features (left shifted);  y = train SSE	
+  points( rep( i-0.15, ncol(rss[[i]]) ), rss[[i]][1, ], col="blue")
+	
+  # x-vec = num features (right shifted); y = test SSE		
+  points( rep( i+0.15, ncol(rss[[i]]) ), rss[[i]][2, ], col="red")
+}
+
+# get min trn SSE for each num of features
+minrss <- sapply(rss, function(x) min(x[1,]))
+# plot min trn SSE
+lines((1:p)-0.15, minrss, col="blue", lwd=1.7)
+
+# get min tst SSE for each num of features
+minrss <- sapply(rss, function(x) min(x[2,]))
+# plot min tst SSE
+lines((1:p)+0.15, minrss, col="red", lwd=1.7)
+
+legend("topright", c("Train", "Test"), col=c("blue", "red"), pch=1)
+```
+Note that the test error minimizes at 2-3 features.
+
+---
+
+Another issue for high-dimensional data
+```{r}
+small = prostate[1:5,]
+lm(lpsa ~ .,data =small)
+```
+
+
+```{r}
+# ridge regression on prostate dataset
+library(MASS)
+lambdas <- seq(0,50,len=10)
+M <- length(lambdas)
+train.rss <- rep(0,M)
+test.rss <- rep(0,M)
+betas <- matrix(0,ncol(x),M)
+for(i in 1:M){
+  Formula <-as.formula(paste("y~",paste(covnames,collapse="+"),sep=""))
+  fit1 <- lm.ridge(Formula,data=x,lambda=lambdas[i])
+  betas[,i] <- fit1$coef
+  
+  scaledX <- sweep(as.matrix(x),2,fit1$xm)
+  scaledX <- sweep(scaledX,2,fit1$scale,"/")
+  yhat <- scaledX%*%fit1$coef+fit1$ym
+  train.rss[i] <- sum((y - yhat)^2)
+  
+  scaledX <- sweep(as.matrix(x.test),2,fit1$xm)
+  scaledX <- sweep(scaledX,2,fit1$scale,"/")
+  yhat <- scaledX%*%fit1$coef+fit1$ym
+  test.rss[i] <- sum((y.test - yhat)^2)
+}
+
+# plot(lambdas,test.rss,type="l",col="red",lwd=2,ylab="RSS",ylim=range(train.rss,test.rss))
+# lines(lambdas,train.rss,col="blue",lwd=2,lty=2)
+# best.lambda <- lambdas[which.min(test.rss)]
+# abline(v=best.lambda+1/9)
+# legend(30,30,c("Train","Test"),col=c("blue","red"),lty=c(2,1))
+
+# Ridge Coefficient Paths
+plot(lambdas,betas[1,],ylim=range(betas),type="n",ylab="Coefficients")
+for(i in 1:ncol(x))
+  lines(lambdas,betas[i,],type="b",lty=i,pch=as.character(i))
+abline(h=0)
+legend("topright",covnames,pch=as.character(1:8))
+```
+
+```{r}
+# lasso
+library(lars)
+lasso.fit <- lars(as.matrix(x), y, type="lasso", trace=TRUE)
+
+plot(lasso.fit, breaks=FALSE)
+legend("topleft", covnames, pch=8, lty=1:length(covnames), col=1:length(covnames))
+
+# this plots the cross validation curve
+lasso.cv <- cv.lars(as.matrix(x), y, K=10, type="lasso", trace=TRUE)
+```
+
+
+
+# Combining Predictors
+
+
+
+### Example: Wage Data
+
+
+```{r}
+library(ISLR); library(ggplot2); library(caret)
+data(Wage)
+Wage <- subset(x=Wage, select= -c(logwage))
+
+
+inBuild <- createDataPartition(y = Wage$wage, p = 0.7, list = FALSE)
+buildData <- Wage[inBuild, ]
+validation <- Wage[-inBuild, ]
+
+inTrain <- createDataPartition(y = buildData$wage, p = 0.7, list = FALSE)
+training <- buildData[inTrain, ]
+testing <- buildData[-inTrain, ]
+
+dim(training)
+dim(testing)
+dim(validation)
+```
+
+Train 2 models
+```{r cache=TRUE, warning=FALSE}
+# linear model
+mod1 <- train(form = wage~., method="glm", data=training)
+
+# random forest
+tr <- trainControl(method = "cv", number = 3)
+mod2 <- train(form = wage~., method="rf", data=training, trainControl=tr)
+```
+
+Make predictions with the models
+```{r}
+pred1 <- predict(mod1, testing)
+pred2 <- predict(mod2, testing)
+
+ggplot(data=testing) + aes(x=pred1, y=pred2, color=wage) + geom_point()
+```
+
+Create a model that combines `pred1` and `pred2`
+```{r cache=TRUE}
+predDF <- data.frame(pred1, pred2, wage=testing$wage)
+
+combModFit <- train(form = wage~., method = "glm", data = predDF)
+
+combPred <- predict(object = combModFit, newdata = predDF)
+```
+
+Compare prediction errors
+```{r}
+# root sum of squared residuals
+rsr <- function(prediction) {
+	sqrt( sum( (prediction - testing$wage)^2 ) ); 
+}
+
+rsr(pred1); rsr(pred2); rsr(combPred)
+```
+The combined predictor has the highest accuracy
+
+Make some predictions on the validation set
+```{r}
+pred1V <- predict(mod1, validation)
+pred2V <- predict(mod2, validation)
+
+predVDF <- data.frame(pred1=pred1V, pred2=pred2V)
+
+combPredV <- predict(combModFit, predVDF)
+```
+
+Evaluate the models on the validation set
+```{r warning=FALSE}
+# use the root sum of squared residuals
+rsr <- function(prediction) {
+	sqrt( sum( (prediction - testing$wage)^2 ) ); 
+}
+
+rsr(pred1V); rsr(pred2V); rsr(combPredV)
+```
+Hmm, the combination predictor does not perform as well on the validation set.
+
+
+
+# Unsupervised Prediction
+
+
+### Example: k-means clustering
+
+```{r}
+library(ggplot2)
+data(iris)
+
+inTrain <- createDataPartition(y=iris$Species, p=0.7, list=FALSE)
+training <- iris[inTrain, ]
+testing <- iris[-inTrain, ]
+
+dim(training); dim(testing)
+```
+
+Do the clustering
+```{r cache=TRUE}
+ss <- subset(x = training, select = -c(Species))
+kMeans1 <- kmeans(x = ss, centers = 3)
+
+training$clusters <- as.factor(kMeans1$cluster)
+
+ggplot(data=training) + aes(x=Petal.Width, y=Petal.Length, color=clusters) + geom_point()
+```
+
+Compare the predicted classification to the actual label
+```{r}
+table(kMeans1$cluster, training$Species)
+```
+
+### Example: Binary Tree Classifier
+
+Train classifier
+```{r cache=TRUE}
+ss <- subset(x = training, select = -c(Species))
+modFit <- train(form = clusters~., method = "rpart", data = ss)
+
+table( predict(modFit, training), training$Species )
+```
+
+Apply classifier to test set
+```{r}
+testClusterPred <- predict(modFit, testing)
+table(testClusterPred, testing$Species)
+```
+
+
+# Forecasting
+
+
+### Example: Time Series
+
+```{r}
+library(xts)
+library(quantmod)
+
+from.dat <- as.Date(x = "01/01/08", format = "%m/%d/%y")
+to.dat <- as.Date(x = "12/31/13", format = "%m/%d/%y")
+
+getSymbols(Symbols = "GOOG", src = "google", from = from.dat, to = to.dat)
+
+head(GOOG)
+```
+
+Summarize monthly prices and store as time series
+```{r eval=FALSE}
+mGoog <- to.monthly(GOOG)
+```
+
+
+
+
+
