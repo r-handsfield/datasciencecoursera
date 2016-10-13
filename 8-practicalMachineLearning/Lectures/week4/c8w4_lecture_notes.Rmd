@@ -142,7 +142,9 @@ for(i in 1:M){
   yhat <- scaledX%*%fit1$coef+fit1$ym
   test.rss[i] <- sum((y.test - yhat)^2)
 }
+```
 
+```{r fig.height=5, fig.width=7}
 # plot(lambdas,test.rss,type="l",col="red",lwd=2,ylab="RSS",ylim=range(train.rss,test.rss))
 # lines(lambdas,train.rss,col="blue",lwd=2,lty=2)
 # best.lambda <- lambdas[which.min(test.rss)]
@@ -157,7 +159,7 @@ abline(h=0)
 legend("topright",covnames,pch=as.character(1:8))
 ```
 
-```{r}
+```{r fig.height=5, fig.width=7}
 # lasso
 library(lars)
 lasso.fit <- lars(as.matrix(x), y, type="lasso", trace=TRUE)
@@ -199,6 +201,8 @@ dim(validation)
 
 Train 2 models
 ```{r cache=TRUE, warning=FALSE}
+library(randomForest)
+
 # linear model
 mod1 <- train(form = wage~., method="glm", data=training)
 
@@ -208,7 +212,7 @@ mod2 <- train(form = wage~., method="rf", data=training, trainControl=tr)
 ```
 
 Make predictions with the models
-```{r}
+```{r warning=FALSE}
 pred1 <- predict(mod1, testing)
 pred2 <- predict(mod2, testing)
 
@@ -236,7 +240,7 @@ rsr(pred1); rsr(pred2); rsr(combPred)
 The combined predictor has the highest accuracy
 
 Make some predictions on the validation set
-```{r}
+```{r warning=FALSE}
 pred1V <- predict(mod1, validation)
 pred2V <- predict(mod2, validation)
 
@@ -311,21 +315,79 @@ table(testClusterPred, testing$Species)
 
 ### Example: Time Series
 
-```{r}
-library(xts)
+```{r message=FALSE}
 library(quantmod)
 
 from.dat <- as.Date(x = "01/01/08", format = "%m/%d/%y")
 to.dat <- as.Date(x = "12/31/13", format = "%m/%d/%y")
 
-getSymbols(Symbols = "GOOG", src = "google", from = from.dat, to = to.dat)
+getSymbols(Symbols = "GOOG", src = "yahoo", from = from.dat, to = to.dat)
 
 head(GOOG)
 ```
 
 Summarize monthly prices and store as time series
-```{r eval=FALSE}
+```{r}
 mGoog <- to.monthly(GOOG)
+
+googOpen <- Op(mGoog)
+ts1 <- ts(googOpen, frequency=12)
+plot(ts1, xlab="Years+1", ylab="GOOG")
+
+```
+
+## Time Series
+
+A mathematical time series can be decomposed into 3 components:
+
+1. Seasonal Component
+2. Trend Component
+3. Irregular Component
+
+The `stats::decompose(timeSeriesObj)` function creates `decomposed.ts` object, which contains the 3 components
+as additional time series, as well as the original time series data.
+
+Decompose a time series into parts
+```{r fig.height=5, fig.width=7}
+plot( decompose(ts1), xlab="Years+1" )
+
+```
+
+### Example
+
+Segment a time series using the `stats::window()` function
+```{r}
+ts1Train <- window(ts1, start=1, end=5)
+ts1Test <- window(ts1, start=5, end=(7 - 0.01))
+ts1Train
+
+```
+
+
+Simple Moving Average
+$$Y_t = \frac{1}{2*k+1} \sum_{j=-k}^{k}{y_{t+j}}$$
+
+Using `forecast::ma`
+```{r}
+library(forecast)
+
+plot(ts1Train)
+lines( ma(ts1Train, order=3), col="red")
+
+```
+
+
+## Exponential Smoothing
+
+$$\hat{y}_{t+1} = \alpha y_t + (1 - \alpha) \hat{y}_{t-1}$$
+
+```{r}
+
+ets1 <- ets(ts1Train, model="MMM")
+fcast <- forecast(ets1)
+plot(fcast); lines(ts1Test, col="red")
+
+accuracy(fcast, ts1Test)
 ```
 
 
