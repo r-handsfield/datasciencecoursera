@@ -24,6 +24,8 @@ library(ggplot2); library(gridExtra)
 
 # Regularized Regression
 
+Regularization can reduce a model's variance and combat overfitting. It does this by adding a penalty term $\lambda$ to the cost function, which raises the cost (prediction error) of a specific set of observations $X^{(i)}$; this in turn lowers the magnitude of the parameters $\Beta^{(i)}$, resulting in weaker contribution from $X^{(i)}$
+
 If $x_1$ and $x_2$ are highly correlated, then
 $$
 y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \epsilon
@@ -31,6 +33,8 @@ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \epsilon
 $$
 
 ### Example Prostate Cancer
+
+
 
 ```{r}
 library(ElemStatLearn)
