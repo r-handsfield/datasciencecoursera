@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(fig.align = 'center', fig.height=3, fig.width=5)
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 library(caret)
 library(ggplot2); library(gridExtra)
 ```
@@ -24,26 +24,36 @@ library(ggplot2); library(gridExtra)
 
 # Regularized Regression
 
-Regularization can reduce a model's variance and combat overfitting. It does this by adding a penalty term $\lambda$ to the cost function, which raises the cost (prediction error) of a specific set of observations $X^{(i)}$; this in turn lowers the magnitude of the parameters $\Beta^{(i)}$, resulting in weaker contribution from $X^{(i)}$
+Regularization can reduce a model's variance and combat overfitting. It does this by adding a penalty term $\lambda$ to the cost function, which raises the cost (prediction error) of a specific set of observations $X^{(i)}$; this in turn lowers the magnitude of the parameters $\beta^{(i)}$, resulting in weaker contribution from $X^{(i)}$
 
-If $x_1$ and $x_2$ are highly correlated, then
+Regularized nethods in `caret` are `(lasso, ridge, relaxo)`
+
+If features $x_1$ and $x_2$ are highly correlated, then
 $$
-y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \epsilon
-\approx \beta_0 + (\beta_1 + \beta_2) x_1 + \epsilon
+\begin{matrix}
+Y & = & \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \epsilon \\ 
+ & \approx & \beta_0 + (\beta_1 + \beta_2) x_1 + \epsilon
+\end{matrix}
 $$
+
+The approximation of $Y$ is
+
+1. pretty close to the actual value of $Y$
+2. biased to $x_1$
+3. lower in variance (cannot overfit to $x_2$)
 
 ### Example Prostate Cancer
 
+Why would we want to reduce the variance of a model? Look at what happens when we train a predictive model with increasing numbers of features.
 
-
-```{r}
+```{r message=FALSE}
 library(ElemStatLearn)
 data(prostate)
 
 str(prostate)
 ```
 
-Train a linear model
+Train a linear model using the sum of squared residuals for the cost metric.
 ```{r cache=TRUE}
 
 covnames <- names(prostate[-(9:10)])
@@ -57,10 +67,8 @@ summary(lm(form, data=prostate[prostate$train,]))
 # create training/test sets
 set.seed(1)
 train.ind <- sample(nrow(prostate), ceiling(nrow(prostate))/2)
-y.test <- prostate$lpsa[-train.ind]
-x.test <- x[-train.ind,]
-y <- prostate$lpsa[train.ind]
-x <- x[train.ind,]
+y.test <- prostate$lpsa[-train.ind];  x.test <- x[-train.ind,]
+y <- prostate$lpsa[train.ind];  x <- x[train.ind,]
 
 p <- length(covnames)
 rss <- list()
@@ -71,7 +79,7 @@ for (i in 1:p) {
   # for each i create a 2 x pCi dim array of X column (feature) combinations
   Index <- combn(p,i)
 
-  # rss - row1 = trn SSE; row2 = tst SSE
+  # rss: row1 = trn SSE; row2 = tst SSE
   rss[[i]] <- apply(Index, 2, function(is) {
     form <- as.formula(paste("y~", paste(covnames[is], collapse="+"), sep=""))
     isfit <- lm(form, data=x)
@@ -85,7 +93,7 @@ for (i in 1:p) {
 }
 ```
 
-Plot performance of a linear regression model
+Plot performance of the linear regression models fir increasing number of features
 ```{r fig.height=5, fig.width=7}
 ### PLOTTING CODE CLUSTERFUCKERY ###
 # create dummy axes of appropriate space;  `type="n"` means no-plot 
@@ -112,16 +120,62 @@ lines((1:p)+0.15, minrss, col="red", lwd=1.7)
 
 legend("topright", c("Train", "Test"), col=c("blue", "red"), pch=1)
 ```
-Note that the test error minimizes at 2-3 features.
+
+Note that the training error always decreases, but the test error minimizes at 2-3 features.
+This is because all models always overfit the training set to some degree. For this reason, we must always _judge_ models on a validation set, and _report_ a single model's performance on the test set.
+
+## Overcoming Limitations
+
+If the data is limited, bootstrap it. If the model is very complex, train on small subsets of a training set, then bootstrap those models.
 
 ---
 
-Another issue for high-dimensional data
+Another way to overcome computational limits is to decompose the expected prediction error.
+
+Assume that $Y$ can be predicted from some function of $X$, plus an error term:
+$$Y_i = f(X_i) + \epsilon_i$$
+
+Then the __Expected Prediction Error__ (MSE) can be expressed as the expectation value of the squared residuals. $\hat f_\lambda$ is the _estimating function_
+$$EPE(\lambda) = E \left[ \{ Y - \hat f_\lambda (x^{(i)}) \}^2 \right]$$
+
+The EPE can be _decomposed_ into the __Irreducible Error__, __Squared Bias__, and __Variance__ of the estimate.
+$$
+EPE ~=~ \sigma^2 ~+~ \{ E[\hat f_\lambda(x^{(i)})] - y^{(i)} \}^2 ~+~ var[\hat f_\lambda (x_0)]
+$$
+
+The bias and variance terms can be traded off to achieve best performance.
+
+### Example - Small Training Set
+
+Another issue for high-dimensional data is not having enough training examples. Below, we try to train a model with 8 features, but only 5 training examples.
 ```{r}
 small = prostate[1:5,]
 lm(lpsa ~ .,data =small)
 ```
 
+We could only solve for parameters (weights) for 4 of the 8 features. The rest are NA.
+If we tried to solve this model via the normal equation, we would find that the design matrix can't be inverted.
+
+One way to solve this problem is with __Hard Thresholding__:
+
+1. Decide that only some (4) features will be nonzero
+2. Set all other feature parameters to zero
+3. Train all possible combinations of arbitrarily nonzero features
+4. Compare models on a validation set
+
+Step 3 is a computational bitch. It's much easier to effectively reduce the number of features by penalizing all the feature parameters with a __Regularization Parameter__ $\lambda$.
+
+$$
+Cost(\beta) = \sum^m_{i=1}{ \left( y^{(i)} - \beta_0 + 
+\sum^n_{j=1}{ \beta_j X^{(i)}_j } \right)}^2
+ +~ \lambda \sum^n_{j=1}{ \beta^2_j }
+$$
+
+This reduces variance and complexity while preserving the structure of the problem. However, including $\lambda$ makes the problem non-singular even if $X^TX$ is not invertible.
+
+Adding regularization turns linear regression into __Ridge Regression__.
+
+### Example - Ridge Regression
 
 ```{r}
 # ridge regression on prostate dataset
@@ -156,14 +210,27 @@ for(i in 1:M){
 # legend(30,30,c("Train","Test"),col=c("blue","red"),lty=c(2,1))
 
 # Ridge Coefficient Paths
-plot(lambdas,betas[1,],ylim=range(betas),type="n",ylab="Coefficients")
+plot(lambdas,betas[1,],ylim=range(betas),type="n",ylab="Coefficients", xlab="Lambda")
 for(i in 1:ncol(x))
   lines(lambdas,betas[i,],type="b",lty=i,pch=as.character(i))
 abline(h=0)
 legend("topright",covnames,pch=as.character(1:8))
 ```
 
-```{r fig.height=5, fig.width=7}
+As $lambda$ increases, the magnitudes of the feature parameters converge towards zero.
+
+### Example - Lasso Regression
+
+Lasso Regression is the same as Ridge, but uses a slightly different form for the regularization term, the absolute value of parameters instead of the square:
+
+$$
+Cost(\beta) = \sum^m_{i=1}{ \left( y^{(i)} - \beta_0 + 
+\sum^n_{j=1}{ \beta_j X^{(i)}_j } \right)}^2
+ +~ \lambda \sum^n_{j=1}{ \left| \beta_j \right| }
+$$
+
+
+```{r fig.height=5, fig.width=7, message=FALSE}
 # lasso
 library(lars)
 lasso.fit <- lars(as.matrix(x), y, type="lasso", trace=TRUE)
@@ -178,6 +245,7 @@ lasso.cv <- cv.lars(as.matrix(x), y, K=10, type="lasso", trace=TRUE)
 
 
 # Combining Predictors
+
 
 
 
