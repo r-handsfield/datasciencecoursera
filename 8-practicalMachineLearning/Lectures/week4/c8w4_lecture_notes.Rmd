@@ -244,8 +244,11 @@ lasso.cv <- cv.lars(as.matrix(x), y, K=10, type="lasso", trace=TRUE)
 
 
 
-# Combining Predictors
+# Combining Predictors aka Ensemble Methods
 
+One way to improve a model, is by designing several predictors that each predict one aspect of the model, then combining these predictors by averaging, voting, etc. This improves accuracy but reduces interpretability. Bagging, boosting, and random forests are examples of this method.
+
+Bagging/ boosting/ random forest can combine __similar classifiers__. Model _ensembling_ and _stacking_ can combine __dissimilar classifiers__.
 
 
 
@@ -259,20 +262,20 @@ Wage <- subset(x=Wage, select= -c(logwage))
 
 
 inBuild <- createDataPartition(y = Wage$wage, p = 0.7, list = FALSE)
-buildData <- Wage[inBuild, ]
-validation <- Wage[-inBuild, ]
+buildData <- Wage[inBuild, ]; validation <- Wage[-inBuild, ]
 
 inTrain <- createDataPartition(y = buildData$wage, p = 0.7, list = FALSE)
-training <- buildData[inTrain, ]
-testing <- buildData[-inTrain, ]
+training <- buildData[inTrain, ]; testing <- buildData[-inTrain, ]
 
 dim(training)
 dim(testing)
 dim(validation)
 ```
 
+---
+
 Train 2 models
-```{r cache=TRUE, warning=FALSE}
+```{r cache=TRUE, warning=FALSE, message=FALSE}
 library(randomForest)
 
 # linear model
@@ -283,22 +286,30 @@ tr <- trainControl(method = "cv", number = 3)
 mod2 <- train(form = wage~., method="rf", data=training, trainControl=tr)
 ```
 
+---
+
 Make predictions with the models
-```{r warning=FALSE}
+```{r warning=FALSE, message=FALSE}
 pred1 <- predict(mod1, testing)
 pred2 <- predict(mod2, testing)
 
 ggplot(data=testing) + aes(x=pred1, y=pred2, color=wage) + geom_point()
 ```
+Wage is represented by color of the dots. Neither predicter corelates perfectly.
+---
 
 Create a model that combines `pred1` and `pred2`
 ```{r cache=TRUE}
 predDF <- data.frame(pred1, pred2, wage=testing$wage)
 
+head(predDF, 3L)
+
 combModFit <- train(form = wage~., method = "glm", data = predDF)
 
 combPred <- predict(object = combModFit, newdata = predDF)
 ```
+
+---
 
 Compare prediction errors
 ```{r}
@@ -310,6 +321,8 @@ rsr <- function(prediction) {
 rsr(pred1); rsr(pred2); rsr(combPred)
 ```
 The combined predictor has the highest accuracy
+
+---
 
 Make some predictions on the validation set
 ```{r warning=FALSE}
@@ -332,9 +345,24 @@ rsr(pred1V); rsr(pred2V); rsr(combPredV)
 ```
 Hmm, the combination predictor does not perform as well on the validation set.
 
+Some tuning would probably improve this model on the validation set. Anyhoo, you can find ensemble methods in `caretEnsemble` (research this).
+
+The simplified classification prodedure is:
+
+1. Build an _odd_ number of models 
+2. Make predictions with each model
+3. Predict the final class by majority vote
 
 
 # Unsupervised Prediction
+
+Unsupervised prediction problems are almost always classification problems. In these problems, we don't even know what the classes are, but we can automatically separate the training data into clusters, then derive classes from those clusters.
+
+The procedure for building cluster predictors is
+
+1. Create some clusters
+2. Name the clusters
+3. Build a predictor for those clusters
 
 
 ### Example: k-means clustering
@@ -368,15 +396,17 @@ table(kMeans1$cluster, training$Species)
 ### Example: Binary Tree Classifier
 
 Train classifier
-```{r cache=TRUE}
+```{r cache=TRUE, message=FALSE}
 ss <- subset(x = training, select = -c(Species))
 modFit <- train(form = clusters~., method = "rpart", data = ss)
 
 table( predict(modFit, training), training$Species )
 ```
+This classifier is good at prediction setosa and versicolor, but middling at predicting virginica.
+
 
 Apply classifier to test set
-```{r}
+```{r message=FALSE}
 testClusterPred <- predict(modFit, testing)
 table(testClusterPred, testing$Species)
 ```
@@ -384,6 +414,30 @@ table(testClusterPred, testing$Species)
 
 # Forecasting
 
+Forecasting uses sequential data to predict future values. It's often performed on time series.
+The data are time dependent, and often display distinct temporal patterns:
+
+* _Trend_ - a long term increase or decrease
+* _Seasonal Pattern_ - short term pattern related to time of week, month, year, etc.
+* _Cycle_ - periodic pattern that repeats
+
+Because of the time dependencies, separating into training/test sets is complicated.
+
+Spatial data exhibits many of the same traits as temporal data, and is subject to the same complexities:
+
+1. Data can depend on nearby observations
+2. There may be location-specific effects
+3. There may be regional patterns
+
+With spatial data, the goal is predict values in new regions.
+
+For both types of data, most standard algorithms may be used.
+
+## Dangers
+
+Spurious correlations are a constant danger. They'll muck up any analysis. A handy tool to correlate search terms with population traits is [http://www.google.com/trends/correlate](http://www.google.com/trends/correlate).
+
+Extrapolations can bone you too. Short term data will rarely show environmental factors that influence long term extrapolations. For example, an extrapolation of world record race times predicts that eventually, people will run the 100m in negative time.
 
 ### Example: Time Series
 
@@ -393,9 +447,10 @@ library(quantmod)
 from.dat <- as.Date(x = "01/01/08", format = "%m/%d/%y")
 to.dat <- as.Date(x = "12/31/13", format = "%m/%d/%y")
 
+# get the google stock price
 getSymbols(Symbols = "GOOG", src = "yahoo", from = from.dat, to = to.dat)
 
-head(GOOG)
+head(GOOG, 3L)
 ```
 
 Summarize monthly prices and store as time series
@@ -425,10 +480,12 @@ plot( decompose(ts1), xlab="Years+1" )
 
 ```
 
+
 ### Example
 
 Segment a time series using the `stats::window()` function
 ```{r}
+# window indices are in years
 ts1Train <- window(ts1, start=1, end=5)
 ts1Test <- window(ts1, start=5, end=(7 - 0.01))
 ts1Train
@@ -451,6 +508,8 @@ lines( ma(ts1Train, order=3), col="red")
 
 ## Exponential Smoothing
 
+Exponential Smoothing gives greater weight to nearby points in time. (As long as $\alpha$ is greater than $0.5$ ??)
+
 $$\hat{y}_{t+1} = \alpha y_t + (1 - \alpha) \hat{y}_{t-1}$$
 
 ```{r}
@@ -458,11 +517,15 @@ $$\hat{y}_{t+1} = \alpha y_t + (1 - \alpha) \hat{y}_{t-1}$$
 ets1 <- ets(ts1Train, model="MMM")
 fcast <- forecast(ets1)
 plot(fcast); lines(ts1Test, col="red")
+```
+The grayish regions are prediction boundaries.
 
-accuracy(fcast, ts1Test)
+Use the `forecast::accuracy` function to see how a model performs on a variety of metrics.
+```{r}
+round( accuracy(fcast, ts1Test) , 2 )
 ```
 
-
+For forecasting, the `forecasat`, `quantmod`, and `quandl` packages are all useful. There is also a good open source book, [Forecasting: Principles and Practice](https://www.otexts.org/fpp) by Rob Hyndman.
 
 
 
