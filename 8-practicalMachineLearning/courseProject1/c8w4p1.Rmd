@@ -2,7 +2,12 @@
 title: "c8w4p1"
 author: "R. Handsfield"
 date: "September 24, 2016"
-output: html_document
+output: 
+  html_document: 
+    highlight: pygments
+    number_sections: yes
+    theme: cerulean
+    toc: yes
 ---
 
 ```{r setup, include=TRUE, echo=FALSE}
@@ -10,12 +15,21 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(fig.align = 'center', fig.height=3, fig.width=5)
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 library(caret)
 library(ggplot2); library(gridExtra)
 ```
 
-Download data
+# Introduction
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: [http://groupware.les.inf.puc-rio.br/har](http://groupware.les.inf.puc-rio.br/har) (see the section on the Weight Lifting Exercise Dataset).
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+The goal of your project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. You may use any of the other variables to predict with. You should create a report describing how you built your model, how you used cross validation, what you think the expected out of sample error is, and why you made the choices you did. You will also use your prediction model to predict 20 different test cases.
+
+
+## Download data
 ```{r}
 setwd("courseProject1")
 
@@ -34,29 +48,50 @@ dfTrn <- read.csv(file = "pml-training.csv", na.strings = c("", "NA"));
 dfTst <- read.csv(file = "pml-training.csv", na.strings = c("", "NA"));
 ```
 
-Examine data frames
+## Examine data frames
 ```{r}
 names(dfTrn)
+dim(dfTrn)
 head(dfTrn)
 head(dfTst)
 ```
 
-Remove columns with missing data
+### Remove columns with missing data
 ```{r}
-keepers <- (apply(X = dfTrn, MARGIN = 2, FUN = function(df) !any(is.na(df)) ))
+keepers <- apply(X = dfTrn, MARGIN = 2, FUN = function(df) !any(is.na(df)) )
 dfTrn <- dfTrn[, keepers]
 
-keepers <- (apply(X = dfTst, MARGIN = 2, FUN = function(df) !any(is.na(df)) ))
+keepers <- apply(X = dfTst, MARGIN = 2, FUN = function(df) !any(is.na(df)) )
 dfTst <- dfTst[, keepers]
 
+dim(dfTrn)
+names(dfTrn)
 ```
+We have removed 100 columns of NA data. Of the remaining columsn, the first 7 are not important, and column 60 is the outcome.
 
-
-Remove incomplete rows
+### Subset
 ```{r}
-dfTrn <- dfTrn[complete.cases(dfTrn), ]
-dfTst <- dfTst[complete.cases(dfTst), ]
+trn <- dfTrn[complete.cases(dfTrn), 8:60]
+tst <- dfTst[complete.cases(dfTst), 8:60]
 ```
+
+## Solution
+
+```{r}
+unique(dfTrn$user_name)
+unique(dfTrn$classe)
+```
+There are data for 6 users doing the exercise in 5 different ways (A-E). This should be straightforward - train a classifier that predicts _classe_ as a function of all other variables. 
+Try a linear SVM with class weights. Params are
+
+1. `cost` = cost
+2. `weight` = class weight
+3. `Loss` = loss function
+
+```{r cache=TRUE, message=FALSE}
+mod <- train(form = classe~., method="cforest", data=trn)
+```
+
 
 
 
