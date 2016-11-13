@@ -68,7 +68,11 @@ createTimeSlices(y, initialWindow, horizon = 1, fixedWindow = TRUE, skip = 0)
 __Training and Testing__
 
 ```{r, eval=FALSE}
-train(x, y, method = "rf", preProcess = NULL, ..., weights = NULL, metric = ifelse(is.factor(y), "Accuracy", "RMSE"), maximize = ifelse(metric %in% c("RMSE", "logLoss"), FALSE, TRUE), trControl = trainControl(), tuneGrid = NULL, tuneLength = 3)
+train(x, y, method = "rf", preProcess = NULL, ..., weights = NULL, 
+      metric = ifelse(is.factor(y), "Accuracy", "RMSE"), 
+      maximize = ifelse(metric %in% c("RMSE", "logLoss"), FALSE, TRUE), 
+      trControl = trainControl(), tuneGrid = NULL, tuneLength = 3
+      )
 ```  
 ```{r, eval=FALSE}
 predict (object, ...)
@@ -76,7 +80,10 @@ predict (object, ...)
 
 __Comparing Models__
 ```{r, eval=FALSE}
-confusionMatrix(data, reference, positive = NULL, dnn = c("Prediction", "Reference"), prevalence = NULL, mode = "sens_spec", ...)
+confusionMatrix(data, reference, positive = NULL, 
+		dnn = c("Prediction", "Reference"), 
+		prevalence = NULL, mode = "sens_spec", ...
+		)
 ```
 
 All possible models are trained the same way -- by passing a string to `caret::train(..., method='string', ...)`. The full list of method strings is below. For details see [http://topepo.github.io/caret/using-your-own-model-in-train.html](http://topepo.github.io/caret/using-your-own-model-in-train.html)
