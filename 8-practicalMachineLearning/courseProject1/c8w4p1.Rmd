@@ -67,11 +67,20 @@ dfTst <- dfTst[, keepers]
 dim(dfTrn)
 names(dfTrn)
 ```
-We have removed 100 columns of NA data. Of the remaining columsn, the first 7 are not important, and column 60 is the outcome.
+We have removed 100 columns of NA data. Of the remaining columsn, the first 7 are not important for classification, and column 60 is the outcome.
 
 ### Subset
+
 ```{r}
-trn <- dfTrn[complete.cases(dfTrn), 8:60]
+vecTrn <- createDataPartition(y = dfTrn$classe, p = 0.1, list = FALSE)
+
+val <- dfTrn[-vecTrn,]
+trn <- dfTrn[vecTrn, ]
+```
+
+```{r}
+trn <- trn[complete.cases(trn), 8:60]
+val <- val[complete.cases(val), 8:60]
 tst <- dfTst[complete.cases(dfTst), 8:60]
 ```
 
@@ -84,12 +93,24 @@ unique(dfTrn$classe)
 There are data for 6 users doing the exercise in 5 different ways (A-E). This should be straightforward - train a classifier that predicts _classe_ as a function of all other variables. 
 Try a linear SVM with class weights. Params are
 
+
+
+
 1. `cost` = cost
 2. `weight` = class weight
 3. `Loss` = loss function
 
 ```{r cache=TRUE, message=FALSE}
-mod <- train(form = classe~., method="cforest", data=trn)
+# mod <- train(x = trn, y = trn$classe, method = "rf")
+m <- train(form = classe~., data = trn, method = "rf")
+```
+
+```{r cache=TRUE, message=FALSE}
+p <- predict(object = mod, newdata = val)
+```
+
+```{r}
+confusionMatrix(data = p, reference = val$classe)
 ```
 
 
