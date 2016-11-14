@@ -15,9 +15,10 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(fig.align = 'center', fig.height=3, fig.width=5)
 ```
 
-```{r echo=FALSE, message=FALSE}
-library(caret)
+```{r library, echo=FALSE, message=FALSE}
 library(ggplot2); library(gridExtra)
+library(caret)
+library(doParallel)
 ```
 
 # Introduction
@@ -30,8 +31,10 @@ The goal of your project is to predict the manner in which they did the exercise
 
 
 ## Download data
-```{r}
-setwd("courseProject1")
+```{r download data}
+if ("courseProject1" %in% list.files()) {
+	setwd("courseProject1")
+}
 
 if ( !("pml-training.csv" %in% list.files()) ) {
 	urlTrn <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
@@ -52,12 +55,12 @@ dfTst <- read.csv(file = "pml-training.csv", na.strings = c("", "NA"));
 ```{r}
 names(dfTrn)
 dim(dfTrn)
-head(dfTrn)
-head(dfTst)
+head(dfTrn, 2L)
+head(dfTst, 2L)
 ```
 
 ### Remove columns with missing data
-```{r}
+```{r clean}
 keepers <- apply(X = dfTrn, MARGIN = 2, FUN = function(df) !any(is.na(df)) )
 dfTrn <- dfTrn[, keepers]
 
@@ -69,19 +72,35 @@ names(dfTrn)
 ```
 We have removed 100 columns of NA data. Of the remaining columsn, the first 7 are not important for classification, and column 60 is the outcome.
 
+```{r}
+dfTrn <- dfTrn[, 8:60]
+dfTst <- dfTst[, 8:60]
+
+```
+
+
+### Z-Transform
+
+Running `lapply(dfTrn,class)` shows that all the columns are numeric, so we can apply the z-transform to the entire data frame.
+```{r}
+dfTrn[,1:52] <- apply(dfTrn[,1:52], 2, scale )
+dfTst[,1:52] <- apply(dfTst[,1:52], 2, scale )
+```
+
+
 ### Subset
 
-```{r}
-vecTrn <- createDataPartition(y = dfTrn$classe, p = 0.1, list = FALSE)
+```{r segment}
+vecTrn <- createDataPartition(y = dfTrn$classe, p = 0.6, list = FALSE)
 
 val <- dfTrn[-vecTrn,]
 trn <- dfTrn[vecTrn, ]
 ```
 
-```{r}
-trn <- trn[complete.cases(trn), 8:60]
-val <- val[complete.cases(val), 8:60]
-tst <- dfTst[complete.cases(dfTst), 8:60]
+```{r complete cases}
+trn <- trn[complete.cases(trn), ]
+val <- val[complete.cases(val), ]
+tst <- dfTst[complete.cases(dfTst), ]
 ```
 
 ## Solution
@@ -91,29 +110,60 @@ unique(dfTrn$user_name)
 unique(dfTrn$classe)
 ```
 There are data for 6 users doing the exercise in 5 different ways (A-E). This should be straightforward - train a classifier that predicts _classe_ as a function of all other variables. 
-Try a linear SVM with class weights. Params are
+Try a random forest and gradient boosting model.
 
-
-
-
-1. `cost` = cost
-2. `weight` = class weight
-3. `Loss` = loss function
-
-```{r cache=TRUE, message=FALSE}
-# mod <- train(x = trn, y = trn$classe, method = "rf")
+```{r single, eval=FALSE, echo=FALSE, cache=TRUE, message=FALSE}
+begin <- Sys.time()
 m <- train(form = classe~., data = trn, method = "rf")
+finish <- Sys.time()
+
+single <- finish-begin
 ```
 
-```{r cache=TRUE, message=FALSE}
-p <- predict(object = mod, newdata = val)
+Train the models. Enable parallel processing to make this tolerable.
+```{r doParallel, message=FALSE}
+cl <- makeCluster(spec = 3)
+registerDoParallel(cl)
+
+begin <- Sys.time()
+modRf <- train(form = classe~., data = trn, method = "rf")
+rfTime <- Sys.time() - begin
+rfTime
+
+begin <- Sys.time()
+modGbm <- train(form = classe~., data = trn, method = "gbm")
+gbmTime <- Sys.time() - begin
+gbmTime
+
+stopCluster(cl)
 ```
 
-```{r}
-confusionMatrix(data = p, reference = val$classe)
+
+
+Make predictions with models
+```{r predict, cache=TRUE, message=FALSE}
+predRf <- predict(object = modRf, newdata = val)
+predGbm <- predict(object = modGbm, newdata = val)
 ```
 
+Compare models
+```{r conf, eval=FALSE}
+cmRf  <- confusionMatrix(data = predRf,  reference = val$classe)
+cmGbm <- confusionMatrix(data = predGbm, reference = val$classe)
 
+round(  cmRf$overall, 2  ); round(  cmGbm$overall, 2  )
+round(  t(cmRf$byClass), 2  ); round(  t(cmGbm$byClass), 2  )
+```
+
+The random forest performs slightly better. So, what performance do we get on the test set?
+```{r test}
+pred <- predict(object = modRf, newdata = tst)
+cmTst <- confusionMatrix(data = pred, reference = tst$classe)
+```
+
+Overall accuracy of the random forest model is $0.956 \pm .003$
+
+`r cmTst$overall`
 
 
 
