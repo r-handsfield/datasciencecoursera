@@ -55,8 +55,8 @@ dfTst <- read.csv(file = "pml-training.csv", na.strings = c("", "NA"));
 ```{r}
 names(dfTrn)
 dim(dfTrn)
-head(dfTrn, 2L)
-head(dfTst, 2L)
+# head(dfTrn, 2L)
+# head(dfTst, 2L)
 ```
 
 ### Remove columns with missing data
@@ -76,15 +76,6 @@ We have removed 100 columns of NA data. Of the remaining columsn, the first 7 ar
 dfTrn <- dfTrn[, 8:60]
 dfTst <- dfTst[, 8:60]
 
-```
-
-
-### Z-Transform
-
-Running `lapply(dfTrn,class)` shows that all the columns are numeric, so we can apply the z-transform to the entire data frame.
-```{r}
-dfTrn[,1:52] <- apply(dfTrn[,1:52], 2, scale )
-dfTst[,1:52] <- apply(dfTst[,1:52], 2, scale )
 ```
 
 
@@ -166,4 +157,125 @@ Overall accuracy of the random forest model is $0.956 \pm .003$
 `r cmTst$overall`
 
 
+### Principle Components
 
+We can see the most important features in the model with
+
+```{r}
+modRf$finalModel$importance
+```
+
+Some rearranging lets us reorder the columns in the training set by decreasing importance.
+```{r eval=FALSE}
+components <- data.frame(MeanDecreaseGini <- modRf$finalModel$importance)
+components$Sensor <- row.names(components)
+
+components <- data.frame(components[order(components$MeanDecreaseGini, decreasing = TRUE), ])
+
+trnPca <- trn[, components$Sensor]
+names(trnPca)
+# View(trnPca[, components$Sensor])
+```
+
+Now we can plot the training time and accuracy as a function of number of features (1-52)
+
+First, initialize a boatload of vectors to hold optimization metrics.
+```{r}
+
+validation_curves <- data.frame(
+	trnTime = rep(NA, 52),
+
+	# training errors
+	errTrnA = rep(NA, 52),
+	errTrnB = rep(NA, 52),
+	errTrnC = rep(NA, 52),
+	errTrnD = rep(NA, 52),
+	errTrnE = rep(NA, 52),
+	
+	# validation errors
+	errValA = rep(NA, 52),
+	errValB = rep(NA, 52),
+	errValC = rep(NA, 52),
+	errValD = rep(NA, 52),
+	errValE = rep(NA, 52)
+)
+```
+
+```{r num features, cache=TRUE}
+cl <- makeCluster(spec = 3)
+registerDoParallel(cl)
+for (iter in 1:52) {
+	print( c("Iteration: ", iter)) 
+	names(trn[1:iter])
+	
+	# train a model using `iter` number of classifiers
+	begin <- Sys.time()
+	modTmp <- train(form = classe~., data = trn[, c(1:iter,53)], method = "rf")
+	
+	# log training time
+	validation_curves[iter, "trnTime"] <- (Sys.time() - begin)
+	print(c("Time = ", validation_curves$trnTime[iter]))
+	
+	print(modTmp$finalModel$xNames)
+	
+	# log training error - found in column 6 of the final model confusion matrix
+	# the error used here is (1 - Sensitivity)
+	validation_curves[iter, 2:6] <- modRf$finalModel$confusion[,6]
+	
+	# predict on the validation set
+	predTmp <- predict(object = modTmp, newdata = val[, c(1:iter, 53) ])
+	
+	# calculate Confusion Matrix
+	cmTmp <- confusionMatrix(data = predTmp, reference = val$classe)
+	
+	# log the validation error ( 1- Sensitivity)
+	# Sensitivity is in column 1 of confusion_matrix$byClass
+	validation_curves[iter, 7:11] <- (1 - cmTmp$byClass[,1])
+	print("\n\n==============================================\n\n")
+}
+stopCluster(cl)
+# add the number of features for easy plotting
+validation_curves$numFeatures <- 1:52
+```
+
+
+
+
+# Appendix I: Z-Transform
+
+What happens to the models if we z-transform the data sets?
+Running `lapply(dfTrn,class)` shows that all the columns are numeric, so we can apply the z-transform to the entire data frame.
+
+The following code would test the models on z-transformed data. Actually running it shows that normalization worsens model performance by $.01 - .03$. No need to run it again because it takes forever.
+```{r zTransform, eval=FALSE, cache=TRUE}
+trnZ[, 1:52] <- apply(trn[,1:52], 2, scale )
+valZ[, 1:52] <- apply(val[,1:52], 2, scale )
+tstZ[, 1:52] <- apply(tst[,1:52], 2, scale )
+
+# train the models ##########################
+cl <- makeCluster(spec = 3)
+registerDoParallel(cl)
+
+begin <- Sys.time()
+modRfZ <- train(form = classe~., data = trnZ, method = "rf")
+rfTime <- Sys.time() - begin
+rfTime
+
+begin <- Sys.time()
+modGbmZ <- train(form = classe~., data = trnZ, method = "gbm")
+gbmTime <- Sys.time() - begin
+gbmTime
+
+stopCluster(cl)
+
+# Make predictions with models ##################################
+predRfZ <- predict(object = modRfZ, newdata = valZ)
+predGbmZ <- predict(object = modGbmZ, newdata = valZ)
+
+# Compare models ###############################
+cmRfZ  <- confusionMatrix(data = predRfZ,  reference = valZ$classe)
+cmGbmZ <- confusionMatrix(data = predGbmZ, reference = valZ$classe)
+
+round(  cmRfZ$overall, 2  ); round(  cmGbmZ$overall, 2  )
+round(  t(cmRfZ$byClass), 2  ); round(  t(cmGbmZ$byClass), 2  )
+```
