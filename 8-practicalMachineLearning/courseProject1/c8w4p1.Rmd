@@ -184,9 +184,10 @@ First, initialize a boatload of vectors to hold optimization metrics.
 
 validation_curves <- data.frame(
 	numFeatures = 1:52,
-	trnBeg = as.POSIXlt(rep(NA, 52), tz = "EST"),
-	trnEnd = as.POSIXlt(rep(NA, 52), tz = "EST"),
-	trnTime = rep(NA, 52),
+	trnBeg =  as.POSIXct( rep(NA, 52), origin="1970-01-01" ),
+	trnEnd =  as.POSIXct( rep(NA, 52), origin="1970-01-01" ),
+	# trnTime = as.POSIXlt( rep(NA, 52) ),  
+	trnTime = as.difftime(tim = rep(0, 52), format = "%M", units = "mins"),
 
 	# training errors
 	errTrnA = rep(NA, 52),
@@ -205,7 +206,7 @@ validation_curves <- data.frame(
 ```
 
 ```{r num features, cache=TRUE}
-cl <- makeCluster(spec = 3)
+cl <- makeCluster(spec = 1)
 registerDoParallel(cl)
 for (iter in 1:3) {
 	print( c("Iteration: ", iter)) 
@@ -219,19 +220,19 @@ for (iter in 1:3) {
 	# log training time
 	validation_curves[iter, "trnBeg"] <- beginTime
 	validation_curves[iter, "trnEnd"] <- endTime
-	# validation_curves[iter, "trnTime"] <- difftime(endTime, beginTime, units = "min")
+	# validation_curves[iter, "trnTime"] <- endTime - beginTime
+	validation_curves[iter, "trnTime"] <- difftime(endTime, beginTime, units = "min")
 	
 	print(beginTime)
 	print(endTime)
 	print(difftime(endTime, beginTime, units="min"))
 	print(c("Time = ", validation_curves$trnTime[iter]))
-	validation_curves$trnTime[iter]
 	
 	print(modTmp$finalModel$xNames)
 	
 	# log training error - found in column 6 of the final model confusion matrix
 	# the error used here is (1 - Sensitivity)
-	validation_curves[iter, 2:6] <- modRf$finalModel$confusion[,6]
+	validation_curves[iter, 5:9] <- modTmp$finalModel$confusion[,6]
 	
 	# predict on the validation set
 	predTmp <- predict(object = modTmp, newdata = val[, c(1:iter, 53) ])
@@ -241,7 +242,7 @@ for (iter in 1:3) {
 	
 	# log the validation error ( 1- Sensitivity)
 	# Sensitivity is in column 1 of confusion_matrix$byClass
-	validation_curves[iter, 7:11] <- (1 - cmTmp$byClass[,1])
+	validation_curves[iter, 10:14] <- (1 - cmTmp$byClass[,1])
 	
 	saveRDS(object = validation_curves, file = "validation_curves.RData")
 	
@@ -291,3 +292,23 @@ cmGbmZ <- confusionMatrix(data = predGbmZ, reference = valZ$classe)
 round(  cmRfZ$overall, 2  ); round(  cmGbmZ$overall, 2  )
 round(  t(cmRfZ$byClass), 2  ); round(  t(cmGbmZ$byClass), 2  )
 ```
+
+
+# Appendix 2 : References
+
+[https://archive.ics.uci.edu/ml/datasets/Wearable+Computing%3A+Classification+of+Body+Postures+and+Movements+%28PUC-Rio%29#](https://archive.ics.uci.edu/ml/datasets/Wearable+Computing%3A+Classification+of+Body+Postures+and+Movements+%28PUC-Rio%29#)
+
+[http://www.mldata.org/repository/data/viewslug/wearable-accelerometers-activity/3/](http://www.mldata.org/repository/data/viewslug/wearable-accelerometers-activity/3/)
+
+[http://www.md2c.nl/how-to-build-a-human-activity-classifier-with-azure-machine-learning/](http://www.md2c.nl/how-to-build-a-human-activity-classifier-with-azure-machine-learning/)
+
+[https://gallery.cortanaintelligence.com/Experiment/Human-Activity-Classifier-2](https://gallery.cortanaintelligence.com/Experiment/Human-Activity-Classifier-2)
+
+
+
+[http://nthturn.com/2015/02/22/prediction-using-random-forests-in-r-an-example/](http://nthturn.com/2015/02/22/prediction-using-random-forests-in-r-an-example/)
+
+[https://rstudio-pubs-static.s3.amazonaws.com/19668_2a08e88c36ab4b47876a589bb1d61c37.html](https://rstudio-pubs-static.s3.amazonaws.com/19668_2a08e88c36ab4b47876a589bb1d61c37.html)
+
+[https://yoke2.github.io/PMLCourseProject/pmlreport.html](https://yoke2.github.io/PMLCourseProject/pmlreport.html)
+
