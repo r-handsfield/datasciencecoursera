@@ -183,6 +183,9 @@ First, initialize a boatload of vectors to hold optimization metrics.
 ```{r}
 
 validation_curves <- data.frame(
+	numFeatures = 1:52,
+	trnBeg = as.POSIXlt(rep(NA, 52), tz = "EST"),
+	trnEnd = as.POSIXlt(rep(NA, 52), tz = "EST"),
 	trnTime = rep(NA, 52),
 
 	# training errors
@@ -204,17 +207,25 @@ validation_curves <- data.frame(
 ```{r num features, cache=TRUE}
 cl <- makeCluster(spec = 3)
 registerDoParallel(cl)
-for (iter in 1:52) {
+for (iter in 1:3) {
 	print( c("Iteration: ", iter)) 
 	names(trn[1:iter])
 	
 	# train a model using `iter` number of classifiers
-	begin <- Sys.time()
+	beginTime <- Sys.time()
 	modTmp <- train(form = classe~., data = trn[, c(1:iter,53)], method = "rf")
+	endTime <- Sys.time()
 	
 	# log training time
-	validation_curves[iter, "trnTime"] <- (Sys.time() - begin)
+	validation_curves[iter, "trnBeg"] <- beginTime
+	validation_curves[iter, "trnEnd"] <- endTime
+	# validation_curves[iter, "trnTime"] <- difftime(endTime, beginTime, units = "min")
+	
+	print(beginTime)
+	print(endTime)
+	print(difftime(endTime, beginTime, units="min"))
 	print(c("Time = ", validation_curves$trnTime[iter]))
+	validation_curves$trnTime[iter]
 	
 	print(modTmp$finalModel$xNames)
 	
@@ -231,11 +242,12 @@ for (iter in 1:52) {
 	# log the validation error ( 1- Sensitivity)
 	# Sensitivity is in column 1 of confusion_matrix$byClass
 	validation_curves[iter, 7:11] <- (1 - cmTmp$byClass[,1])
+	
+	saveRDS(object = validation_curves, file = "validation_curves.RData")
+	
 	print("\n\n==============================================\n\n")
 }
 stopCluster(cl)
-# add the number of features for easy plotting
-validation_curves$numFeatures <- 1:52
 ```
 
 
