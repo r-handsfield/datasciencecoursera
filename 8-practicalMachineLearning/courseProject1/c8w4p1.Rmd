@@ -256,7 +256,12 @@ stopCluster(cl)
 saveRDS(object = validation_curves, file = "validation_curves.RData")
 ```
 
+Reshape validation curves for plotting
+```{r}
+mdf <- melt(data = validation_curves, id.vars = 1, measure.vars = 4:14)
 
+ggplot(data = mdf) + aes(x = numFeatures, y = value, color = variable) + geom_line()
+```
 
 
 # Appendix I: Z-Transform
