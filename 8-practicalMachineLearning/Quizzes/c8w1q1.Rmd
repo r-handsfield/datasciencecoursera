@@ -16,7 +16,7 @@ d) Training and test sets
 
 ## Solution
 
-From 002__ page 4
+From __002__ page 4
 
 > 1. question
 > 2. input data
@@ -27,6 +27,29 @@ From 002__ page 4
 
 
 __Answer:__ Asking the right question, Deciding on an Algorithm, Evaluating the Prediction
+
+# Question 1A
+
+Which of the following are components in building a machine learning algorithm?
+
+a) Training and test sets
+b) Machine learning
+c) __Deciding on an algorithm__
+d) Statistical inference
+e) Artificial intelligence
+
+## Solution
+
+From __002__ page 4, components of a predictor are
+
+> 1. question
+> 2. input data
+> 3. features
+> 4. algorithm  (deciding on an algorithm)
+> 5. parameters
+> 6. evaluation
+
+__Answer:__  Deciding on an Algorithm
 
 # Question 2
 
@@ -58,7 +81,6 @@ b) R^2
 c) Correlation
 d) Median absolute deviation
 
-
 ## Solution
 
 From 006__ p13:
@@ -79,7 +101,7 @@ From 006__ p13:
 >       * One example is [kappa](http://en.wikipedia.org/wiki/Cohen%27s_kappa)
 
 
-__Answer 4:__ Sensitivity, Predictive Value of a Positive, Specificity
+__Answer 4:__ Sensitivity, Predictive Value of a Positive, Specificity, Median Absolute Deviation
 
 # Question 5
 
@@ -117,6 +139,17 @@ Do algebra with the ratios:
 <br />
 Solve for $tp$ and $fp$, then plug into 
 $$PPV = {tp \over {tp + fp}} = {100 \over {100 + 1000}} \approx .09$$
+
+```{r}
+tp <- 99
+tn <- 98901
+fp <- 999
+fn <- 1
+
+ppv <- tp/(tp + fp)
+ppv
+```
+
 
 __Answer:__ PPV = .09
 
